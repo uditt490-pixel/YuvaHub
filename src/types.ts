@@ -58,3 +58,12 @@ export interface Notification {
   type: 'new_event' | 'deadline' | 'system';
   link?: string;
 }
+
+export interface TopicDeepDive {
+  topic: string;
+  summary: string;
+  keySkills: string[];
+  trendingOpportunities: { title: string; desc: string }[];
+  marketOutlook: string;
+  relatedTags: string[];
+}

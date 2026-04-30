@@ -33,7 +33,7 @@ export interface UserProfile {
   skills?: string[];
   location: string;
   age: number | '';
-  interests: string[];
+  interests?: string[];
   notificationsEnabled: boolean;
   bookmarkedEventIds?: string[];
   registeredEventIds?: string[];

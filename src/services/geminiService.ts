@@ -80,8 +80,8 @@ export async function fetchEventsAndSchemes(query: string = "", profile?: UserPr
       User Profile:
       - Location: ${profile.location}
       - Age: ${profile.age}
-      - Interests: ${profile.interests.join(", ")}
-      - Skills: ${profile.skills?.join(", ")}
+      - Interests: ${profile.interests?.join(", ") || "None"}
+      - Skills: ${profile.skills?.join(", ") || "None"}
     ` : "";
 
     const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });

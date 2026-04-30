@@ -309,7 +309,7 @@ export default function App() {
   };
 
   const handleSaveProfile = async () => {
-    if (!tempProfile.location || !tempProfile.age || !tempProfile.name || !tempProfile.phone || !tempProfile.address || !tempProfile.dob || !tempProfile.college || (tempProfile.skills && tempProfile.skills.length === 0) || tempProfile.interests.length === 0) {
+    if (!tempProfile.location || !tempProfile.age || !tempProfile.name || !tempProfile.phone || !tempProfile.address || !tempProfile.dob || !tempProfile.college || (tempProfile.skills && tempProfile.skills.length === 0) || (tempProfile.interests || []).length === 0) {
       addToast("Missing Info", "Please fill in all identity fields, college, skills, and select at least one interest.", "warning");
       return;
     }
@@ -466,12 +466,15 @@ export default function App() {
   }, [isAdmin, showAdmin]);
 
   const toggleInterest = (interest: string) => {
-    setTempProfile(prev => ({
-      ...prev,
-      interests: prev.interests.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest]
-    }));
+    setTempProfile(prev => {
+      const currentInterests = prev.interests || [];
+      return {
+        ...prev,
+        interests: currentInterests.includes(interest)
+          ? currentInterests.filter(i => i !== interest)
+          : [...currentInterests, interest]
+      };
+    });
   };
 
   const toggleBookmark = async (eventId: string) => {
@@ -700,7 +703,7 @@ export default function App() {
               "new_event"
             );
           } else {
-            newNearbyEvents.forEach(event => {
+            (newNearbyEvents || []).forEach(event => {
               addNotification(
                 "Nearby Opportunity!",
                 `${event.title} is happening near you.`,
@@ -801,19 +804,19 @@ export default function App() {
       let scoreB = 0;
 
       // Interest matching
-      profile.interests.forEach(interest => {
+      (profile?.interests || []).forEach(interest => {
         if (a.description.toLowerCase().includes(interest.toLowerCase())) scoreA += 2;
         if (b.description.toLowerCase().includes(interest.toLowerCase())) scoreB += 2;
       });
 
       // Domain matching
-      profile.preferredDomains?.forEach(domain => {
+      (profile?.preferredDomains || []).forEach(domain => {
         if (a.title.toLowerCase().includes(domain.toLowerCase())) scoreA += 3;
         if (b.title.toLowerCase().includes(domain.toLowerCase())) scoreB += 3;
       });
 
       // Skill matching
-      profile.skills?.forEach(skill => {
+      (profile?.skills || []).forEach(skill => {
         if (a.description.toLowerCase().includes(skill.toLowerCase())) scoreA += 4;
         if (b.description.toLowerCase().includes(skill.toLowerCase())) scoreB += 4;
       });

@@ -109,8 +109,51 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [assistantLoading, setAssistantLoading] = useState(false);
   const [draftContent, setDraftContent] = useState<string | null>(null);
-  const [assistantInput, setAssistantInput] = useState('');
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
+
+  const getRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const statusColor = useMemo(() => {
+    const diff = (new Date().getTime() - lastRefreshed.getTime()) / 1000 / 60;
+    if (diff < 5) return 'bg-emerald-500';
+    if (diff < 30) return 'bg-amber-500';
+    return 'bg-slate-300';
+  }, [lastRefreshed]);
+
+  const handleRefreshFeed = () => {
+    setLastRefreshed(new Date());
+    // In a real app, this would re-fetch data
+    addToast("Feed Updated", "Fetched latest opportunities.", "success");
+  };
+  const [trackerSubTab, setTrackerSubTab] = useState<'applied' | 'saved'>('applied');
+
+  // Sub-components
+  const SkeletonCard = () => (
+    <div className="bg-white rounded-[40px] p-8 border border-slate-100 shadow-sm overflow-hidden relative">
+      <div className="flex justify-between items-start mb-6">
+        <div className="w-24 h-6 bg-slate-100 rounded-xl animate-pulse" />
+        <div className="w-8 h-8 bg-slate-100 rounded-lg animate-pulse" />
+      </div>
+      <div className="w-full h-8 bg-slate-100 rounded-2xl animate-pulse mb-4" />
+      <div className="w-1/2 h-8 bg-slate-100 rounded-2xl animate-pulse mb-8" />
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-24 h-4 bg-slate-100 rounded-lg animate-pulse" />
+        <div className="w-24 h-4 bg-slate-100 rounded-lg animate-pulse" />
+      </div>
+      <div className="w-full h-14 bg-slate-100 rounded-[24px] animate-pulse" />
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+    </div>
+  );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [assistantInput, setAssistantInput] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [hasVisitedForYou, setHasVisitedForYou] = useState(() => localStorage.getItem('has_visited_for_you') === 'true');
 
   const [showSettings, setShowSettings] = useState(!profile);
@@ -1021,54 +1064,74 @@ export default function App() {
 
       case 'tracker':
         return (
-          <div className="p-8">
-            <header className="mb-10 flex items-center justify-between">
-              <div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">My Applications</h2>
-                <p className="text-slate-500 font-medium">Track your progress and stay on top of deadlines.</p>
-              </div>
-              <div className="flex gap-2">
-                <div className="bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold text-slate-500">
-                  {userRegistrations.length} Total
-                </div>
-              </div>
+          <div className="p-6 lg:p-10 max-w-screen-2xl mx-auto">
+            <header className="mb-10">
+              <h2 className="text-4xl font-black text-slate-900 tracking-tight mb-2">My Tracker</h2>
+              <p className="text-slate-500 font-medium max-w-xl">Organize your journey, track applications, and view your saved picks.</p>
             </header>
 
-            {userRegistrations.length > 0 ? (
-              <div className="space-y-4 max-w-4xl">
-                {userRegistrations.map((reg) => {
-                  const event = events.find(e => e.id === reg.eventId);
-                  return (
-                    <div key={reg.id} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-all group">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 mb-10 p-1.5 bg-slate-100 rounded-2xl w-fit">
+              <button 
+                onClick={() => setTrackerSubTab('applied')}
+                className={cn(
+                  "px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                  trackerSubTab === 'applied' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                )}
+              >
+                Applications
+              </button>
+              <button 
+                onClick={() => setTrackerSubTab('saved')}
+                className={cn(
+                  "px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                  trackerSubTab === 'saved' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                )}
+              >
+                Saved Items
+              </button>
+            </div>
+
+            {trackerSubTab === 'applied' ? (
+              userRegistrations.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 max-w-5xl">
+                  {userRegistrations.map((reg) => (
+                    <motion.div 
+                      key={reg.id} 
+                      className="bg-white p-6 md:p-8 rounded-[40px] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all group relative overflow-hidden"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <div className="absolute top-0 right-0 h-full w-2 bg-indigo-500 opacity-20" />
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-6">
                           <div className={cn(
-                            "w-12 h-12 rounded-2xl flex items-center justify-center",
-                            reg.status === 'Selected' ? "bg-emerald-100 text-emerald-600" :
-                            reg.status === 'Rejected' ? "bg-red-100 text-red-600" :
-                            "bg-slate-100 text-slate-400"
+                            "w-16 h-16 rounded-3xl flex items-center justify-center shadow-inner",
+                            reg.status === 'Selected' ? "bg-emerald-50 text-emerald-600" :
+                            reg.status === 'Rejected' ? "bg-red-50 text-red-600" :
+                            "bg-slate-50 text-slate-400"
                           )}>
-                            {reg.status === 'Selected' ? <Trophy className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                            {reg.status === 'Selected' ? <Trophy className="w-8 h-8" /> : <Clock className="w-8 h-8" />}
                           </div>
                           <div>
-                            <h4 className="font-black text-slate-900 mb-0.5">{reg.eventTitle}</h4>
-                            <div className="flex items-center gap-3 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                              <span>Applied {reg.registeredAt?.toDate ? new Date(reg.registeredAt.toDate()).toLocaleDateString() : 'Recently'}</span>
-                              {event?.date && <span className="text-indigo-500">Due: {event.date}</span>}
+                            <h4 className="text-xl font-black text-slate-900 mb-1 leading-tight">{reg.eventTitle}</h4>
+                            <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs font-bold text-slate-400 uppercase tracking-[0.1em]">
+                              <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Applied {reg.registeredAt?.toDate ? new Date(reg.registeredAt.toDate()).toLocaleDateString() : 'Recently'}</span>
+                              <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                              <span className="text-indigo-600 font-black">Status: {reg.status}</span>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-2xl">
                           {(['Interested', 'Applied', 'Rejected', 'Selected'] as ApplicationStatus[]).map((status) => (
                             <button
                               key={status}
                               onClick={() => updateApplicationStatus(reg.id, status)}
                               className={cn(
-                                "px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border",
+                                "px-4 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
                                 reg.status === status 
-                                  ? "bg-slate-900 text-white border-slate-900" 
-                                  : "bg-white text-slate-400 border-slate-100 hover:border-slate-300"
+                                  ? "bg-white text-indigo-600 shadow-sm border border-indigo-100" 
+                                  : "text-slate-400 hover:text-slate-600"
                               )}
                             >
                               {status}
@@ -1077,41 +1140,97 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* Checklist section */}
-                      <div className="mt-6 pt-6 border-t border-slate-50">
-                        <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Application Checklist</h5>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {[
-                            { item: 'Resume/CV', key: 'resume' },
-                            { item: 'Pitch Deck', key: 'deck' },
-                            { item: 'ID Proof', key: 'id' },
-                            { item: 'GitHub/Portfolio', key: 'portfolio' }
-                          ].map((check) => (
-                            <div key={check.key} className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl">
-                              <div className="w-4 h-4 rounded-md border-2 border-slate-200 flex items-center justify-center bg-white cursor-pointer hover:border-indigo-400 transition-colors">
-                               <Check className="w-3 h-3 text-white" />
-                              </div>
-                              <span className="text-[10px] font-bold text-slate-600">{check.item}</span>
-                            </div>
-                          ))}
-                        </div>
+                      <div className="mt-8 pt-8 border-t border-slate-50 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[
+                          { item: 'Resume/CV', key: 'resume' },
+                          { item: 'Pitch Deck', key: 'deck' },
+                          { item: 'ID Proof', key: 'id' },
+                          { item: 'GitHub/Portfolio', key: 'portfolio' }
+                        ].map((check) => (
+                          <div key={check.key} className="flex items-center justify-between px-5 py-4 bg-slate-50/50 rounded-2xl border border-transparent hover:border-indigo-100 transition-colors">
+                             <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">{check.item}</span>
+                             <div className="w-5 h-5 rounded-lg border-2 border-slate-200 bg-white flex items-center justify-center cursor-pointer hover:border-indigo-400 transition-all active:scale-95 group/check">
+                               <Check className="w-3.5 h-3.5 text-white group-hover/check:text-indigo-400" />
+                             </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-24 bg-white rounded-[40px] border border-dashed border-slate-200">
+                  <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-300 mx-auto mb-6">
+                    <Calendar className="w-10 h-10" />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 mb-2">No Applications Tracked</h3>
+                  <p className="text-slate-500 font-medium mb-8 max-w-sm mx-auto">Apply to opportunities and track your progress through every stage.</p>
+                  <button 
+                    onClick={() => setActiveTab('discover')}
+                    className="bg-slate-900 px-8 py-4 rounded-[24px] text-[10px] font-black text-white uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200"
+                  >
+                    Explore Feeds
+                  </button>
+                </div>
+              )
             ) : (
-              <div className="text-center py-20 bg-slate-50 rounded-[40px] border border-dashed border-slate-200">
-                <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-black text-slate-900 mb-1">No applications tracked yet</h3>
-                <p className="text-slate-500 text-sm font-medium mb-6">Start applying to opportunities to track them here.</p>
-                <button 
-                  onClick={() => setActiveTab('discover')}
-                  className="bg-white px-6 py-3 border border-slate-200 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
-                >
-                  Browse Events
-                </button>
-              </div>
+              /* Saved Items */
+              profile?.bookmarkedEventIds && profile.bookmarkedEventIds.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {events
+                    .filter(e => profile.bookmarkedEventIds?.includes(e.id))
+                    .map(event => (
+                      <div key={event.id} id={`saved-${event.id}`} />
+                    ))}
+                  {/* Re-using EventCard somehow or just copying UI */}
+                  {events
+                    .filter(e => profile.bookmarkedEventIds?.includes(e.id))
+                    .map(event => (
+                      <div key={event.id} className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-sm relative group overflow-hidden">
+                        <div className="flex justify-between items-start mb-6">
+                          <div className={cn(
+                            "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest",
+                            event.type === 'hackathon' ? "bg-indigo-50 text-indigo-600" :
+                            event.type === 'internship' ? "bg-emerald-50 text-emerald-600" :
+                            "bg-amber-50 text-amber-600"
+                          )}>
+                            {event.type}
+                          </div>
+                          <button 
+                            onClick={() => toggleBookmark(event.id)}
+                            className="text-indigo-600 hover:text-indigo-700"
+                          >
+                            <Bookmark className="w-5 h-5 fill-current" />
+                          </button>
+                        </div>
+                        <h4 className="text-xl font-black text-slate-900 leading-tight mb-4">{event.title}</h4>
+                        <div className="flex items-center gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">
+                           <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> {event.date}</span>
+                        </div>
+                        <button 
+                          onClick={() => { setSelectedEvent(event); setShowConfirmReg(event); }}
+                          className="w-full py-4 bg-slate-900 text-white rounded-[24px] font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all"
+                        >
+                          Details & Apply
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-24 bg-white rounded-[40px] border border-dashed border-slate-200">
+                  <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center text-indigo-300 mx-auto mb-6">
+                    <Bookmark className="w-10 h-10" />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 mb-2">Your Saved List is Empty</h3>
+                  <p className="text-slate-500 font-medium mb-8 max-w-sm mx-auto">Save opportunities you're interested in and view them later here.</p>
+                  <button 
+                    onClick={() => setActiveTab('discover')}
+                    className="bg-indigo-600 px-8 py-4 rounded-[24px] text-[10px] font-black text-white uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-200"
+                  >
+                    Browse Now
+                  </button>
+                </div>
+              )
             )}
           </div>
         );
@@ -1373,18 +1492,18 @@ export default function App() {
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-[10px] font-black text-indigo-600 uppercase tracking-widest">
-                    {lastFetch > 0 ? `Updated ${new Date(lastFetch).toLocaleTimeString()}` : 'Live Opportunities'}
-                  </div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-2.5 px-4 py-2 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                  <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", statusColor)} />
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    Live Feed • Updated {getRelativeTime(lastRefreshed)}
+                  </span>
                   <button 
-                    onClick={() => loadInitialData(true)}
+                    onClick={handleRefreshFeed}
                     disabled={isUpdating}
-                    className="p-1.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-indigo-600 transition-colors disabled:opacity-50"
-                    title="Check for New Updates"
+                    className="p-1 hover:text-indigo-600 transition-colors disabled:opacity-50"
                   >
-                    <RefreshCw className={cn("w-3.5 h-3.5", isUpdating && "animate-spin")} />
+                    <RefreshCw className={cn("w-3 h-3", isUpdating && "animate-spin")} />
                   </button>
                 </div>
               </div>
@@ -1516,24 +1635,34 @@ export default function App() {
             </header>
 
             {/* Filter Bar */}
-            <div className="flex flex-wrap items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-4 no-scrollbar -mx-6 px-6 lg:mx-0 lg:px-0">
+               {filterType !== 'all' && (
+                  <button 
+                    onClick={() => setFilterType('all')}
+                    className="flex items-center gap-2.5 px-5 py-3 bg-indigo-600 text-white rounded-[24px] text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-xl shadow-indigo-100 shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Reset
+                  </button>
+                )}
               {[
-                { id: 'all', label: 'All Feeds', icon: LayoutGrid },
+                { id: 'all', label: 'All Fields', icon: LayoutGrid },
                 { id: 'hackathon', label: 'Hackathons', icon: Sparkles },
                 { id: 'scheme', label: 'Scholarships', icon: GraduationCap },
                 { id: 'program', label: 'Mentorships', icon: Briefcase },
+                { id: 'internship', label: 'Internships', icon: ExternalLink },
               ].map((type) => (
                 <button
                   key={type.id}
                   onClick={() => setFilterType(type.id as any)}
                   className={cn(
-                    "flex items-center gap-2.5 px-6 py-3.5 rounded-full text-xs font-black uppercase tracking-widest transition-all border whitespace-nowrap",
+                    "flex items-center gap-3 px-6 py-3.5 rounded-[24px] text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border shrink-0",
                     filterType === type.id 
-                      ? "bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-200 scale-105" 
-                      : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                      ? "bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-200" 
+                      : "bg-white text-slate-400 border-slate-50 hover:border-slate-200 hover:text-slate-600"
                   )}
                 >
-                  <type.icon className={cn("w-4 h-4", filterType === type.id ? "text-indigo-400" : "")} />
+                  <type.icon className={cn("w-3.5 h-3.5", filterType === type.id ? "text-indigo-400" : "text-slate-300")} />
                   {type.label}
                 </button>
               ))}
@@ -1633,7 +1762,7 @@ export default function App() {
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-[40px] h-[340px] animate-pulse border border-slate-100" />
+                  <SkeletonCard key={i} />
                 ))}
               </div>
             ) : (
@@ -1857,21 +1986,32 @@ export default function App() {
             </div>
           </div>
 
-          <div className="mt-auto p-6 border-t border-slate-50">
-            <div className="bg-slate-900 rounded-3xl p-5 relative overflow-hidden group">
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-2">
-                   <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                   <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Weekly Insight</p>
+          <div className="mt-auto p-6">
+            <div className="bg-indigo-600 h-[240px] rounded-[40px] p-8 relative overflow-hidden group shadow-2xl shadow-indigo-200">
+               <div className="absolute top-0 right-0 p-8">
+                 <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md">
+                   <TrendingUp className="w-8 h-8 text-white opacity-40" />
+                 </div>
+               </div>
+              <div className="relative z-10 h-full flex flex-col">
+                <div className="flex items-center gap-2 mb-4">
+                   <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                   <p className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">Weekly Insight</p>
                 </div>
-                <h4 className="text-white font-bold text-sm leading-tight mb-4">AI is the most high-growth domain in Bangalore.</h4>
+                <h4 className="text-white font-black text-xl leading-tight mb-auto">
+                   AI research grants are peak trending in IITs right now.
+                </h4>
                 <button 
-                  onClick={() => setIsAssistantOpen(true)}
-                  className="w-full bg-indigo-600 text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-colors shadow-xl shadow-indigo-900/20"
+                  onClick={() => {
+                    setAssistantInput("Tell me more about the AI research grants trending in IITs.");
+                    setIsAssistantOpen(true);
+                  }}
+                  className="w-full bg-white text-indigo-600 py-4 rounded-[24px] text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-indigo-900/20"
                 >
-                  Message Assistant
+                  Explore Insight
                 </button>
               </div>
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-500 rounded-full blur-3xl opacity-50" />
             </div>
           </div>
         </aside>

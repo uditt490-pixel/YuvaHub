@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, Component, ReactNode, ErrorInfo } from 'react';
 import { 
-  Search, MapPin, Bell, ExternalLink, Filter, Info, 
+  Search, MapPin, Bell, BellRing, ExternalLink, Filter, Info, 
   Briefcase, GraduationCap, X, Check, User, Sparkles, 
   BellOff, Settings, ChevronRight, Sliders, Globe, 
   Calendar, ArrowRight, LayoutGrid, List, AlertTriangle, RefreshCw,
@@ -1214,7 +1214,7 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
                 <div>
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">My Skills</h3>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">My Skills</h4>
                   <div className="flex flex-wrap gap-2">
                     {['Frontend', 'Backend', 'Python', 'Design', 'Management', 'Public Speaking', 'Data Analysis', 'Problem Solving'].map(s => (
                       <button 
@@ -1231,7 +1231,7 @@ export default function App() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">Areas of Interest</h3>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">Areas of Interest</h4>
                   <div className="flex flex-wrap gap-2">
                     {['AI/ML', 'Blockchain', 'Cybersecurity', 'Sustainable Devel.', 'Govt. Schemes', 'Internships', 'Social Impact'].map(d => (
                       <button 
@@ -1246,6 +1246,35 @@ export default function App() {
                       </button>
                     ))}
                   </div>
+                </div>
+              </div>
+
+              <div className="mb-10 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 px-1">Preferences</h3>
+                <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600">
+                      <BellRing className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-slate-900 mb-0.5">Opportunity Notifications</h4>
+                      <p className="text-[10px] text-slate-500 font-medium">Get alerted about new schemes, hackathons, and deadline reminders.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setTempProfile(prev => ({ ...prev, notificationsEnabled: !prev.notificationsEnabled }))}
+                    className={cn(
+                      "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
+                      tempProfile.notificationsEnabled ? "bg-indigo-600" : "bg-slate-200"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                        tempProfile.notificationsEnabled ? "translate-x-6" : "translate-x-1"
+                      )}
+                    />
+                  </button>
                 </div>
               </div>
 
@@ -2007,7 +2036,7 @@ export default function App() {
               {step === 3 && (
                 <div className="space-y-6 text-center">
                   <Globe className="w-12 h-12 text-indigo-600 mx-auto mb-2" />
-                  <h3 className="text-xl font-black text-slate-900">Language & Budget</h3>
+                  <h3 className="text-xl font-black text-slate-900">Language & Preferences</h3>
                   <div className="space-y-4">
                     <div>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Preferred Language</p>
@@ -2018,12 +2047,20 @@ export default function App() {
                       </div>
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Budget Filter</p>
-                      <div className="flex gap-2 justify-center">
-                         {['free', 'any'].map(b => (
-                           <button key={b} onClick={() => setData({ ...data, budgetPreference: b as any })} className={cn("px-4 py-2 rounded-xl text-[10px] font-bold border", data.budgetPreference === b ? "bg-slate-900 text-white" : "bg-slate-50")}>{b}</button>
-                         ))}
-                      </div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Notifications</p>
+                      <button 
+                        onClick={() => setData({ ...data, notificationsEnabled: !data.notificationsEnabled })}
+                        className={cn(
+                          "w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all",
+                          data.notificationsEnabled ? "bg-indigo-50 border-indigo-200 text-indigo-700" : "bg-slate-50 border-slate-100 text-slate-500"
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Bell className={cn("w-4 h-4", data.notificationsEnabled ? "fill-current" : "")} />
+                          <span className="text-xs font-bold">Stay Updated</span>
+                        </div>
+                        <div className={cn("w-2 h-2 rounded-full", data.notificationsEnabled ? "bg-indigo-600 animate-pulse" : "bg-slate-300")} />
+                      </button>
                     </div>
                   </div>
                 </div>

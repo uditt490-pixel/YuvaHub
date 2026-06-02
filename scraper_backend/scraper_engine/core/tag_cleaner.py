@@ -60,7 +60,7 @@ def clean_tags_with_ai(title: str, raw_tags: list) -> list:
 
     try:
         req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=15) as response:
+        with urllib.request.urlopen(req, timeout=8) as response:
             res_data = json.loads(response.read().decode("utf-8"))
             text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
             tags = json.loads(text)
@@ -74,13 +74,8 @@ def clean_tags_with_ai(title: str, raw_tags: list) -> list:
             _rate_limit_until = time.time() + 30.0
         else:
             logger.warning(f"AI Tag Cleanup failed: {he}. Falling back to standard normalizer.")
-    except TimeoutError:
-        pass # Silent fallback for timeout
     except Exception as ex:
-        if "timed out" in str(ex).lower() or "timeout" in str(ex).lower():
-            pass # Silent fallback for timeout
-        else:
-            logger.warning(f"AI Tag Cleanup exception: {ex}. Falling back to standard normalizer.")
+        logger.warning(f"AI Tag Cleanup exception: {ex}. Falling back to standard normalizer.")
         
     # Return standard clean list fallback
     fallback = [t for t in raw_tags if len(t) > 1 and len(t) < 20]

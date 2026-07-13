@@ -3,6 +3,7 @@ import { Target, Search, Compass, ShieldCheck, Loader2, ArrowRight, RefreshCw, S
 import { io } from 'socket.io-client';
 import { UserProfile } from '../../types';
 import { fetchSmartFeed, fetchExploreFeed, trackInteraction, runScoutProtocolBackend, generateApplyAssistBackend, fetchLatestFeed } from '../../services/apiClient';
+import { ErrorState } from '../ui/states';
 import ShareModal from '../ui/ShareModal';
 import ApplyAssistModal from '../ui/ApplyAssistModal';
 
@@ -18,6 +19,7 @@ export default function Dashboard({ user, profile, onViewDetails }: DashboardPro
   const [scoutData, setScoutData] = useState({ year: '', field: '', tech: '', goal: '' });
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [feedError, setFeedError] = useState<string | null>(null);
   const [feedItems, setFeedItems] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -66,6 +68,7 @@ export default function Dashboard({ user, profile, onViewDetails }: DashboardPro
     if (isFirstLoad || force) setLoading(true);
     
     try {
+      setFeedError(null);
       const fetchFn = mode === 'smart' 
         ? () => fetchSmartFeed(profile, 1) 
         : mode === 'daily'
@@ -77,8 +80,8 @@ export default function Dashboard({ user, profile, onViewDetails }: DashboardPro
       setCurrentPage(1);
       setHasNextPage(!!results.next_page);
       setLastUpdated(Date.now());
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setFeedError('Unable to load your dashboard feed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -252,7 +255,9 @@ export default function Dashboard({ user, profile, onViewDetails }: DashboardPro
           </div>
         </div>
         
-        {loading ? (
+        {feedError && feedItems.length === 0 ? (
+          <ErrorState description={feedError} onRetry={() => void loadInitialFeed(true)} retrying={loading} />
+        ) : loading ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[16px] border border-[#E2E8F0]">
             <div className="w-10 h-10 border-4 border-[#2563EB] border-t-transparent rounded-full animate-spin mb-4"></div>
             <p className="text-[#64748B] font-[500] text-[14px]">Discovering more opportunities for you 🚀</p>

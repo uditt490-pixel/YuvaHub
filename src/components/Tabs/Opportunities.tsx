@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Filter, Users, ChevronRight, Clock, Star, Share2, Copy, RefreshCw } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { searchOpportunities, trackInteraction } from '../../services/apiClient';
+import { AsyncState } from '../ui/states';
 
 export default function Opportunities({ 
   user, 
@@ -23,6 +24,8 @@ export default function Opportunities({
 
   const [searchData, setSearchData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [retrying, setRetrying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Filter states
   const [filters, setFilters] = useState({
@@ -35,16 +38,18 @@ export default function Opportunities({
   
   const [sortBy, setSortBy] = useState('Most relevant');
 
-  const fetchData = async (q: string) => {
-    setLoading(true);
+  const fetchData = async (q: string, isRetry = false) => {
+    isRetry ? setRetrying(true) : setLoading(true);
+    setError(null);
     try {
       const typeStr = filters.type.Internships ? 'Internship' : (filters.type.Hackathons ? 'Hackathon' : 'All');
       const results = await searchOpportunities(q || "Student opportunities", typeStr, 1, {});
       setSearchData(results);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setError('Unable to load opportunities. Please try again.');
     } finally {
       setLoading(false);
+      setRetrying(false);
     }
   };
 
@@ -229,6 +234,14 @@ export default function Opportunities({
              <h2 className="text-[24px] font-[800] tracking-tight text-gray-900 mb-1">Opportunities Explorer</h2>
              <p className="text-[14px] text-[#64748B]">Browse and filter the complete live database.</p>
            </div>
+           <button 
+             onClick={() => void fetchData(qVal, true)}
+             disabled={loading}
+             className="flex items-center gap-2 bg-white border border-[#E2E8F0] px-4 py-2 rounded-[8px] text-[13px] font-[600] text-[#0F172A] hover:bg-[#F8FAFC] transition-colors shadow-sm disabled:opacity-50"
+           >
+             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+             Refresh
+           </button>
            
            <div className="flex items-center gap-3 w-full md:w-auto">
              {/* Sort Select */}
@@ -267,11 +280,16 @@ export default function Opportunities({
             />
          </div>
 
-         {loading ? (
-            <div className="flex py-20 justify-center">
-               <div className="w-8 h-8 border-4 border-[#2563EB] border-t-transparent rounded-full animate-spin"></div>
-            </div>
-         ) : filteredResults?.length ? (
+         <AsyncState
+           loading={loading}
+           error={error}
+           empty={filteredResults.length === 0}
+           onRetry={() => void fetchData(qVal, true)}
+           retrying={retrying}
+           skeletonCount={6}
+           emptyTitle="No opportunities found"
+           emptyDescription="Try changing your search or filters, then search again."
+         >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
                {filteredResults.map((opp: any, i: number) => {
                   const cleanSlug = (opp.title || "opportunity").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -322,11 +340,7 @@ export default function Opportunities({
                   )
                })}
             </div>
-         ) : (
-            <div className="py-20 text-center">
-               <p className="text-gray-500">No opportunities found matching your filters.</p>
-            </div>
-         )}
+         </AsyncState>
 
          {/* Pagination */}
          {!loading && filteredResults?.length > 0 && (

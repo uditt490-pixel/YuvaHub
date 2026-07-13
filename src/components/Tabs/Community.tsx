@@ -3,6 +3,7 @@ import { db } from '../../lib/firebase';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, limit } from 'firebase/firestore';
 import { Trophy, Megaphone, HelpCircle, Link as LinkIcon, Send, Heart, MessageSquare, Loader2 } from 'lucide-react';
 import { UserProfile } from '../../types';
+import { EmptyState, ErrorState, SkeletonCard } from '../ui/states';
 
 export default function Community({ user, profile }: { user: any, profile: UserProfile | null }) {
   const [posts, setPosts] = useState<any[]>([]);
@@ -10,6 +11,10 @@ export default function Community({ user, profile }: { user: any, profile: UserP
   const [postType, setPostType] = useState('Win');
   const [pageSize, setPageSize] = useState(10);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [feedError, setFeedError] = useState<string | null>(null);
+  const [posting, setPosting] = useState(false);
+  const [postError, setPostError] = useState<string | null>(null);
   
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -32,14 +37,19 @@ export default function Community({ user, profile }: { user: any, profile: UserP
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const p = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPosts(p);
-    }, (error) => {
-      console.error("Firestore Error in Community:", error);
+      setFeedError(null);
+      setInitialLoading(false);
+    }, () => {
+      setFeedError('Unable to load community posts. Please try again.');
+      setInitialLoading(false);
     });
     return () => unsubscribe();
   }, [user, pageSize]);
 
   const handlePost = async () => {
-    if (!postContent.trim() || !user) return;
+    if (!postContent.trim() || !user || posting) return;
+    setPosting(true);
+    setPostError(null);
     try {
       await addDoc(collection(db, 'community_posts'), {
         uid: user.uid,
@@ -51,9 +61,10 @@ export default function Community({ user, profile }: { user: any, profile: UserP
         replies: 0,
       });
       setPostContent('');
-    } catch (error) {
-      console.error("Error posting:", error);
-      alert("Failed to submit post");
+    } catch {
+      setPostError('Unable to publish your post. Please try again.');
+    } finally {
+      setPosting(false);
     }
   };
 
@@ -129,7 +140,7 @@ export default function Community({ user, profile }: { user: any, profile: UserP
                     ))}
                   </div>
                   <button onClick={handlePost} className="clean-btn px-6 py-2 flex items-center gap-2">
-                    <Send className="w-4 h-4" /> Post
+                    {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} {posting ? 'Posting...' : 'Post'}
                   </button>
                 </div>
               </div>
@@ -138,7 +149,10 @@ export default function Community({ user, profile }: { user: any, profile: UserP
 
           {/* Posts list */}
           <div className="space-y-4">
-            {posts.map((post, index) => {
+            {postError ? <ErrorState title="Post not published" description={postError} /> : null}
+            {initialLoading ? <SkeletonCard count={3} /> : null}
+            {!initialLoading && feedError ? <ErrorState title="Community unavailable" description={feedError} /> : null}
+            {!initialLoading && !feedError && posts.map((post, index) => {
               const isLast = index === posts.length - 1;
               return (
                 <div 
@@ -179,9 +193,9 @@ export default function Community({ user, profile }: { user: any, profile: UserP
               );
             })}
             
-            {posts.length === 0 && (
-              <div className="text-center py-12 text-gray-500">No posts yet. Be the first to share!</div>
-            )}
+            {!initialLoading && !feedError && posts.length === 0 ? (
+              <EmptyState title="No community posts yet" description="Be the first to share a win, update, question, or resource." />
+            ) : null}
             
             {posts.length >= pageSize && (
               <div className="py-4 flex justify-center text-gray-400">

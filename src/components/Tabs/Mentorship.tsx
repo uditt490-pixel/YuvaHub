@@ -4,6 +4,7 @@ import { db } from '../../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ChatMessage } from '../../types';
 import { chatWithAIMentorBackend } from '../../services/apiClient';
+import { ErrorState } from '../ui/states';
 
 export default function Mentorship({ user }: { user: any }) {
   const [view, setView] = useState<'ai' | 'human'>('ai');
@@ -248,10 +249,13 @@ function MentorApplyForm({ user, onClose }: any) {
   const [formData, setFormData] = useState({ name: '', linkedin: '', org: '', field: '', exp: '', availability: [] as string[], why: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
+    setSubmitError(null);
     try {
       if(!user) throw new Error("Must be logged in.");
       await addDoc(collection(db, 'mentor_applications'), {
@@ -276,6 +280,7 @@ function MentorApplyForm({ user, onClose }: any) {
 
   return (
     <form onSubmit={handleSubmit} className="text-left bg-white text-gray-900 rounded-xl p-6 md:p-8 space-y-6 w-full shadow-xl">
+      {submitError ? <ErrorState title="Application not submitted" description={submitError} /> : null}
       <div className="flex justify-between items-center pb-4 border-b border-gray-100">
          <h4 className="font-bold text-lg">Mentor Application</h4>
          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">&times;</button>

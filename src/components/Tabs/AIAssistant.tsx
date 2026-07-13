@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileText, Bot, Briefcase, GraduationCap, Sparkles, ChevronRight, CheckCircle, Search, ScrollText, Send } from 'lucide-react';
 import { UserProfile } from '../../types';
 import * as geminiService from '../../services/gemini';
+import { ErrorState } from '../ui/states';
 
 interface AIAssistantProps {
   user: any;
@@ -111,10 +112,13 @@ function ResumeReview() {
   const [resumeText, setResumeText] = useState("");
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<any>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const handleReview = async () => {
     if (!resumeText.trim()) return;
+    if (loading) return;
     setLoading(true);
+    setReviewError(null);
     try {
       // Direct call to Gemini via server proxy
       const res = await fetch("/api/v1/ai/resume_review", {
@@ -124,15 +128,8 @@ function ResumeReview() {
       });
       const data = await res.json();
       setFeedback(data);
-    } catch (e) {
-      console.error(e);
-      // Fallback dummy feedback for preview if API missing
-      setFeedback({
-        score: 65,
-        strengths: ["Clear formatting", "Good action verbs used"],
-        weaknesses: ["Missing quantified impact metrics", "Skills section is too broad"],
-        suggestions: ["Change 'Worked on backend' to 'Developed backend Python API servicing 10k requests/sec'"]
-      });
+    } catch {
+      setReviewError('Unable to analyze the resume right now. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -165,6 +162,8 @@ function ResumeReview() {
            </button>
         </div>
       </div>
+
+      {reviewError ? <ErrorState title="Resume analysis failed" description={reviewError} onRetry={() => void handleReview()} retrying={loading} /> : null}
 
       {feedback && (
         <div className="clean-card p-8 animate-fade-in border-t-4 border-t-purple-600">

@@ -17,6 +17,7 @@ import Bookmarks from './components/Tabs/Bookmarks';
 import SettingsTab from './components/Tabs/Settings';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import NotificationDropdown from './components/ui/NotificationDropdown';
+import { OfflineBanner } from './components/ui/states';
 import OpportunityDetail from './components/Tabs/OpportunityDetail';
 import AIAssistant from './components/Tabs/AIAssistant';
 
@@ -30,6 +31,7 @@ function App() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [backendReady, setBackendReady] = useState(false);
+  const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
   const [lastSyncedTime, setLastSyncedTime] = useState(new Date().toLocaleTimeString());
   const [appSearchQuery, setAppSearchQuery] = useState('');
 
@@ -146,6 +148,12 @@ function App() {
     const interval = setInterval(checkBackend, 60000); // Check every minute
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (backendReady) {
+      setOfflineBannerDismissed(false);
+    }
+  }, [backendReady]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {

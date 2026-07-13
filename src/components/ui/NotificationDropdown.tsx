@@ -1,131 +1,367 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Bell, MapPin, Zap, Info, Loader2 } from 'lucide-react';
-import { fetchNotifications, markNotificationRead, markAllNotificationsRead } from '../../services/apiClient';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Bell, Info, Loader2, MapPin, Zap } from 'lucide-react';
+import {
+  fetchNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from '../../services/apiClient';
+import { EmptyState, ErrorState, SkeletonCard } from './states';
 
-export default function NotificationDropdown({ profile }: { profile: any }) {
+interface Notification {
+  id: string;
+  type?: string;
+  title?: string;
+  message?: string;
+  time?: string;
+  read?: boolean;
+}
+
+export default function NotificationDropdown({ profile }: { profile: unknown }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
+  const [markingNotificationId, setMarkingNotificationId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const loadNotifications = async () => {
-    const data = await fetchNotifications();
-    setNotifications(data || []);
-  };
+  const loadNotifications = useCallback(
+    async (showRefreshState = false) => {
+      if (showRefreshState) {
+        setRefreshing(true);
+      } else if (notifications.length === 0) {
+        setInitialLoading(true);
+      }
+
+      setError(null);
+
+      try {
+        const data = await fetchNotifications();
+        setNotifications(Array.isArray(data) ? data : []);
+      } catch {
+        setError(
+          notifications.length > 0
+            ? 'Could not refresh notifications. Showing previously loaded notifications.'
+            : 'Unable to load notifications. Please try again.',
+        );
+      } finally {
+        setInitialLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [notifications.length],
+  );
 
   useEffect(() => {
-    loadNotifications();
-    
-    // Connect to real-time notification stream
+    void loadNotifications();
+
     const eventSource = new EventSource('/api/v1/admin/stream/telemetry');
-    
-    eventSource.addEventListener('NOTIFICATION_RECEIVED', (event: any) => {
-      const newNotif = JSON.parse(event.data);
-      setNotifications(prev => [newNotif, ...prev]);
-    });
+
+    const handleNotification = (event: MessageEvent<string>) => {
+      try {
+        const newNotification = JSON.parse(event.data) as Notification;
+        if (!newNotification?.id) return;
+
+        setNotifications((current) => {
+          if (current.some((notification) => notification.id === newNotification.id)) {
+            return current;
+          }
+          return [newNotification, ...current];
+        });
+      } catch {
+        // Ignore malformed telemetry events.
+      }
+    };
+
+    eventSource.addEventListener(
+      'NOTIFICATION_RECEIVED',
+      handleNotification as EventListener,
+    );
 
     return () => {
+      eventSource.removeEventListener(
+        'NOTIFICATION_RECEIVED',
+        handleNotification as EventListener,
+      );
       eventSource.close();
     };
-  }, [profile]);
+  }, [profile, loadNotifications]);
 
   useEffect(() => {
-    // Click outside to close
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
   }, []);
 
+  const unreadCount = notifications.filter((notification) => !notification.read).length;
+
   const handleMarkRead = async (id: string) => {
-    await markNotificationRead(id);
-    loadNotifications();
+    if (markingNotificationId || markingAll) return;
+
+    setMarkingNotificationId(id);
+    setError(null);
+
+    const previousNotifications = notifications;
+    setNotifications((current) =>
+      current.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification,
+      ),
+    );
+
+    try {
+      await markNotificationRead(id);
+    } catch {
+      setNotifications(previousNotifications);
+      setError('Unable to mark this notification as read. Please try again.');
+    } finally {
+      setMarkingNotificationId(null);
+    }
   };
 
   const handleMarkAllRead = async () => {
-    setLoading(true);
-    await markAllNotificationsRead();
-    await loadNotifications();
-    setLoading(false);
+    if (markingAll || unreadCount === 0) return;
+
+    setMarkingAll(true);
+    setError(null);
+
+    const previousNotifications = notifications;
+    setNotifications((current) =>
+      current.map((notification) => ({ ...notification, read: true })),
+    );
+
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      setNotifications(previousNotifications);
+      setError('Unable to mark all notifications as read. Please try again.');
+    } finally {
+      setMarkingAll(false);
+    }
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  const getIcon = (type: string) => {
+  const getIcon = (type?: string) => {
     switch (type) {
-      case 'match': return Zap;
-      case 'local': return MapPin;
-      case 'welcome': return Bell;
-      default: return Info;
+      case 'match':
+        return Zap;
+      case 'local':
+        return MapPin;
+      case 'welcome':
+        return Bell;
+      default:
+        return Info;
     }
+  };
+
+  const renderContent = () => {
+    if (initialLoading) {
+      return (
+        <div className="p-4" role="status" aria-live="polite">
+          <span className="sr-only">Loading notifications</span>
+          <SkeletonCard count={3} />
+        </div>
+      );
+    }
+
+    if (error && notifications.length === 0) {
+      return (
+        <div className="p-4">
+          <ErrorState
+            title="Notifications unavailable"
+            description={error}
+            onRetry={() => void loadNotifications(true)}
+            retrying={refreshing}
+          />
+        </div>
+      );
+    }
+
+    if (notifications.length === 0) {
+      return (
+        <div className="p-4">
+          <EmptyState
+            title="You are all caught up"
+            description="New updates and opportunity alerts will appear here."
+            icon={<Bell className="h-6 w-6" aria-hidden="true" />}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <>
+        {error ? (
+          <div
+            role="status"
+            className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={() => void loadNotifications(true)}
+                disabled={refreshing}
+                className="font-semibold underline disabled:opacity-50"
+              >
+                {refreshing ? 'Retrying...' : 'Retry'}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {notifications.map((notification) => {
+          const Icon = getIcon(notification.type);
+          const isMarkingThis = markingNotificationId === notification.id;
+
+          return (
+            <button
+              type="button"
+              key={notification.id}
+              onClick={() => {
+                if (!notification.read) {
+                  void handleMarkRead(notification.id);
+                }
+              }}
+              disabled={isMarkingThis || markingAll}
+              className={`group flex w-full gap-3 border-b border-gray-50 p-4 text-left transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70 ${
+                !notification.read ? 'bg-blue-50/30' : ''
+              }`}
+              aria-label={
+                notification.read
+                  ? `${notification.title ?? 'Notification'}, read`
+                  : `${notification.title ?? 'Notification'}, mark as read`
+              }
+            >
+              <div className="mt-0.5 shrink-0">
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                    !notification.read
+                      ? 'bg-blue-100 text-blue-600'
+                      : 'bg-gray-100 text-gray-400'
+                  }`}
+                >
+                  {isMarkingThis ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </div>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <h4
+                  className={`mb-0.5 line-clamp-1 text-sm ${
+                    !notification.read
+                      ? 'font-bold text-gray-900'
+                      : 'font-semibold text-gray-700'
+                  }`}
+                >
+                  {notification.title ?? 'Notification'}
+                </h4>
+                <p className="mb-1 line-clamp-2 text-xs text-gray-600">
+                  {notification.message ?? 'You have a new update.'}
+                </p>
+                {notification.time ? (
+                  <span className="text-[10px] font-medium text-gray-400">
+                    {notification.time}
+                  </span>
+                ) : null}
+              </div>
+
+              {!notification.read ? (
+                <span
+                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500"
+                  aria-label="Unread"
+                />
+              ) : null}
+            </button>
+          );
+        })}
+      </>
+    );
   };
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="text-gray-400 hover:text-gray-600 relative p-1 rounded-md hover:bg-gray-100 transition-colors"
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="relative rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
       >
-        <Bell className="w-5 h-5" />
-        {unreadCount > 0 && <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+        <Bell className="h-5 w-5" aria-hidden="true" />
+        {unreadCount > 0 ? (
+          <span
+            className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500"
+            aria-hidden="true"
+          />
+        ) : null}
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+      {isOpen ? (
+        <div
+          role="dialog"
+          aria-label="Notifications"
+          className="animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl shadow-gray-200/50 duration-200"
+        >
+          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 p-4">
             <h3 className="font-bold text-gray-900">Notifications</h3>
-            {unreadCount > 0 && (
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
-                {unreadCount} New
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {refreshing ? (
+                <Loader2
+                  className="h-4 w-4 animate-spin text-gray-400"
+                  aria-label="Refreshing notifications"
+                />
+              ) : null}
+              {unreadCount > 0 ? (
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                  {unreadCount} New
+                </span>
+              ) : null}
+            </div>
           </div>
-          
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-               <div className="p-8 text-center flex flex-col items-center gap-2">
-                 <Bell className="w-8 h-8 text-gray-200" />
-                 <p className="text-gray-500 text-xs">All caught up!</p>
-               </div>
-            ) : (
-              notifications.map((n) => {
-                const Icon = getIcon(n.type);
-                return (
-                  <div 
-                    key={n.id} 
-                    onClick={() => !n.read && handleMarkRead(n.id)}
-                    className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer group flex gap-3 ${!n.read ? 'bg-blue-50/30' : ''}`}
-                  >
-                    <div className="shrink-0 mt-0.5">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${!n.read ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className={`text-sm mb-0.5 line-clamp-1 ${!n.read ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>{n.title}</h4>
-                      <p className="text-xs text-gray-600 mb-1 line-clamp-2">{n.message}</p>
-                      <span className="text-[10px] text-gray-400 font-medium">{n.time}</span>
-                    </div>
-                    {!n.read && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 shrink-0"></div>}
-                  </div>
-                );
-              })
-            )}
-          </div>
-          
-          <button 
-            onClick={handleMarkAllRead}
-            disabled={loading || unreadCount === 0}
-            className="w-full p-3 text-center text-xs font-semibold text-blue-600 hover:bg-blue-50 transition-colors bg-white disabled:opacity-50 disabled:bg-white border-t border-gray-100 flex items-center justify-center gap-2"
+
+          <div className="max-h-80 overflow-y-auto">{renderContent()}</div>
+
+          <button
+            type="button"
+            onClick={() => void handleMarkAllRead()}
+            disabled={
+              markingAll ||
+              unreadCount === 0 ||
+              initialLoading ||
+              Boolean(markingNotificationId)
+            }
+            className="flex w-full items-center justify-center gap-2 border-t border-gray-100 bg-white p-3 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
           >
-            {loading && <Loader2 className="w-3 h-3 animate-spin" />}
-            Mark all as read
+            {markingAll ? (
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+            ) : null}
+            {markingAll ? 'Marking all as read...' : 'Mark all as read'}
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

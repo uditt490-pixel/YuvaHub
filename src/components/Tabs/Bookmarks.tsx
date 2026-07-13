@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Bookmark as BookmarkIcon, Target, Loader2, ExternalLink } from 'lucide-react';
+import { Bookmark as BookmarkIcon } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { fetchOpportunityById } from '../../services/apiClient';
+import { AsyncState } from '../ui/states';
 
 interface BookmarksProps {
   user: any;
@@ -12,57 +13,36 @@ interface BookmarksProps {
 export default function Bookmarks({ user, profile, onViewDetails }: BookmarksProps) {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [retrying, setRetrying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadBookmarks = async (isRetry = false) => {
+    if (!profile?.bookmarks?.length) {
+      setItems([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    isRetry ? setRetrying(true) : setLoading(true);
+    setError(null);
+
+    try {
+      const results = await Promise.all(
+        profile.bookmarks.map((id) => fetchOpportunityById(id)),
+      );
+      setItems(results.filter(Boolean));
+    } catch {
+      setError('Unable to load your bookmarks. Please try again.');
+    } finally {
+      setLoading(false);
+      setRetrying(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadBookmarks() {
-      if (!profile || !profile.bookmarks || profile.bookmarks.length === 0) {
-        setItems([]);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        const results = await Promise.all(
-          profile.bookmarks.map(id => fetchOpportunityById(id))
-        );
-        // Filter out any nulls if an opp got deleted
-        setItems(results.filter(r => r));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadBookmarks();
+    void loadBookmarks();
   }, [profile?.bookmarks]);
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24">
-        <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-4" />
-        <p className="text-gray-500 font-medium">Loading your saved opportunities...</p>
-      </div>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="max-w-4xl mx-auto space-y-8">
-        <header>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Your Bookmarks</h2>
-          <p className="text-gray-500 mt-1">Opportunities you've saved for later.</p>
-        </header>
-
-        <div className="clean-card p-12 text-center border-dashed border-gray-300">
-          <BookmarkIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">No bookmarks yet</h3>
-          <p className="text-gray-500 max-w-md mx-auto">
-            When you find an opportunity you like, save it to your bookmarks to keep track of it here.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -71,6 +51,17 @@ export default function Bookmarks({ user, profile, onViewDetails }: BookmarksPro
         <p className="text-gray-500 mt-1">Review your saved opportunities and apply.</p>
       </header>
 
+      <AsyncState
+        loading={loading}
+        error={error}
+        empty={items.length === 0}
+        onRetry={() => void loadBookmarks(true)}
+        retrying={retrying}
+        skeletonCount={4}
+        emptyTitle="You have not bookmarked any opportunities"
+        emptyDescription="Bookmark an opportunity to find it quickly later."
+        emptyAction={<BookmarkIcon className="mx-auto h-8 w-8 text-gray-300" aria-hidden="true" />}
+      >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map((item, i) => (
           <div key={i} className="clean-card p-6 flex flex-col justify-between relative group">
@@ -116,6 +107,7 @@ export default function Bookmarks({ user, profile, onViewDetails }: BookmarksPro
           </div>
         ))}
       </div>
+      </AsyncState>
     </div>
   );
 }

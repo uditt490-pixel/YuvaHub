@@ -3,6 +3,7 @@ import { ShieldCheck, Calendar, ExternalLink, RefreshCw } from 'lucide-react';
 import { db } from '../../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { UserProfile } from '../../types';
+import { ErrorState } from '../ui/states';
 
 export default function Profile({ user, profile, setProfile }: { user: any, profile: UserProfile | null, setProfile: (p: UserProfile) => void }) {
   const [formData, setFormData] = useState<UserProfile>(profile || {
@@ -13,6 +14,7 @@ export default function Profile({ user, profile, setProfile }: { user: any, prof
   
   const [skillInput, setSkillInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) setFormData(profile);
@@ -32,13 +34,15 @@ export default function Profile({ user, profile, setProfile }: { user: any, prof
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return alert("Auth required.");
+    if (loading) return;
     setLoading(true);
+    setSaveError(null);
     try {
       await setDoc(doc(db, 'users', user.uid), formData, { merge: true });
       setProfile(formData);
       alert("Profile updated successfully.");
-    } catch (err: any) {
-      alert(err.message);
+    } catch {
+      setSaveError('Unable to save your profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -82,6 +86,7 @@ export default function Profile({ user, profile, setProfile }: { user: any, prof
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
+          {saveError ? <ErrorState title="Profile not saved" description={saveError} /> : null}
           <form onSubmit={handleSave} className="space-y-8 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
             {/* Identity */}
             <div className="space-y-6">

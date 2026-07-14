@@ -228,10 +228,10 @@ function App() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
         <div className="flex items-center gap-3 animate-pulse">
-           <div className="w-12 h-12 rounded-[12px] bg-[#2563EB] flex items-center justify-center shadow-lg shadow-blue-500/20">
+           <div className="w-12 h-12 rounded-xl bg-[#2563EB] flex items-center justify-center shadow-lg shadow-blue-500/20">
              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
            </div>
-           <h1 className="text-[28px] font-[800] tracking-tight text-gray-900">
+           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
              Yuva<span className="text-[#2563EB]">Hub</span>
            </h1>
         </div>
@@ -261,12 +261,12 @@ function App() {
     <div className="flex h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden">
       
       {/* Sidebar Desktop - Fixed 220px */}
-      <aside className="hidden lg:flex w-[220px] border-r border-[#E2E8F0] flex-col bg-white z-10 shrink-0 relative">
+      <aside className="hidden lg:flex w-55 border-r border-[#E2E8F0] flex-col bg-white z-10 shrink-0 relative">
         <div className="p-6 border-b border-[#E2E8F0] flex items-center justify-center gap-2">
-          <div className="w-[28px] h-[28px] rounded-lg bg-[#2563EB] flex items-center justify-center">
+          <div className="w-7 h-7 rounded-lg bg-[#2563EB] flex items-center justify-center">
              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           </div>
-          <h1 className="text-[17px] font-[700] tracking-tight text-gray-900">
+          <h1 className="text-lg font-bold tracking-tight text-gray-900">
             YuvaHub
           </h1>
         </div>
@@ -310,7 +310,7 @@ function App() {
           <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center">
              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           </div>
-          <h1 className="text-[17px] font-[700] tracking-tight text-gray-900">
+          <h1 className="text-lg font-bold tracking-tight text-gray-900">
             YuvaHub
           </h1>
         </div>
@@ -368,10 +368,10 @@ function App() {
                        {/* SVG Icon using Lucide is imported as Search? Wait, I don't want to break imports, I'll use simple search icon. */}
                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </div>
-                    <input type="text" placeholder="Search standard competitions..." className="w-full bg-[#F8FAFC] border border-gray-200 outline-none rounded-[8px] pl-10 pr-4 py-2 text-[14px] focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={appSearchQuery} onChange={(e) => setAppSearchQuery(e.target.value)} />
+                    <input type="text" placeholder="Search standard competitions..." className="w-full bg-[#F8FAFC] border border-gray-200 outline-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" value={appSearchQuery} onChange={(e) => setAppSearchQuery(e.target.value)} />
                  </div>
               ) : (
-                 <p className="text-[14px] text-[#64748B] font-medium">
+                 <p className="text-sm text-[#64748B] font-medium">
                    {selectedOppId 
                      ? "Detail Overview" 
                      : (user ? `Welcome back, ${profile?.name || user.displayName || 'Student'}` : 'Welcome to YuvaHub')
@@ -381,7 +381,7 @@ function App() {
            </div>
            <div className="flex items-center gap-5">
               <NotificationDropdown profile={profile} />
-              <div className="w-[32px] h-[32px] rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-[13px]">
+              <div className="w-8 h-8 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-sm">
                 {profile?.name ? profile.name.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || 'U')}
               </div>
            </div>
@@ -402,7 +402,7 @@ function App() {
         </div>
         
         {/* Live Feed Strip Footer */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gray-900 text-gray-400 text-xs py-2 px-6 flex items-center justify-center gap-2 border-t border-gray-800 z-25">
+        <div className="absolute bottom-0 left-0 right-0 bg-gray-900 text-gray-400 text-xs py-2 px-6 flex items-center justify-center gap-2 border-t border-gray-800 z-20">
           <span className={`${backendReady ? 'text-green-400' : 'text-red-400'} animate-pulse`}>●</span> 
           <span className="font-medium">{backendReady ? 'Live' : 'Offline'}</span>
           <span className="hidden sm:inline">· Last synced: {lastSyncedTime}</span>

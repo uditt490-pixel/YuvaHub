@@ -110,7 +110,20 @@ cp .env.example .env
 ```
 Open the `.env` file and insert your credentials. See the [Environment Variables Guide](#-environment-variables-guide) below.
 
-### 5. Run the Project
+### 5. Configure Firebase Authentication (Google Sign-In Setup)
+Firebase authentication credentials are loaded from `firebase-applet-config.json` in the root folder.
+* **Option A (Use Shared Dev Config)**: If you use the repository's default file, ask the project administrator to add `localhost` to the Authorized Redirect Domains in the main Firebase Console.
+* **Option B (Set Up Your Own Sandbox - Recommended)**:
+  1. Create a free Firebase project at the [Firebase Console](https://console.firebase.google.com/).
+  2. Register a Web App and replace the keys inside `firebase-applet-config.json` in your project root with your credentials.
+  3. Go to **Authentication** -> **Sign-in method** in your Firebase console and enable **Google**.
+  4. Go to **Authentication** -> **Settings** -> **Authorized domains** -> click **Add Domain** -> type `localhost` -> click **Add**.
+  5. Prevent Git from tracking your private credentials by running:
+     ```bash
+     git update-index --assume-unchanged firebase-applet-config.json
+     ```
+
+### 6. Run the Project
 To run the server in development mode with hot-reloading:
 ```bash
 npm run dev
@@ -194,5 +207,3 @@ This list updates dynamically whenever a Pull Request is successfully merged:
     <img src="https://contrib.rocks/image?repo=uditt490-pixel/YuvaHub" alt="YuvaHub Contributors" />
   </a>
 </p>
-
-*Made with contributors-img ([contrib.rocks](https://contrib.rocks)).*

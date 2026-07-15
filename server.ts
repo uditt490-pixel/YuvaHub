@@ -26,11 +26,16 @@ try {
     }
   });
 
+  let redisErrorLogged = false;
   redisClient.on('error', (err) => {
-    console.error('[Redis] Connection error:', err.message);
+    if (!redisErrorLogged) {
+      console.warn('[Redis] Connection failed or Redis is not running. Bypassing rate limiting (fail-open mode).');
+      redisErrorLogged = true;
+    }
   });
   redisClient.on('connect', () => {
     console.log('[Redis] Connected successfully');
+    redisErrorLogged = false;
   });
 } catch (e: any) {
   console.error('[Redis] Init error:', e.message);

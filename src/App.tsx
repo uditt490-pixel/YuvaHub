@@ -18,8 +18,8 @@ import NotificationDropdown from './components/ui/NotificationDropdown';
 import OpportunityDetail from './components/Tabs/OpportunityDetail';
 import AIAssistant from './components/Tabs/AIAssistant';
 import OnboardingFlow from './components/OnboardingFlow';
-import SplashAuth from './components/SplashAuth';
 import Legal from './components/Tabs/Legal';
+import FAQ from './components/Tabs/FAQ';
 
 function App() {
   const {
@@ -106,6 +106,7 @@ function App() {
       case 'settings': return <SettingsTab />;
       case 'admin': return <AdminDashboard />;
       case 'legal': return <Legal />;
+      case 'faq': return <FAQ />;
       default: return <Dashboard />;
     }
   };
@@ -130,7 +131,7 @@ function App() {
     );
   }
 
-  if (activeTab === 'legal' && !user) {
+  if ((activeTab === 'legal' || activeTab === 'faq') && !user) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
@@ -142,7 +143,7 @@ function App() {
               ← Back to Home / Login
             </button>
           </div>
-          <Legal />
+          {activeTab === 'legal' ? <Legal /> : <FAQ />}
         </div>
       </div>
     );
@@ -316,7 +317,7 @@ function App() {
           <span className="font-medium">{backendReady ? 'Live' : 'Offline'}</span>
           <span className="hidden sm:inline">· Last synced: {lastSyncedTime}</span>
           <span>· Opportunities indexed & verified</span>
-          <span className="hidden md:inline">· YuvaHub © 2026 · <button onClick={() => setActiveTab('legal')} className="hover:underline hover:text-white cursor-pointer font-medium bg-transparent border-none p-0 text-xs text-gray-450">Privacy & Terms</button></span>
+          <span className="hidden md:inline">· YuvaHub © 2026 · <button onClick={() => setActiveTab('legal')} className="hover:underline hover:text-white cursor-pointer font-medium bg-transparent border-none p-0 text-xs text-gray-450 font-medium">Privacy & Terms</button> · <button onClick={() => setActiveTab('faq')} className="hover:underline hover:text-white cursor-pointer font-medium bg-transparent border-none p-0 text-xs text-gray-450 font-medium">Help & FAQ</button></span>
         </div>
       </main>
 

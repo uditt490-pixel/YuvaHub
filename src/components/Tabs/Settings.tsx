@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile } from '../../types';
-import { Bell, Lock, UserX, Database } from 'lucide-react';
+import { Bell, Lock, UserX, Database, HelpCircle } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
 export default function SettingsTab() {
@@ -71,6 +71,23 @@ export default function SettingsTab() {
               </button>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">This action is permanent and cannot be undone.</p>
             </div>
+          </div>
+        </div>
+
+        <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+            <HelpCircle className="w-5 h-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Help & Support Center</h3>
+          </div>
+          <div className="flex justify-between items-center flex-wrap gap-3">
+            <span className="text-xs text-gray-500 dark:text-gray-400">Have questions about features or need to contact our team?</span>
+            <button 
+              onClick={() => setActiveTab('faq')} 
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+            >
+              <span>Visit FAQ & Support</span>
+              <span className="text-sm">→</span>
+            </button>
           </div>
         </div>
       </div>

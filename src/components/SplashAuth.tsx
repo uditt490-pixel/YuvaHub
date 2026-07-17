@@ -98,15 +98,15 @@ export default function SplashAuth() {
         </div>
         
         <div className="relative h-[400px] w-full rounded-[20px] bg-gradient-to-br from-[#EFF6FF] to-[#F0FDF4] shadow-lg border border-white flex items-center justify-center p-8">
-           <div className="absolute top-[10%] left-[10%] w-[120px] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 animate-float" style={{ animationDelay: '0s' }}>
+           <div className="absolute top-[10%] left-[10%] z-20 w-[120px] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 animate-float" style={{ animationDelay: '0s' }}>
               <span className="text-3xl">🚀</span>
               <span className="text-[10px] font-bold">Landed job at Google</span>
            </div>
-           <div className="absolute bottom-[20%] right-[5%] w-[130px] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 animate-float" style={{ animationDelay: '0.8s' }}>
+           <div className="absolute bottom-[20%] right-[5%] z-20 w-[130px] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 animate-float" style={{ animationDelay: '0.8s' }}>
               <span className="text-3xl">🏆</span>
               <span className="text-[10px] font-bold">Won ETHGlobal</span>
            </div>
-           <div className="absolute top-[40%] right-[15%] w-[100px] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 animate-float" style={{ animationDelay: '1.5s' }}>
+           <div className="absolute top-[20%] right-[12%] z-20 w-[100px] bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 animate-float" style={{ animationDelay: '1.5s' }}>
               <span className="text-3xl">💡</span>
               <span className="text-[10px] font-bold">Top 10 Finalist</span>
            </div>

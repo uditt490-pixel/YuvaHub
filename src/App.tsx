@@ -17,7 +17,7 @@ import AdminDashboard from './components/Admin/AdminDashboard';
 import NotificationDropdown from './components/ui/NotificationDropdown';
 import OpportunityDetail from './components/Tabs/OpportunityDetail';
 import AIAssistant from './components/Tabs/AIAssistant';
-import OnboardingFlow from './components/OnboardingFlow';
+import BackToTopButton from './components/ui/BackToTopButton';import OnboardingFlow from './components/OnboardingFlow';
 import SplashAuth from './components/SplashAuth';
 import Security from './components/Tabs/Security';
 import Legal from './components/Tabs/Legal';
@@ -315,7 +315,9 @@ function App() {
             renderContent()
           )}
         </div>
-        
+
+        <BackToTopButton />
+
         {/* Live Feed Strip Footer */}
         <div className="absolute bottom-0 left-0 right-0 bg-gray-900 text-gray-400 text-xs py-2 px-6 flex items-center justify-center gap-2 border-t border-gray-800 z-20">
           <span className={`${backendReady ? 'text-green-400' : 'text-red-400'} animate-pulse`}>●</span> 

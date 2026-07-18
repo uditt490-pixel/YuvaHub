@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
 import { connection } from "./connection";
 
-export const emailQueue = new Queue("emailQueue", { connection });
+export const emailQueue = new Queue("emailQueue", { connection: connection as any });
 
 export interface EmailJobData {
   to: string;

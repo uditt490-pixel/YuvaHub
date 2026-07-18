@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
 import { connection } from "./connection";
 
-export const pushQueue = new Queue("pushQueue", { connection });
+export const pushQueue = new Queue("pushQueue", { connection: connection as any });
 
 export interface PushJobData {
   userId: string;

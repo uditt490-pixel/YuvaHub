@@ -194,7 +194,7 @@ export default function Profile() {
           {formData.avatarUrl ? (
             <img 
               src={formData.avatarUrl.includes("cloudinary.com") ? formData.avatarUrl.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_200,h_200/") : formData.avatarUrl} 
-              alt="Avatar" 
+              alt={`${formData.name || 'User'}'s profile picture`} 
               className="w-20 h-20 rounded-full object-cover border-2 border-blue-500 shadow-sm"
             />
           ) : (

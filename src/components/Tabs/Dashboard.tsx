@@ -153,9 +153,9 @@ export default function Dashboard() {
     <div className="max-w-[1200px] mx-auto space-y-10 pb-12 font-sans px-4 md:px-0">
       <header className="pt-2 flex justify-between items-start">
         <div>
-          <h2 className="text-[28px] font-[800] tracking-tight text-gray-900 mb-2">
+          <h1 className="text-[28px] font-[800] tracking-tight text-gray-900 mb-2">
             Dashboard
-          </h2>
+          </h1>
           <p className="text-[15px] text-[#64748B]">Here is your personalized intelligence briefing.</p>
         </div>
         <button 
@@ -182,7 +182,7 @@ export default function Dashboard() {
           <div className="inline-block px-3 py-1 bg-[#2563EB] text-white text-[11px] font-[800] uppercase tracking-wide rounded-full mb-4">
             New Feature
           </div>
-          <h3 className="text-[24px] font-[800] text-gray-900 mb-3">Scout Protocol</h3>
+          <h2 className="text-[24px] font-[800] text-gray-900 mb-3">Scout Protocol</h2>
           <p className="text-[15px] text-[#475569] max-w-xl leading-relaxed">Find your best matches in seconds. Our AI will calibrate your feed based on your specific requirements and background, updating in real-time.</p>
           <div className="flex flex-wrap items-center gap-3 mt-6 text-[13px] font-[600] text-[#1D4ED8]">
             <span className="flex items-center gap-[6px]"><span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold shadow-sm">1</span> Year</span>
@@ -203,9 +203,9 @@ export default function Dashboard() {
       <div className="space-y-6 pt-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-[20px] font-[800] text-gray-900 flex items-center gap-2">
+            <h2 className="text-[20px] font-[800] text-gray-900 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-[#F59E0B]" /> {discoveryMode === 'daily' ? "Daily Summary" : "Personalized Feed"}
-            </h3>
+            </h2>
             {lastUpdated && !loading && (
               <p className="text-[12px] font-[500] text-[#64748B] mt-1.5 flex items-center gap-1.5">
                 <RefreshCw className="w-3 h-3" /> Last checked: {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

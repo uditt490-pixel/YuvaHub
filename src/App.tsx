@@ -31,6 +31,86 @@ import About from './pages/About';
 import AboutTab from './components/Tabs/About';
 import HelpCenterPage from './pages/HelpCenter';
 import GettingStartedDetail from './pages/GettingStartedDetail';
+import { SEO } from './components/SEO';
+
+const PUBLIC_TABS = ['opportunities', 'about', 'privacy', 'terms', 'cookies', 'guidelines', 'security', 'support', 'legal'];
+
+const getSeoPropsForTab = (tab: string) => {
+  switch (tab) {
+    case 'dashboard':
+      return {
+        title: "YuvaHub | Find Student Hackathons, Scholarships & Mentorships",
+        description: "Discovery platform for Indian students. Find hackathons, scholarships, and mentorship opportunities to boost your career. Real-time updates and AI matching."
+      };
+    case 'opportunities':
+      return {
+        title: "Explore Opportunities | Internships, Jobs & Hackathons | YuvaHub",
+        description: "Discover and apply to the latest internships, entry-level jobs, hackathons, and scholarships for Indian students. Real-time updates and AI matching."
+      };
+    case 'about':
+      return {
+        title: "About Us | Empowering Student Careers | YuvaHub",
+        description: "Learn about YuvaHub's mission to connect Indian students with life-changing hackathons, scholarships, internships, and mentors."
+      };
+    case 'privacy':
+      return {
+        title: "Privacy Policy | YuvaHub",
+        description: "Read the YuvaHub Privacy Policy to understand how we protect, handle, and secure your personal information."
+      };
+    case 'terms':
+      return {
+        title: "Terms of Service | YuvaHub",
+        description: "Review the Terms of Service and guidelines for using the YuvaHub platform."
+      };
+    case 'cookies':
+      return {
+        title: "Cookie Policy | YuvaHub",
+        description: "Learn how YuvaHub uses cookies and tracking technologies to optimize your experience."
+      };
+    case 'guidelines':
+      return {
+        title: "Community Guidelines | YuvaHub",
+        description: "Review the YuvaHub Community Guidelines to help build a safe, respectful, and professional student network."
+      };
+    case 'security':
+      return {
+        title: "Security Center | YuvaHub",
+        description: "Learn about YuvaHub's security practices, data encryption, and account protection measures."
+      };
+    case 'support':
+      return {
+        title: "Support & Feedback | YuvaHub",
+        description: "Need help? Contact the YuvaHub support team or submit feedback to help us improve the platform."
+      };
+    case 'legal':
+      return {
+        title: "Legal Index | YuvaHub",
+        description: "Access YuvaHub's legal index containing all terms, privacy policies, cookie policies, and community guidelines."
+      };
+    // Private tabs
+    case 'bookmarks':
+      return { title: "My Bookmarks | YuvaHub", description: "View your bookmarked student opportunities on YuvaHub." };
+    case 'submit':
+      return { title: "Submit Opportunity | YuvaHub", description: "Share a student opportunity, hackathon, internship, or scholarship with the YuvaHub community." };
+    case 'mentorship':
+      return { title: "AI Mentorship | YuvaHub", description: "Receive AI-driven career guidance and mentorship plans on YuvaHub." };
+    case 'community':
+      return { title: "Community Forum | YuvaHub", description: "Participate in discussions and share resources with other ambitious students on YuvaHub." };
+    case 'profile':
+      return { title: "My Profile | YuvaHub", description: "Manage your student profile, skills, education, and resumes on YuvaHub." };
+    case 'settings':
+      return { title: "Settings | YuvaHub", description: "Adjust your account configurations and platform settings on YuvaHub." };
+    case 'admin':
+      return { title: "Admin Dashboard | YuvaHub", description: "YuvaHub administrative operations control panel." };
+    case 'ai_assistant':
+      return { title: "AI Assistant | YuvaHub", description: "Interact with our intelligent career assistant for optimization and guidance." };
+    default:
+      return {
+        title: "YuvaHub | Find Student Hackathons, Scholarships & Mentorships",
+        description: "Discovery platform for Indian students. Find hackathons, scholarships, and mentorship opportunities to boost your career. Real-time updates and AI matching."
+      };
+  }
+};
 
 function App() {
   const {
@@ -151,20 +231,82 @@ function App() {
     );
   }
 
-  if ((activeTab === 'legal' || activeTab === 'security' || activeTab === 'support' || activeTab === 'about') && !user) {
+  const isPublicRoute = selectedOppId || PUBLIC_TABS.includes(activeTab);
+
+  if (!user && isPublicRoute) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
+        {/* Public Header */}
+        <header className="sticky top-0 z-50 h-[60px] bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 lg:px-12">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => { clearSelectedOpportunity(); setActiveTab('dashboard'); }}>
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            </div>
+            <span className="font-bold text-[17px] tracking-tight text-gray-900 dark:text-white">YuvaHub</span>
+          </div>
+          
+          <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-gray-600 dark:text-gray-300">
+            <button onClick={() => { clearSelectedOpportunity(); setActiveTab('opportunities'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Opportunities</button>
+            <button onClick={() => { clearSelectedOpportunity(); setActiveTab('about'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">About Us</button>
+            <button onClick={() => { clearSelectedOpportunity(); setActiveTab('legal'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Legal Index</button>
+            <button onClick={() => { clearSelectedOpportunity(); setActiveTab('support'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Support</button>
+          </nav>
+          
+          <div className="flex items-center gap-4">
             <button 
-              onClick={() => setActiveTab('dashboard')} 
-              className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline font-bold bg-transparent border-none cursor-pointer"
+              onClick={toggleTheme} 
+              className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Toggle Dark Mode"
             >
-              ← Back to Home / Login
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button onClick={signInWithGoogle} className="px-5 py-2 text-[14px] font-medium bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 transition-colors cursor-pointer">
+              Login
             </button>
           </div>
-          {activeTab === 'legal' ? <Legal /> : activeTab === 'security' ? <Security /> : activeTab === 'about' ? <AboutTab /> : <Support />}
-        </div>
+        </header>
+
+        {/* Centralized SEO component for public pages */}
+        {selectedOppId ? null : (
+          <SEO 
+            title={getSeoPropsForTab(activeTab).title}
+            description={getSeoPropsForTab(activeTab).description}
+            noindex={false}
+          />
+        )}
+
+        {/* Content Area */}
+        <main className="flex-1 max-w-6xl w-full mx-auto py-8 px-4 sm:px-6 lg:px-8 pb-20">
+          <div className="mb-6">
+            <button 
+              onClick={() => { clearSelectedOpportunity(); setActiveTab('dashboard'); }} 
+              className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline font-bold bg-transparent border-none cursor-pointer"
+            >
+              ← Back to Home
+            </button>
+          </div>
+          {selectedOppId ? (
+            <OpportunityDetail />
+          ) : (
+            renderContent()
+          )}
+        </main>
+
+        {/* Public Footer */}
+        <footer className="bg-white dark:bg-gray-800 border-t border-gray-250 dark:border-gray-700 py-8 px-6 lg:px-12 mt-auto">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <span className="text-[13px] text-gray-500 dark:text-gray-400">&copy; 2026 YuvaHub Inc. All rights reserved.</span>
+            <div className="flex flex-wrap gap-6 text-[13px] text-gray-500 dark:text-gray-400">
+              <button onClick={() => { clearSelectedOpportunity(); setActiveTab('about'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">About Us</button>
+              <button onClick={() => { clearSelectedOpportunity(); setActiveTab('privacy'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Privacy Policy</button>
+              <button onClick={() => { clearSelectedOpportunity(); setActiveTab('terms'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Terms of Service</button>
+              <button onClick={() => { clearSelectedOpportunity(); setActiveTab('cookies'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Cookie Policy</button>
+              <button onClick={() => { clearSelectedOpportunity(); setActiveTab('guidelines'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Guidelines</button>
+              <button onClick={() => { clearSelectedOpportunity(); setActiveTab('security'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Security</button>
+              <button onClick={() => { clearSelectedOpportunity(); setActiveTab('support'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Support</button>
+            </div>
+          </div>
+        </footer>
       </div>
     );
   }
@@ -180,6 +322,14 @@ function App() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden dark:bg-gray-900 dark:text-gray-100">
+      {/* Centralized SEO component for logged-in views */}
+      {selectedOppId ? null : (
+        <SEO 
+          title={getSeoPropsForTab(activeTab).title}
+          description={getSeoPropsForTab(activeTab).description}
+          noindex={!PUBLIC_TABS.includes(activeTab)}
+        />
+      )}
       
       {/* Sidebar Desktop - Fixed 220px */}
       <aside className="hidden lg:flex w-55 border-r border-[#E2E8F0] dark:border-gray-700 flex-col bg-white dark:bg-gray-800 z-10 shrink-0 relative">

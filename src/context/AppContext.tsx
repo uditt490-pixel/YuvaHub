@@ -53,6 +53,18 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window === 'undefined') return 'dashboard';
+    const path = window.location.pathname;
+    if (path === '/') return 'dashboard';
+    const tabName = path.substring(1);
+    const publicTabs = ['opportunities', 'about', 'privacy', 'terms', 'cookies', 'guidelines', 'security', 'support', 'legal'];
+    if (publicTabs.includes(tabName)) return tabName;
+    const privateTabs = ['dashboard', 'bookmarks', 'submit', 'mentorship', 'community', 'profile', 'settings', 'admin', 'ai_assistant'];
+    if (privateTabs.includes(tabName)) return tabName;
+    return 'dashboard';
+  });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Authentication state
   const [user, setUser] = useState<any>(null);
@@ -189,8 +201,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     const handleLocationChange = () => {
-      const oppMatch = window.location.pathname.match(/^\/opportunity\/([^/]+)/);
-      setSelectedOppId(oppMatch ? oppMatch[1] : null);
+      const path = window.location.pathname;
+      const oppMatch = path.match(/^\/opportunity\/([^/]+)/);
+      if (oppMatch) {
+         setSelectedOppId(oppMatch[1]);
+      } else {
+         setSelectedOppId(null);
+         if (path === '/') {
+           setActiveTab('dashboard');
+         } else {
+           const tabName = path.substring(1);
+           const allTabs = ['opportunities', 'about', 'privacy', 'terms', 'cookies', 'guidelines', 'security', 'support', 'legal', 'dashboard', 'bookmarks', 'submit', 'mentorship', 'community', 'profile', 'settings', 'admin', 'ai_assistant'];
+           if (allTabs.includes(tabName)) {
+             setActiveTab(tabName);
+           }
+         }
+      }
     };
     window.addEventListener('popstate', handleLocationChange);
     return () => window.removeEventListener('popstate', handleLocationChange);
@@ -210,6 +236,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   // ─── Auth + profile sync ──────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (selectedOppId) return; // handled by viewOpportunity
+    if (typeof window === 'undefined') return;
+    const currentPath = window.location.pathname;
+    const expectedPath = activeTab === 'dashboard' ? '/' : `/${activeTab}`;
+    if (currentPath !== expectedPath) {
+      window.history.pushState(null, '', expectedPath);
+    }
+  }, [activeTab, selectedOppId]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {

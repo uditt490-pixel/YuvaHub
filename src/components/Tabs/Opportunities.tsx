@@ -268,7 +268,7 @@ export default function Opportunities() {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
           <div className="hidden md:block">
-            <h2 className="text-[24px] font-[800] tracking-tight text-gray-900 mb-1">Opportunities Explorer</h2>
+            <h1 className="text-[24px] font-[800] tracking-tight text-gray-900 mb-1">Opportunities Explorer</h1>
             <p className="text-[14px] text-[#64748B]">Browse and filter the complete live database.</p>
           </div>
 

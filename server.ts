@@ -541,6 +541,7 @@ export function getSocketIO() {
 }
 
 async function startServer() {
+  let viteInstance: any = null;
   const app = express();
   const server = http.createServer(app);
   
@@ -602,6 +603,319 @@ async function startServer() {
   app.use("/api/", generalLimiter);
   // Apply strict AI limiter specifically to AI endpoints
   app.use("/api/ai/", aiLimiter);
+
+  // --- Technical SEO Route Interceptors ---
+
+  const serveHtmlWithSeo = async (req: express.Request, res: express.Response) => {
+    try {
+      const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
+      const currentUrl = `${baseUrl}${req.originalUrl}`;
+      
+      let title = "YuvaHub | Student Opportunity Platform (Hackathons, Scholarships, Mentorships)";
+      let description = "YuvaHub is India's leading discovery platform for students. Find life-changing hackathons, scholarships, and mentorships to accelerate your tech career. AI-powered matching for your skills.";
+      let image = `${baseUrl}/og-image.jpg`;
+      let schemaData: any = null;
+
+      const pathName = req.path.toLowerCase();
+      
+      if (pathName.startsWith("/opportunity/")) {
+        const parts = req.path.split("/");
+        const id = parts[2];
+        if (id) {
+          let opp: any = null;
+          if (db) {
+            try {
+              let query;
+              try {
+                query = { _id: new ObjectId(id) };
+              } catch(e) {
+                query = { id: id };
+              }
+              opp = await db.collection("opportunities").findOne(query);
+            } catch (dbErr) {
+              console.error("Error retrieving opportunity for SEO:", dbErr);
+            }
+          }
+          
+          if (!opp) {
+            opp = CURATED_FALLBACKS.find(f => f.id === id);
+          }
+
+          if (opp) {
+            const displayOrg = opp.org || opp.organization || "Curated Partner";
+            const cleanTitle = (opp.title || "").substring(0, 50);
+            title = `${cleanTitle} | ${displayOrg} | YuvaHub`;
+            description = opp.description ? (opp.description.substring(0, 150) + "...") : `Apply to ${opp.title} at ${displayOrg} via YuvaHub.`;
+            if (opp.orgLogo) {
+              image = opp.orgLogo;
+            }
+            
+            const isJob = opp.category?.toLowerCase().includes('job') || opp.category?.toLowerCase().includes('internship') || opp.type?.toLowerCase().includes('job') || opp.type?.toLowerCase().includes('internship');
+            
+            if (isJob) {
+              schemaData = {
+                "@context": "https://schema.org",
+                "@type": "JobPosting",
+                "title": opp.title,
+                "description": opp.description || "",
+                "employmentType": opp.category?.toLowerCase().includes('intern') || opp.type?.toLowerCase().includes('intern') ? "INTERN" : "FULL_TIME",
+                "hiringOrganization": {
+                  "@type": "Organization",
+                  "name": displayOrg,
+                  "sameAs": baseUrl
+                },
+                "jobLocation": {
+                  "@type": "Place",
+                  "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": opp.location || "Remote/Online",
+                    "addressCountry": "Global"
+                  }
+                }
+              };
+            } else {
+              schemaData = {
+                "@context": "https://schema.org",
+                "@type": "Event",
+                "name": opp.title,
+                "description": opp.description || "",
+                "eventStatus": "https://schema.org/EventScheduled",
+                "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
+                "location": {
+                  "@type": "VirtualLocation",
+                  "url": currentUrl
+                },
+                "organizer": {
+                  "@type": "Organization",
+                  "name": displayOrg
+                }
+              };
+            }
+          }
+        }
+      } else if (pathName === "/opportunities") {
+        title = "Explore Opportunities | Internships, Jobs & Hackathons | YuvaHub";
+        description = "Discover and apply to the latest internships, entry-level jobs, hackathons, and scholarships for Indian students. Real-time updates and AI matching.";
+      } else if (pathName === "/about") {
+        title = "About Us | Empowering Student Careers | YuvaHub";
+        description = "Learn about YuvaHub's mission to connect Indian students with life-changing hackathons, scholarships, internships, and mentors.";
+      } else if (pathName === "/privacy") {
+        title = "Privacy Policy | YuvaHub";
+        description = "Read the YuvaHub Privacy Policy to understand how we protect, handle, and secure your personal information.";
+      } else if (pathName === "/terms") {
+        title = "Terms of Service | YuvaHub";
+        description = "Review the Terms of Service and guidelines for using the YuvaHub platform.";
+      } else if (pathName === "/cookies") {
+        title = "Cookie Policy | YuvaHub";
+        description = "Learn how YuvaHub uses cookies and tracking technologies to optimize your experience.";
+      } else if (pathName === "/guidelines") {
+        title = "Community Guidelines | YuvaHub";
+        description = "Review the YuvaHub Community Guidelines to help build a safe, respectful, and professional student network.";
+      } else if (pathName === "/security") {
+        title = "Security Center | YuvaHub";
+        description = "Learn about YuvaHub's security practices, data encryption, and account protection measures.";
+      } else if (pathName === "/support") {
+        title = "Support & Feedback | YuvaHub";
+        description = "Need help? Contact the YuvaHub support team or submit feedback to help us improve the platform.";
+      } else if (pathName === "/legal") {
+        title = "Legal Index | YuvaHub";
+        description = "Access YuvaHub's legal index containing all terms, privacy policies, cookie policies, and community guidelines.";
+      }
+
+      let htmlPath = process.env.NODE_ENV === "production"
+        ? path.join(process.cwd(), "dist/index.html")
+        : path.join(process.cwd(), "index.html");
+
+      if (!fs.existsSync(htmlPath)) {
+        return res.status(404).send("index.html not found");
+      }
+
+      let html = fs.readFileSync(htmlPath, "utf8");
+
+      if (process.env.NODE_ENV !== "production" && viteInstance) {
+        html = await viteInstance.transformIndexHtml(req.originalUrl, html);
+      }
+
+      // Replacements helper
+      const replaceMeta = (h: string, nameAttr: string, attrVal: string, content: string) => {
+        const regex = new RegExp(`<meta\\s+[^>]*${nameAttr}=["']${attrVal}["'][^>]*content=["'][^"']*["'][^>]*>`, 'i');
+        if (regex.test(h)) {
+          return h.replace(regex, `<meta ${nameAttr}="${attrVal}" content="${content}">`);
+        }
+        const regexReverse = new RegExp(`<meta\\s+[^>]*content=["'][^"']*["'][^>]*${nameAttr}=["']${attrVal}["'][^>]*>`, 'i');
+        if (regexReverse.test(h)) {
+          return h.replace(regexReverse, `<meta ${nameAttr}="${attrVal}" content="${content}">`);
+        }
+        return h.replace('</head>', `  <meta ${nameAttr}="${attrVal}" content="${content}">\n</head>`);
+      };
+
+      const replaceTitle = (h: string, t: string) => {
+        const regex = /<title>[^<]*<\/title>/i;
+        if (regex.test(h)) {
+          return h.replace(regex, `<title>${t}</title>`);
+        }
+        return h.replace('</head>', `  <title>${t}</title>\n</head>`);
+      };
+
+      const replaceCanonical = (h: string, u: string) => {
+        const regex = /<link\s+[^>]*rel=["']canonical["'][^>]*>/i;
+        if (regex.test(h)) {
+          return h.replace(regex, `<link rel="canonical" href="${u}">`);
+        }
+        return h.replace('</head>', `  <link rel="canonical" href="${u}">\n</head>`);
+      };
+
+      const injectJsonLd = (h: string, data: any) => {
+        if (!data) return h;
+        const scriptTag = `  <script type="application/ld+json" id="jsonld-seo-schema">${JSON.stringify(data)}</script>\n`;
+        return h.replace('</head>', `${scriptTag}</head>`);
+      };
+
+      html = replaceTitle(html, title);
+      html = replaceMeta(html, 'name', 'description', description);
+      html = replaceMeta(html, 'property', 'og:title', title);
+      html = replaceMeta(html, 'property', 'og:description', description);
+      html = replaceMeta(html, 'property', 'og:image', image);
+      html = replaceMeta(html, 'property', 'og:url', currentUrl);
+      html = replaceMeta(html, 'property', 'og:type', 'website');
+      html = replaceMeta(html, 'name', 'twitter:card', 'summary_large_image');
+      html = replaceMeta(html, 'name', 'twitter:title', title);
+      html = replaceMeta(html, 'name', 'twitter:description', description);
+      html = replaceMeta(html, 'name', 'twitter:image', image);
+      html = replaceMeta(html, 'name', 'twitter:url', currentUrl);
+      html = replaceCanonical(html, currentUrl);
+      html = injectJsonLd(html, schemaData);
+
+      res.setHeader("Content-Type", "text/html");
+      res.send(html);
+    } catch (err) {
+      console.error("HTML SEO injection error:", err);
+      res.status(500).send("Internal Server Error");
+    }
+  };
+
+  app.get("/robots.txt", (req, res) => {
+    const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
+    const robotsTxt = `User-agent: *
+Allow: /
+Allow: /opportunities
+Allow: /about
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /guidelines
+Allow: /security
+Allow: /support
+Allow: /legal
+Allow: /opportunity/
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /bookmarks/
+Disallow: /submit/
+Disallow: /settings/
+Disallow: /profile/
+Disallow: /mentorship/
+Disallow: /community/
+Disallow: /ai_assistant/
+Disallow: /api/
+
+Content-Signal: ai-train=no, search=yes, ai-input=no
+
+Sitemap: ${baseUrl}/sitemap.xml
+`;
+    res.header("Content-Type", "text/plain");
+    res.send(robotsTxt);
+  });
+
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
+      const staticPaths = [
+        "",
+        "/opportunities",
+        "/about",
+        "/privacy",
+        "/terms",
+        "/cookies",
+        "/guidelines",
+        "/security",
+        "/support",
+        "/legal"
+      ];
+
+      let urls = staticPaths.map(p => {
+        return `  <url>
+    <loc>${baseUrl}${p}</loc>
+    <changefreq>daily</changefreq>
+    <priority>${p === "" ? "1.0" : "0.8"}</priority>
+  </url>`;
+      });
+
+      // Fetch opportunities if DB is ready
+      if (db) {
+        try {
+          const items = await db.collection("opportunities")
+            .find({})
+            .project({ _id: 1, title: 1, created_at: 1 })
+            .toArray();
+
+          const slugify = (text: string): string => {
+            return (text || "")
+              .toString()
+              .toLowerCase()
+              .trim()
+              .replace(/\s+/g, '-')
+              .replace(/[^\w\-]+/g, '')
+              .replace(/\-\-+/g, '-')
+              .replace(/^-+/, '')
+              .replace(/-+$/, '');
+          };
+
+          items.forEach((item: any) => {
+            const id = item._id.toString();
+            const slug = slugify(item.title);
+            const dateStr = item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+            urls.push(`  <url>
+    <loc>${baseUrl}/opportunity/${id}/${slug}</loc>
+    <lastmod>${dateStr}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`);
+          });
+        } catch (dbErr) {
+          console.error("Error fetching opportunities for sitemap:", dbErr);
+        }
+      }
+
+      const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join("\n")}
+</urlset>`;
+
+      res.header("Content-Type", "application/xml");
+      res.send(sitemapXml);
+    } catch (err) {
+      console.error("Sitemap generation error:", err);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+  const publicHtmlRoutes = [
+    "/",
+    "/opportunities",
+    "/about",
+    "/privacy",
+    "/terms",
+    "/cookies",
+    "/guidelines",
+    "/security",
+    "/support",
+    "/legal",
+    "/opportunity/:id",
+    "/opportunity/:id/:slug"
+  ];
+
+  app.get(publicHtmlRoutes, serveHtmlWithSeo);
 
   // --- DNS-AID Agent Discovery Endpoints ---
   app.get("/.well-known/agents/:file", (req, res) => {
@@ -1887,7 +2201,8 @@ Return JSON strictly in this format:
       }
 
       let mapped = items.map((doc: any) => {
-        const d = { ...doc, id: doc._id.toString() };
+        const docId = doc._id ? doc._id.toString() : (doc.id ? doc.id.toString() : "");
+        const d = { ...doc, id: docId };
         delete d._id;
         return d;
       });
@@ -2964,17 +3279,15 @@ ${JSON.stringify(userProfile, null, 2)}
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
+    viteInstance = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
-    app.use(vite.middlewares);
+    app.use(viteInstance.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*all", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+    app.get("*all", serveHtmlWithSeo);
   }
 
   // --- Socket.io Real-Time Pipeline ---

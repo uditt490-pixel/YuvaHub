@@ -20,6 +20,10 @@ import { RedisStore } from "rate-limit-redis";
 import Redis from "ioredis";
 import { v2 as cloudinary } from "cloudinary";
 import { meiliClient, initializeSearchSync } from "./src/services/searchSync.js";
+import { ExpressAdapter } from '@bull-board/express';
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { scraperQueue } from './src/queues/scraperQueue.js';
 
 dotenv.config();
 
@@ -536,6 +540,14 @@ async function startServer() {
 
   // Trust reverse proxy (Cloud Run, nginx / Cloudflare reverse proxies)
   app.set('trust proxy', true);
+
+  const serverAdapter = new ExpressAdapter();
+  serverAdapter.setBasePath('/admin/queues');
+  createBullBoard({
+    queues: [new BullMQAdapter(scraperQueue)],
+    serverAdapter: serverAdapter,
+  });
+  app.use('/admin/queues', serverAdapter.getRouter());
 
   // Suppress express-rate-limit warnings / errors for forwarded headers when behind proxy
   app.use((req, res, next) => {

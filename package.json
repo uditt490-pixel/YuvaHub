@@ -14,9 +14,12 @@
     "scrape": "tsx scrape-cli.ts",
     "test-mongo": "tsx tests/test-mongo.ts",
     "test-dnl": "tsx src/services/dnl/validationTest.ts",
-    "test-cqrs": "tsx tests/test-cqrs.ts"
+    "test-cqrs": "tsx tests/test-cqrs.ts",
+    "test-scraper": "tsx tests/test-scraper.ts"
   },
   "dependencies": {
+    "@bull-board/api": "^8.1.2",
+    "@bull-board/express": "^8.1.2",
     "@emailjs/browser": "^4.4.1",
     "@google/genai": "^1.29.0",
     "@google/generative-ai": "^0.24.1",

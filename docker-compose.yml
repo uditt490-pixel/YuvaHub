@@ -12,5 +12,14 @@ services:
       - meilisearch_data:/meili_data
     restart: unless-stopped
 
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
 volumes:
   meilisearch_data:
+  redis_data:

@@ -824,24 +824,29 @@ async function startServer() {
          return res.json({ num_results: 0, items: [] });
       }
 
-      const pipeline = [
-        {
-          "$vectorSearch": {
-            "index": "vector_index", 
-            "path": "embedding",
-            "queryVector": queryEmbedding,
-            "numCandidates": 100,
-            "limit": 10
-          }
-        },
-        {
-          "$project": {
-            "embedding": 0
-          }
-        }
-      ];
+      const allOps = await dbQuery.collection("opportunities").find({ embedding: { $exists: true } }).toArray();
 
-      const items = await dbQuery.collection("opportunities").aggregate(pipeline).toArray();
+      const cosineSimilarity = (a: number[], b: number[]) => {
+        let dotProduct = 0;
+        let normA = 0;
+        let normB = 0;
+        for (let i = 0; i < a.length; i++) {
+          dotProduct += a[i] * b[i];
+          normA += a[i] * a[i];
+          normB += b[i] * b[i];
+        }
+        if (normA === 0 || normB === 0) return 0;
+        return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+      };
+
+      const scoredItems = allOps.map((op: any) => {
+        const score = cosineSimilarity(queryEmbedding, op.embedding);
+        const { embedding, ...rest } = op; // omit embedding from response payload
+        return { ...rest, score };
+      });
+
+      scoredItems.sort((a: any, b: any) => b.score - a.score);
+      const items = scoredItems.slice(0, 10);
 
       res.json({
         num_results: items.length,

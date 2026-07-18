@@ -1,6 +1,8 @@
 import { MongoClient } from 'mongodb';
 import { spawn } from 'child_process';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 dotenv.config();
 
@@ -9,6 +11,10 @@ if (!uri) {
   console.error("MONGODB_URI not found in env!");
   process.exit(1);
 }
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const serverPath = path.resolve(__dirname, "../server.ts");
 
 async function runTest() {
   console.log("Connecting to MongoDB...");
@@ -22,7 +28,7 @@ async function runTest() {
   await collection.deleteMany({ isTest: true });
 
   console.log("Starting server process...");
-  const serverProcess = spawn("node", ["--import", "tsx", "server.ts"], {
+  const serverProcess = spawn("node", ["--import", "tsx", serverPath], {
     env: { ...process.env, NODE_ENV: "production" }
   });
 

@@ -1,4 +1,4 @@
-import { enqueueEmail } from "./src/queues/emailQueue";
+import { enqueueEmail } from "../src/queues/emailQueue";
 
 async function run() {
   console.log("Starting queue load test...");

@@ -16,7 +16,7 @@ export const emailWorker = new Worker<EmailJobData>(
     
     console.log(`[EmailWorker] Successfully sent email to ${job.data.to}`);
   },
-  { connection }
+  { connection: connection as any }
 );
 
 emailWorker.on("completed", (job) => {

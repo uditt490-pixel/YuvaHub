@@ -39,7 +39,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [appSearchQuery, setAppSearchQuery] = useState('');
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const savedTheme = localStorage.getItem('yuvahub-theme');
-    return savedTheme === 'dark' ? 'dark' : 'light';
+    if (savedTheme) {
+      return savedTheme === 'dark' ? 'dark' : 'light';
+    }
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
   });
 
   const [selectedOppId, setSelectedOppId] = useState<string | null>(() => {

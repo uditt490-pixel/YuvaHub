@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile } from '../../types';
-import { Bell, Lock, UserX, Database } from 'lucide-react';
+import { Bell, Lock, UserX, Info } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
 export default function SettingsTab() {
@@ -24,6 +23,8 @@ export default function SettingsTab() {
       </div>
 
       <div className="space-y-6">
+
+        {/* Email notifications */}
         <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
             <Bell className="w-5 h-5 text-gray-400" />
@@ -37,6 +38,7 @@ export default function SettingsTab() {
           </div>
         </div>
 
+        {/* Privacy */}
         <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
             <Lock className="w-5 h-5 text-gray-400" />
@@ -47,8 +49,8 @@ export default function SettingsTab() {
             <ToggleOption label="Show wins in community feed" checked={privWins} onChange={setPrivWins} />
             <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
               <span className="text-xs text-gray-500 dark:text-gray-400">View our full policy and guidelines</span>
-              <button 
-                onClick={() => setActiveTab('privacy')} 
+              <button
+                onClick={() => setActiveTab('privacy')}
                 className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
               >
                 <span>Read Privacy Policy</span>
@@ -58,6 +60,27 @@ export default function SettingsTab() {
           </div>
         </div>
 
+        {/* About YuvaHub — links to the About page */}
+        <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
+            <Info className="w-5 h-5 text-blue-500" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">About YuvaHub</h3>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Learn about our mission, platform architecture, and the team behind YuvaHub.
+            </p>
+            <button
+              onClick={() => setActiveTab('about')}
+              className="ml-6 shrink-0 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+            >
+              <span>View About Page</span>
+              <span className="text-sm">→</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Account control */}
         <div className="clean-card p-6 border-red-100 dark:bg-gray-800 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
             <UserX className="w-5 h-5 text-red-500" />
@@ -73,15 +96,15 @@ export default function SettingsTab() {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">This action is permanent and cannot be undone.</p>
               </div>
               <div className="flex gap-4">
-                <button 
-                  onClick={() => setActiveTab('security')} 
+                <button
+                  onClick={() => setActiveTab('security')}
                   className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
                 >
                   <span>Security Center</span>
                   <span className="text-sm">→</span>
                 </button>
-                <button 
-                  onClick={() => setActiveTab('support')} 
+                <button
+                  onClick={() => setActiveTab('support')}
                   className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
                 >
                   <span>Support & Feedback</span>
@@ -91,18 +114,21 @@ export default function SettingsTab() {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
 }
 
-function ToggleOption({ label, checked, onChange }: { label: string, checked: boolean, onChange: (c: boolean) => void }) {
+function ToggleOption({ label, checked, onChange }: { label: string; checked: boolean; onChange: (c: boolean) => void }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-gray-700 dark:text-gray-300 font-medium">{label}</span>
-      <button 
+      <button
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'}`}
+        aria-pressed={checked}
+        aria-label={label}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'}`}
       >
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>

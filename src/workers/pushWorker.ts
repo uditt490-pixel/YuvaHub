@@ -15,7 +15,7 @@ export const pushWorker = new Worker<PushJobData>(
     
     console.log(`[PushWorker] Successfully sent push to ${job.data.userId}`);
   },
-  { connection }
+  { connection: connection as any }
 );
 
 pushWorker.on("completed", (job) => {

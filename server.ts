@@ -798,7 +798,7 @@ async function startServer() {
   app.post("/api/v1/auth/sync", async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      if (typeof authHeader !== 'string' || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ error: "Unauthorized: Missing token" });
       }
 
@@ -946,7 +946,7 @@ async function startServer() {
 
   async function getAuthenticatedUser(req: any) {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (typeof authHeader !== 'string' || !authHeader.startsWith("Bearer ")) {
       throw new Error("Unauthorized: Missing token");
     }
 
@@ -1763,7 +1763,7 @@ Return JSON strictly in this format:
     try {
       const rawId = req.params.id;
 
-      if (rawId.startsWith("fall_ai_") || rawId.startsWith("scout_")) {
+      if (typeof rawId === 'string' && (rawId.startsWith("fall_ai_") || rawId.startsWith("scout_"))) {
         return res.json({
           id: rawId,
           title: "AI Intelligent Fallback Match",
@@ -1782,6 +1782,7 @@ Return JSON strictly in this format:
       const { ObjectId } = await import("mongodb");
       let query;
       try {
+        if (typeof rawId !== 'string') throw new Error("Invalid id");
         query = { _id: new ObjectId(rawId) };
       } catch(e) {
         query = { id: rawId };
@@ -2651,6 +2652,7 @@ ${JSON.stringify(userProfile, null, 2)}
 
       let queryId;
       try {
+        if (typeof commentId !== 'string') throw new Error("Invalid id");
         queryId = new ObjectId(commentId);
       } catch (e) {
         queryId = commentId;

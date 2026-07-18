@@ -1,6 +1,6 @@
 import { MongoClient, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
-import { isToxic } from './src/services/toxicity.js';
+import { isToxic } from '../src/services/toxicity.js';
 import { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
@@ -44,8 +44,8 @@ async function runTests() {
   await Promise.all(
     userIds.map(async (userId) => {
       await db.collection("posts").updateOne(
-        { _id: postId, upvoted_by: { $ne: userId } },
-        { $inc: { upvotes: 1 }, $push: { upvoted_by: userId } }
+        { _id: postId, upvoted_by: { $ne: userId } } as any,
+        { $inc: { upvotes: 1 }, $push: { upvoted_by: userId } } as any
       );
     })
   );

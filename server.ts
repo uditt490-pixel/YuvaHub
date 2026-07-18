@@ -24,6 +24,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import { createBullBoard } from '@bull-board/api';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { scraperQueue } from './src/queues/scraperQueue.js';
+import { generateOpportunityEmbedding } from "./src/services/embedding.js";
 
 dotenv.config();
 
@@ -568,6 +569,28 @@ async function startServer() {
     await gracefulShutdown("API_TRIGGER");
   });
 
+  // --- Rate Limiting Middlewares ---
+  const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per window
+    message: { error: "Too Many Requests", message: "You have exceeded your 100 requests in 15 minutes limit!" },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  const aiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per window for AI
+    message: { error: "Too Many Requests", message: "You have exceeded your 10 AI requests in 15 minutes limit!" },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  // Apply general limiter to all API endpoints
+  app.use("/api/", generalLimiter);
+  // Apply strict AI limiter specifically to AI endpoints
+  app.use("/api/ai/", aiLimiter);
+
   // --- DNS-AID Agent Discovery Endpoints ---
   app.get("/.well-known/agents/:file", (req, res) => {
     const file = req.params.file;
@@ -774,6 +797,51 @@ async function startServer() {
         items: result.items
       });
     } catch(err) {
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  app.get("/api/v1/opportunities/semantic-search", async (req, res) => {
+    try {
+      const q = req.query.q as string;
+      if (!q) {
+        return res.status(400).json({ error: "Missing query parameter 'q'" });
+      }
+
+      const queryEmbedding = await generateOpportunityEmbedding(q);
+      if (!queryEmbedding) {
+        return res.status(500).json({ error: "Failed to generate embedding for query" });
+      }
+
+      if (!dbQuery) {
+         return res.json({ num_results: 0, items: [] });
+      }
+
+      const pipeline = [
+        {
+          "$vectorSearch": {
+            "index": "vector_index", 
+            "path": "embedding",
+            "queryVector": queryEmbedding,
+            "numCandidates": 100,
+            "limit": 10
+          }
+        },
+        {
+          "$project": {
+            "embedding": 0
+          }
+        }
+      ];
+
+      const items = await dbQuery.collection("opportunities").aggregate(pipeline).toArray();
+
+      res.json({
+        num_results: items.length,
+        items
+      });
+    } catch (err) {
+      console.error("/api/v1/opportunities/semantic-search error:", err);
       res.status(500).json({ error: "Internal Server Error" });
     }
   });

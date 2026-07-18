@@ -3,6 +3,7 @@ import { connection } from "../queues/connection";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import crypto from "crypto";
+import { generateOpportunityEmbedding } from "../services/embedding.js";
 
 dotenv.config();
 
@@ -45,7 +46,11 @@ export const scraperWorker = new Worker(
       location: "Online",
       dedupeHash,
       createdAt: new Date().toISOString(),
+      embedding: null as number[] | null,
     };
+
+    const embeddingText = `${title} ${organization} ${opportunity.description} ${type}`;
+    opportunity.embedding = await generateOpportunityEmbedding(embeddingText);
 
     // Upsert into MongoDB for idempotency
     const db = mongoClient.db(dbName);

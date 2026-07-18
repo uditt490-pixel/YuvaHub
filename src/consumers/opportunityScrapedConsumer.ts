@@ -1,4 +1,5 @@
-import { OpportunityScrapedEvent } from '../events/schemas';
+import { OpportunityScrapedEvent } from '../events/schemas.js';
+import { generateOpportunityEmbedding } from '../services/embedding.js';
 
 export async function createOpportunityScrapedConsumer(db: any) {
   return async (event: OpportunityScrapedEvent) => {
@@ -20,7 +21,11 @@ export async function createOpportunityScrapedConsumer(db: any) {
       dedupe_hash: payload.dedupeHash,
       created_at: new Date(event.timestamp),
       updated_at: new Date(),
+      embedding: null as number[] | null,
     };
+
+    const embeddingText = `${payload.title} ${payload.sourceName} ${payload.description} ${payload.opportunityType}`;
+    doc.embedding = await generateOpportunityEmbedding(embeddingText);
 
     try {
       if (db.isMock) {

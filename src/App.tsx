@@ -22,6 +22,10 @@ import SplashAuth from './components/SplashAuth';
 import Security from './components/Tabs/Security';
 import Legal from './components/Tabs/Legal';
 import Support from './components/Tabs/Support';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Cookies from './pages/Cookies';
+import Guidelines from './pages/Guidelines';
 
 function App() {
   const {

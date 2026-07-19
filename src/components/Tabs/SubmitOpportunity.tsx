@@ -17,6 +17,8 @@ export default function SubmitOpportunity() {
     location: '',
     link: '',
     deadline: '',
+    startDate: '',
+    endDate: '',
     tags: '',
     email: '',
     confirmed: false
@@ -29,6 +31,13 @@ export default function SubmitOpportunity() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.confirmed || loading) return;
+
+    if (formData.startDate && formData.endDate) {
+      if (new Date(formData.endDate) < new Date(formData.startDate)) {
+        setSubmitError("End date cannot be earlier than start date.");
+        return;
+      }
+    }
 
     setLoading(true);
     setSubmitError(null);
@@ -49,6 +58,8 @@ export default function SubmitOpportunity() {
         },
         link: formData.link,
         deadline: formData.deadline,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
         tags: tagsArray,
         contactEmail: formData.email,
         status: 'pending_review',
@@ -58,7 +69,7 @@ export default function SubmitOpportunity() {
       
       setSuccess(true);
       setFormData({
-        type: 'Internship', title: '', org: '', desc: '', year: 'Any', field: 'Any', location: '', link: '', deadline: '', tags: '', email: '', confirmed: false
+        type: 'Internship', title: '', org: '', desc: '', year: 'Any', field: 'Any', location: '', link: '', deadline: '', startDate: '', endDate: '', tags: '', email: '', confirmed: false
       });
     } catch {
       setSubmitError('Unable to submit the opportunity. Please try again.');
@@ -174,6 +185,19 @@ export default function SubmitOpportunity() {
             <input type="date" className="clean-input w-full p-3" value={formData.deadline} onChange={e => setFormData({...formData, deadline: e.target.value})} />
           </div>
         </div>
+
+        {(formData.type === 'Hackathon' || formData.type === 'Event' || formData.type === 'Program') && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-100">
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-700">Start Date</label>
+              <input type="date" className="clean-input w-full p-3" value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-semibold text-gray-700">End Date</label>
+              <input type="date" className="clean-input w-full p-3" value={formData.endDate} onChange={e => setFormData({...formData, endDate: e.target.value})} />
+            </div>
+          </div>
+        )}
 
         <div className="pt-4 border-t border-gray-100 space-y-4">
           <div>

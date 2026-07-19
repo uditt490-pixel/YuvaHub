@@ -8,6 +8,8 @@ export interface Opportunity {
   description: string;
   location: string;
   deadline: string; // ISO date string
+  startDate?: string;
+  endDate?: string;
   link: string;
   tags: string[];
   contactEmail: string;

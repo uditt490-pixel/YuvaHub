@@ -4,7 +4,11 @@ import { getAuth } from 'firebase-admin/auth';
 
 let isFirebaseInitialized = false;
 
-// Initialize Firebase Admin (with mock/fallback if credentials aren't present)
+const isDevelopment = process.env.NODE_ENV === 'development';
+const mockAuthEnabled = process.env.ENABLE_MOCK_AUTH === 'true';
+const mockValidToken = process.env.MOCK_VALID_TOKEN || 'MOCK_VALID_TOKEN';
+
+// Initialize Firebase Admin
 try {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
     const serviceAccount = JSON.parse(
@@ -31,9 +35,19 @@ try {
     console.log(
       '[Auth] Firebase Admin initialized with Application Default Credentials / Project ID.',
     );
+
   } else {
     console.warn(
       '[Auth] WARNING: No Firebase Admin credentials found. Using MOCK auth verification for development.',
+
+  } else if (isDevelopment && mockAuthEnabled) {
+    console.warn(
+      '[Auth] WARNING: Firebase credentials not found. Mock authentication is ENABLED for development.',
+    );
+  } else {
+    console.warn(
+      '[Auth] Firebase credentials not found. Mock authentication is disabled.',
+
     );
   }
 } catch (error) {
@@ -71,12 +85,18 @@ export const authenticateUser = (dbCommand: any) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+
       return sendAuthError(
         res,
         401,
         'INVALID_AUTH_HEADER',
         'Missing or malformed Authorization header.',
       );
+
+      return res.status(401).json({
+        error: 'Unauthorized: Missing or invalid token format',
+      });
+
     }
 
     const token = authHeader.split(' ')[1];
@@ -84,18 +104,34 @@ export const authenticateUser = (dbCommand: any) => {
     try {
       let decodedToken: any = null;
 
-      // Check if we are running in mock mode
       if (!isFirebaseInitialized) {
+
         if (token === 'MOCK_VALID_TOKEN') {
+
+        if (!(isDevelopment && mockAuthEnabled)) {
+          return res.status(503).json({
+            error:
+              'Authentication service unavailable. Firebase Admin is not configured.',
+          });
+        }
+
+        console.warn('[Auth] Using mock authentication.');
+
+        if (token === mockValidToken) {
+
           decodedToken = {
             uid: 'mock_user_123',
             email: 'mock@example.com',
             name: 'Mock User',
           };
         } else {
+
           const mockError: any = new Error('Invalid mock token');
           mockError.code = 'auth/invalid-token';
           throw mockError;
+
+          throw new Error('Invalid mock token');
+
         }
       } else {
         decodedToken = await getAuth().verifyIdToken(token);
@@ -103,7 +139,6 @@ export const authenticateUser = (dbCommand: any) => {
 
       req.user = decodedToken;
 
-      // JIT Profile Creation (Eventual Consistency with Upsert)
       if (dbCommand) {
         try {
           const usersCollection = dbCommand.collection('users');
@@ -125,11 +160,19 @@ export const authenticateUser = (dbCommand: any) => {
             },
           );
         } catch (dbError) {
+
           console.error('[Auth] Error during JIT user profile creation:', dbError);
+
+          console.error(
+            '[Auth] Error during JIT user profile creation:',
+            dbError,
+          );
+
         }
       }
 
       next();
+
     } catch (error: any) {
       console.error('[Auth] Authentication failed', {
         code: error?.code || 'unknown',
@@ -172,6 +215,13 @@ export const authenticateUser = (dbCommand: any) => {
             'Authentication failed.',
           );
       }
+
+    } catch (error) {
+      console.error('[Auth] Token verification failed:', error);
+      return res.status(401).json({
+        error: 'Unauthorized: Invalid token',
+      });
+
     }
   };
 };
@@ -179,7 +229,14 @@ export const authenticateUser = (dbCommand: any) => {
 export const deleteFirebaseUser = async (uid: string) => {
   if (isFirebaseInitialized) {
     await getAuth().deleteUser(uid);
+
   } else {
     console.warn(`[Auth] Mock mode: Firebase user ${uid} deletion skipped.`);
+
+  } else if (isDevelopment && mockAuthEnabled) {
+    console.warn(
+      `[Auth] Mock mode: Firebase user ${uid} deletion skipped.`,
+    );
+
   }
 };

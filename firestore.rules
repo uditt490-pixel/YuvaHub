@@ -38,5 +38,12 @@ service cloud.firestore {
       allow update: if isOwner(resource.data.uid);
       allow delete: if isOwner(resource.data.uid);
     }
+
+    match /event_waitlists/{waitlistId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId);
+      allow delete: if isOwner(resource.data.userId);
+    }
   }
 }

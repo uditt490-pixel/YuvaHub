@@ -2677,7 +2677,7 @@ Return ONLY a JSON object strictly adhering to this schema:
     }
   });
 
-  app.put("/api/v1/opportunity/:id", async (req, res) => {
+  app.put("/api/v1/opportunity/:id", authorizeRoles("admin", "moderator"), async (req, res) => {
     try {
       if (!dbCommand || !dbQuery) return res.status(503).json({ error: "Database not available" });
       const id = req.params.id;

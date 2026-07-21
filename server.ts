@@ -174,7 +174,17 @@ async function getRankedOpportunities(database: any, profile: any, page: number,
 
     // Retain mock DB logic as a fallback for offline development
     if (database.isMock) {
-      const cursor = database.collection("opportunities").find({}).sort({ created_at: -1 }).limit(150);
+      const currentDate = new Date();
+      const cursor = database.collection("opportunities").find({
+        $or: [
+          { endDate: { $gte: currentDate } },
+          { startDate: { $gte: currentDate } },
+          { deadlineDate: { $gte: currentDate } },
+          { deadline: { $regex: "days left|weeks left|rolling|active|open", $options: "i" } },
+          { deadline: { $not: /closed|expired/i } },
+          { endDate: { $exists: false }, startDate: { $exists: false }, deadlineDate: { $exists: false }, deadline: { $exists: false } }
+        ]
+      }).sort({ created_at: -1 }).limit(150);
       const opportunities = await cursor.toArray();
       
       if (opportunities.length === 0) {
@@ -286,6 +296,20 @@ async function getRankedOpportunities(database: any, profile: any, page: number,
       limit: searchLimit
     });
     let items = searchRes.hits;
+
+    const nowTime = new Date().getTime();
+    items = items.filter((item: any) => {
+      if (item.endDate && new Date(item.endDate).getTime() < nowTime) return false;
+      if (item.startDate && new Date(item.startDate).getTime() < nowTime) return false;
+      if (item.deadlineDate && new Date(item.deadlineDate).getTime() < nowTime) return false;
+      if (item.deadline && typeof item.deadline === 'string') {
+        const dStr = item.deadline.toLowerCase();
+        if (dStr.includes('closed') || dStr.includes('expired')) return false;
+        const d = new Date(item.deadline);
+        if (!isNaN(d.getTime()) && d.getTime() < nowTime) return false;
+      }
+      return true;
+    });
 
     if (items.length === 0) {
       return { items: [], next_page: null };
@@ -1348,10 +1372,21 @@ ${urls.join("\n")}
       }
 
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const now = new Date();
       
       // Check if created_at is stored as Date, or if there's no results, fallback to latest overall
       const cursor = dbQuery.collection("opportunities")
-        .find({ created_at: { $gte: twentyFourHoursAgo } })
+        .find({ 
+          created_at: { $gte: twentyFourHoursAgo },
+          $or: [
+            { endDate: { $gte: now } },
+            { startDate: { $gte: now } },
+            { deadlineDate: { $gte: now } },
+            { deadline: { $regex: "days left|weeks left|rolling|active|open", $options: "i" } },
+            { deadline: { $not: /closed|expired/i } },
+            { endDate: { $exists: false }, startDate: { $exists: false }, deadlineDate: { $exists: false }, deadline: { $exists: false } }
+          ]
+        })
         .sort({ created_at: -1 })
         .limit(20);
 
@@ -1360,7 +1395,16 @@ ${urls.join("\n")}
       if (items.length === 0) {
         // Fallback to latest 10 overall if no recents
         const fallbackCursor = dbQuery.collection("opportunities")
-            .find({})
+            .find({
+              $or: [
+                { endDate: { $gte: now } },
+                { startDate: { $gte: now } },
+                { deadlineDate: { $gte: now } },
+                { deadline: { $regex: "days left|weeks left|rolling|active|open", $options: "i" } },
+                { deadline: { $not: /closed|expired/i } },
+                { endDate: { $exists: false }, startDate: { $exists: false }, deadlineDate: { $exists: false }, deadline: { $exists: false } }
+              ]
+            })
             .sort({ created_at: -1 })
             .limit(10);
         const fallbackItems = await fallbackCursor.toArray();

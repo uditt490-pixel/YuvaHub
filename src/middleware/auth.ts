@@ -117,6 +117,12 @@ export const authenticateUser = (dbCommand: any) => {
               returnDocument: 'after',
             },
           );
+
+          if (userDoc && userDoc.value && userDoc.value.role) {
+            req.user.role = userDoc.value.role;
+          } else {
+            req.user.role = 'student';
+          }
         } catch (dbError) {
           console.error(
             '[Auth] Error during JIT user profile creation:',
@@ -143,4 +149,18 @@ export const deleteFirebaseUser = async (uid: string) => {
       `[Auth] Mock mode: Firebase user ${uid} deletion skipped.`,
     );
   }
+};
+
+export const authorizeRoles = (allowedRoles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user || !req.user.role) {
+      return res.status(403).json({ error: 'Access denied: No role assigned.' });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: `Access denied: Requires one of ${allowedRoles.join(', ')}` });
+    }
+
+    next();
+  };
 };

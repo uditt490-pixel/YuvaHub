@@ -1,9 +1,26 @@
 import { Request, Response } from "express";
 import { dbCommand, dbQuery } from "../db.js";
 import { ObjectId } from "mongodb";
+import escapeHtml from "escape-html";
 import { meiliClient } from "../../services/searchSync.js";
 import { generateOpportunityEmbedding } from "../../services/embedding.js";
 import { CURATED_FALLBACKS } from "../../services/staticFallbacks.js";
+
+/**
+ * Helper to escape user-controlled text strings for safe HTML / SEO metadata insertion
+ */
+const sanitizeText = (text: any): string => {
+  if (typeof text !== "string") return "";
+  return escapeHtml(text.trim());
+};
+
+/**
+ * Sanitizes array of strings (e.g. tags)
+ */
+const sanitizeArray = (arr: any): string[] => {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item) => (typeof item === "string" ? escapeHtml(item.trim()) : ""));
+};
 
 // Composite Feed Ranking Engine based on relevance, freshness, quality, and engagement clicks
 export async function getRankedOpportunities(database: any, profile: any, page: number, limit: number) {
@@ -374,19 +391,26 @@ export const submitOpportunity = async (req: Request, res: Response) => {
     const payload = req.body;
     const { randomUUID } = await import("crypto");
 
+    // SEC-08 FIX: Sanitize user input fields to prevent Stored XSS in meta/SEO/HTML
+    const cleanTitle = sanitizeText(payload.title);
+    const cleanDescription = sanitizeText(payload.description);
+    const cleanOrg = sanitizeText(payload.organization);
+    const cleanCategory = sanitizeText(payload.type);
+    const cleanTags = sanitizeArray(payload.tags);
+
     const doc = {
-      title: payload.title,
-      description: payload.description,
-      source: payload.organization,
-      source_name: payload.organization,
+      title: cleanTitle,
+      description: cleanDescription,
+      source: cleanOrg,
+      source_name: cleanOrg,
       source_url: payload.link,
       apply_link: payload.link,
       image_url: 'https://yuvahub.xyz/og-image.jpg',
-      tags: payload.tags || [],
-      category: payload.type,
-      deadline: payload.deadline,
-      location: payload.eligibility?.location,
-      opportunity_type: payload.type,
+      tags: cleanTags,
+      category: cleanCategory,
+      deadline: sanitizeText(payload.deadline),
+      location: sanitizeText(payload.eligibility?.location),
+      opportunity_type: cleanCategory,
       dedupe_hash: payload.link ? payload.link : randomUUID(),
       created_at: new Date(),
       updated_at: new Date(),
@@ -439,8 +463,18 @@ export const getOpportunityById = async (req: Request, res: Response) => {
     if (!item) {
       return res.status(404).json({ error: "Opportunity not found" });
     }
-    const mapped = { ...item, id: item._id.toString() };
+
+    // SEC-08 FIX: Ensure title and description are escaped on response payload for SEO / Head metadata
+    const mapped = {
+      ...item,
+      id: item._id.toString(),
+      title: sanitizeText(item.title),
+      description: sanitizeText(item.description),
+      source_name: sanitizeText(item.source_name || item.source),
+      tags: sanitizeArray(item.tags)
+    };
     delete mapped._id;
+
     res.json(mapped);
   } catch (err) {
     console.error("/api/v1/opportunity/:id error:", err);
@@ -464,6 +498,12 @@ export const updateOpportunity = async (req: Request, res: Response) => {
     const updateData = { ...req.body, updated_at: new Date() };
     delete updateData._id;
     delete updateData.id;
+
+    // SEC-08 FIX: Sanitize updated fields if provided
+    if (updateData.title) updateData.title = sanitizeText(updateData.title);
+    if (updateData.description) updateData.description = sanitizeText(updateData.description);
+    if (updateData.organization) updateData.organization = sanitizeText(updateData.organization);
+    if (updateData.tags) updateData.tags = sanitizeArray(updateData.tags);
 
     const result = await dbCommand.collection("opportunities").updateOne(
       { _id: queryId },

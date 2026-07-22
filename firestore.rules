@@ -20,9 +20,6 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isOwner(userId) && (!request.resource.data.keys().hasAny(['isAdmin', 'isVerified']) || (request.resource.data.get('isAdmin', false) == false && request.resource.data.get('isVerified', false) == false));
-      allow update: if isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'isVerified']);
-      allow delete: if isOwner(userId);
       allow write: if isOwner(userId) || isAdmin();
     }
 

@@ -20,6 +20,7 @@ import AIAssistant from './components/Tabs/AIAssistant';
 import OnboardingFlow from './components/OnboardingFlow';
 import SplashAuth from './components/SplashAuth';
 import Security from './components/Tabs/Security';
+import AuthSecurityCenter from './components/Tabs/AuthSecurityCenter';
 import Legal from './components/Tabs/Legal';
 import Privacy from './components/Tabs/Privacy';
 import Terms from './components/Tabs/Terms';
@@ -94,6 +95,7 @@ function App() {
     { id: 'mentorship', label: 'Mentorship', icon: Users },
     { id: 'community', label: 'Community', icon: MessageSquare },
     { id: 'profile', label: 'My Profile', icon: User },
+    { id: 'auth_security', label: 'Auth & Security', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
     ...(user?.email === 'uditt490@gmail.com' ? [{ id: 'admin', label: 'Admin', icon: Activity }] : []),
   ];
@@ -109,6 +111,7 @@ function App() {
       case 'community': return <Community />;
       case 'profile': return <Profile />;
       case 'settings': return <SettingsTab />;
+      case 'auth_security': return <AuthSecurityCenter />;
       case 'admin': return <AdminDashboard />;
       case 'security': return <Security />;
       case 'privacy': return <Privacy />;

@@ -136,6 +136,14 @@ Open your browser and navigate to `http://localhost:5173`.
 - **Manually Run Scrapers:** `npm run scrape`
 - **Check Database Connectivity:** `npm run test-mongo`
 
+### 7. Optional Docker & Redis Setup
+Running Docker is **optional** for local development. `npm run dev` works out-of-the-box without Docker by running background tasks in local fallback mode.
+
+If you wish to test BullMQ queues or Meilisearch indexing locally with Redis, ensure Docker Desktop is running and start the containers:
+```bash
+docker compose up -d
+```
+
 ---
 
 ## Environment Variables Guide

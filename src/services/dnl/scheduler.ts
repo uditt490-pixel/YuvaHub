@@ -1,11 +1,13 @@
 import { IOpportunityAdapter } from './types';
 import { ingestOpportunities } from './deduplicator';
 import { logTelemetry } from './metrics';
+import { createBreaker } from '../circuitBreaker';
 
 export class DNLDispatcher {
   private db: any;
   private adapters: IOpportunityAdapter[] = [];
   private intervalId: NodeJS.Timeout | null = null;
+  private breakers: Record<string, any> = {};
 
   constructor(db: any) {
     this.db = db;
@@ -13,6 +15,46 @@ export class DNLDispatcher {
 
   registerAdapter(adapter: IOpportunityAdapter) {
     this.adapters.push(adapter);
+  }
+
+  private getBreaker(sourceName: string) {
+    if (!this.breakers[sourceName]) {
+      const fetchCb = async (url: string) => {
+        const fetchStart = performance.now();
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        let ttfb = 0;
+        // In Node.js environment, response.body might not have getReader if it's node-fetch.
+        // We'll do a simple fallback if reader is not available.
+        if (response.body && typeof (response.body as any).getReader === 'function') {
+          const reader = (response.body as any).getReader();
+          await reader.read();
+          ttfb = Math.round(performance.now() - fetchStart);
+        } else {
+          ttfb = Math.round(performance.now() - fetchStart);
+        }
+        
+        const text = await response.text();
+        return { text, ttfb };
+      };
+      
+      const breaker = createBreaker(
+        fetchCb,
+        { timeout: 10000, errorThresholdPercentage: 50, resetTimeout: 30000 },
+        sourceName
+      );
+      
+      breaker.fallback((url, err) => {
+        // Return empty payload array if circuit opens or fetch fails
+        return { text: "[]", ttfb: 0 };
+      });
+
+      this.breakers[sourceName] = breaker;
+    }
+    return this.breakers[sourceName];
   }
 
   // Orchestrate a single run for an adapter with its payload/url
@@ -25,20 +67,10 @@ export class DNLDispatcher {
 
     try {
       if (typeof fetchUrlOrPayload === 'string') {
-        // Measure TTFB by fetching from URL
-        const fetchStart = performance.now();
-        const response = await fetch(fetchUrlOrPayload);
-        const reader = response.body?.getReader();
-        if (reader) {
-          await reader.read(); // Read first byte/chunk
-          ttfb = Math.round(performance.now() - fetchStart);
-        } else {
-          ttfb = Math.round(performance.now() - fetchStart);
-        }
-        
-        // Fetch full text
-        const text = await response.text();
-        rawPayload = JSON.parse(text);
+        const breaker = this.getBreaker(adapter.sourceName);
+        const result = await breaker.fire(fetchUrlOrPayload);
+        ttfb = result.ttfb;
+        rawPayload = JSON.parse(result.text);
       } else {
         // Static/mock payload
         const simulatedDelay = Math.floor(Math.random() * 50) + 10; // 10ms-60ms

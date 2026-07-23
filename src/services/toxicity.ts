@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { GoogleGenAI } from '@google/genai';
+import { createBreaker } from './circuitBreaker';
 
 // Simple local keyword-based check for quick offline toxicity classification
 const TOXIC_KEYWORDS = [
@@ -7,6 +8,22 @@ const TOXIC_KEYWORDS = [
   'motherfucker', 'retard', 'faggot', 'nigger', 'idiot', 'moron', 'kill yourself',
   'die', 'hate you'
 ];
+
+const geminiBreaker = createBreaker(
+  async (genAI: GoogleGenAI, text: string) => {
+    return await genAI.models.generateContent({
+      model: "gemini-2.5-flash", // Using a fast, standard model
+      contents: `Classify if the following text is toxic, abusive, hateful, or highly inappropriate. Respond with ONLY 'toxic' or 'clean' (in lowercase): \n\n"${text}"`
+    });
+  },
+  { timeout: 5000, errorThresholdPercentage: 50, resetTimeout: 30000 },
+  'Gemini AI'
+);
+
+geminiBreaker.fallback((genAI, text, err) => {
+  // If Gemini fails or circuit is open, we fallback to 'clean' to not block users unnecessarily
+  return { text: 'clean' };
+});
 
 /**
  * Checks if a string contains toxic content.
@@ -30,12 +47,8 @@ export async function isToxic(text: string, genAI?: GoogleGenAI | null): Promise
   // 2. Google Gemini fallback if instance is available
   if (genAI) {
     try {
-      const response = await genAI.models.generateContent({
-        model: "gemini-2.5-flash", // Using a fast, standard model
-        contents: `Classify if the following text is toxic, abusive, hateful, or highly inappropriate. Respond with ONLY 'toxic' or 'clean' (in lowercase): \n\n"${text}"`
-      });
-
-      const responseText = (response.text || '').toLowerCase().trim();
+      const response = await geminiBreaker.fire(genAI, text);
+      const responseText = ((response as any).text || '').toLowerCase().trim();
       console.log(`[Toxicity Checker] Gemini model response: "${responseText}"`);
       return responseText.includes('toxic');
     } catch (err: any) {

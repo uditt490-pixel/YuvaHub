@@ -95,7 +95,7 @@ function startReconnectLoop(): void {
 export class MemoryCollection {
   data: any[];
   constructor(initialData: any[] = []) { this.data = initialData; }
-  find(query: any = {}) {
+  findSync(query: any = {}) {
     let result = this.data;
     for (const key in query) {
       if (key === 'id') {
@@ -129,7 +129,10 @@ export class MemoryCollection {
         result = result.filter(r => r[key] === query[key]);
       }
     }
-
+    return result;
+  }
+  find(query: any = {}) {
+    let result = this.findSync(query);
     const cursor = {
       sort: () => cursor,
       skip: (n: number) => { result = result.slice(n); return cursor; },
@@ -143,11 +146,11 @@ export class MemoryCollection {
     return res.length;
   }
   async findOne(query: any) {
-    const res = await this.find(query).toArray();
+    const res = this.findSync(query);
     return res[0] || null;
   }
   async updateOne(query: any, update: any, options: any = {}) {
-    const item = await this.findOne(query);
+    const item = (this.findSync(query))[0] || null;
     if (item) {
       if (update.$set) {
         Object.assign(item, update.$set);
@@ -180,6 +183,28 @@ export class MemoryCollection {
       return { upsertedCount: 1, upsertedId: "mock_upsert_id" };
     }
     return { modifiedCount: 0 };
+  }
+  async findOneAndUpdate(query: any, update: any, options: any = {}) {
+    const matched = this.findSync(query);
+    let item = matched[0] || null;
+    if (!item && options.upsert) {
+      item = { ...query };
+      if (update.$setOnInsert) {
+        Object.assign(item, update.$setOnInsert);
+      }
+      if (update.$set) {
+        Object.assign(item, update.$set);
+      }
+      this.data.push(item);
+      return { value: item };
+    }
+    if (item) {
+      if (update.$set) {
+        Object.assign(item, update.$set);
+      }
+      return { value: item };
+    }
+    return { value: null };
   }
   async insertOne(doc: any) { this.data.push(doc); return { insertedId: "mock_id" }; }
   async deleteOne(query: any) {

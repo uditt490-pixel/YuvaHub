@@ -22,11 +22,6 @@ import BountyBoard from './components/Tabs/BountyBoard';
 import BackToTopButton from './components/ui/BackToTopButton';import OnboardingFlow from './components/OnboardingFlow';
 import SplashAuth from './components/SplashAuth';
 import Security from './components/Tabs/Security';
-import AuthSecurityCenter from './components/Tabs/AuthSecurityCenter';
-import CareerMatchStudio from './components/Tabs/CareerMatchStudio';
-import HackathonStudio from './components/Tabs/HackathonStudio';
-import DeveloperApiPortal from './components/Tabs/DeveloperApiPortal';
-import GrantFellowshipStudio from './components/Tabs/GrantFellowshipStudio';
 import Legal from './components/Tabs/Legal';
 import Support from './components/Tabs/Support';
 import HelpCenter from './components/Tabs/HelpCenter';
@@ -208,16 +203,11 @@ function App() {
     { id: 'teams', label: 'Team Builder', icon: Users },
     { id: 'bookmarks', label: 'Bookmarks', icon: Bookmark },
     { id: 'ai_assistant', label: 'AI Assistant', icon: Sparkles },
-    { id: 'career_match', label: 'Career Match Studio', icon: Activity },
-    { id: 'hackathon_studio', label: 'Hackathon Studio', icon: Activity },
-    { id: 'developer_api', label: 'Developer API Portal', icon: Activity },
-    { id: 'grant_studio', label: 'Grants & Fellowships', icon: Activity },
     { id: 'submit', label: 'Submit Opportunity', icon: PlusCircle },
     { id: 'mentorship', label: 'Mentorship', icon: Users },
     { id: 'bounty_board', label: 'Bounty Board', icon: Sparkles },
     { id: 'community', label: 'Community', icon: MessageSquare },
     { id: 'profile', label: 'My Profile', icon: User },
-    { id: 'auth_security', label: 'Auth & Security', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
     { id: 'mock_interview', label: 'Mock Interview', icon: Mic },
     ...(isAdminUser ? [{ id: 'admin', label: 'Admin', icon: Activity }] : []),
@@ -230,17 +220,12 @@ function App() {
       case 'teams': return <Teams />;
       case 'bookmarks': return <Bookmarks />;
       case 'ai_assistant': return <AIAssistant />;
-      case 'career_match': return <CareerMatchStudio />;
-      case 'hackathon_studio': return <HackathonStudio />;
-      case 'developer_api': return <DeveloperApiPortal />;
-      case 'grant_studio': return <GrantFellowshipStudio />;
       case 'submit': return <SubmitOpportunity />;
       case 'mentorship': return <Mentorship />;
       case 'bounty_board': return <BountyBoard />;
       case 'community': return <Community />;
       case 'profile': return <Profile />;
       case 'settings': return <SettingsTab />;
-      case 'auth_security': return <AuthSecurityCenter />;
       case 'admin': return <AdminDashboard />;
       case 'security': return <Security />;
       case 'privacy': return <Privacy />;

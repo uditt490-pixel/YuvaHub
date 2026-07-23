@@ -6,6 +6,44 @@ import { meiliClient } from "../../services/searchSync.js";
 import { generateOpportunityEmbedding } from "../../services/embedding.js";
 import { CURATED_FALLBACKS } from "../../services/staticFallbacks.js";
 
+// Toggle bookmark for an opportunity
+export const toggleBookmark = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!dbCommand) return res.status(503).json({ error: "Database not available" });
+    
+    const opportunityId = req.params.id;
+    if (!opportunityId) return res.status(400).json({ error: "Missing opportunityId" });
+    
+    // Check if opportunity exists first
+    const oid = safeObjectId(opportunityId);
+    const query = oid ? { _id: oid } : { id: opportunityId };
+    const opp = await dbCommand.collection("opportunities").findOne(query);
+    if (!opp) return res.status(404).json({ error: "Opportunity not found" });
+    
+    const collection = dbCommand.collection("saved_opportunities");
+    const existing = await collection.findOne({ userId: user.uid, opportunityId });
+    
+    if (existing) {
+      // Un-bookmark
+      await collection.deleteOne({ userId: user.uid, opportunityId });
+      return res.json({ saved: false });
+    } else {
+      // Bookmark
+      await collection.insertOne({
+        userId: user.uid,
+        opportunityId,
+        createdAt: new Date()
+      });
+      return res.json({ saved: true });
+    }
+  } catch (err: any) {
+    console.error("POST /api/opportunities/:id/bookmark error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
 /**
  * Helper to escape user-controlled text strings for safe HTML / SEO metadata insertion
  */

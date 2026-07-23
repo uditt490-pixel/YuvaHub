@@ -150,7 +150,27 @@ export class DNLDispatcher {
   }
 
   private async dispatchAll() {
-    console.log('[DNLDispatcher] Cron trigger: Dispatching all scraper runs...');
-    // Orchestrated scraping runs would go here in production.
+    console.log(`[DNLDispatcher] Cron trigger: Dispatching ${this.adapters.length} scraper run(s)...`);
+
+    const results = await Promise.allSettled(
+      this.adapters.map(async (adapter) => {
+        const sourceName = adapter.sourceName;
+        const configUrl = process.env[`SCRAPER_URL_${sourceName.toUpperCase()}`];
+
+        if (configUrl) {
+          console.log(`[DNLDispatcher] Running scraper for ${sourceName} via URL: ${configUrl}`);
+          await this.runScrape(adapter, configUrl);
+        } else {
+          console.warn(`[DNLDispatcher] No SCRAPER_URL_${sourceName.toUpperCase()} configured. Skipping ${sourceName}.`);
+        }
+      })
+    );
+
+    const failed = results.filter(r => r.status === 'rejected').length;
+    if (failed > 0) {
+      console.error(`[DNLDispatcher] ${failed}/${this.adapters.length} scraper run(s) failed.`);
+    } else {
+      console.log(`[DNLDispatcher] All ${this.adapters.length} scraper run(s) completed.`);
+    }
   }
 }

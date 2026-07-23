@@ -25,9 +25,11 @@ Sentry.init({
 const app = express();
 const server = http.createServer(app);
 
-const corsOrigins = process.env.NODE_ENV === "development" 
-  ? ["http://localhost:3000", "http://127.0.0.1:3000"]
-  : ["https://yuvahub.xyz", "https://www.yuvahub.xyz", "https://yuvahub-web.vercel.app"];
+const corsOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL]
+  : process.env.NODE_ENV === "development"
+    ? ["http://localhost:3000", "http://127.0.0.1:3000"]
+    : ["https://yuvahub.xyz", "https://www.yuvahub.xyz", "https://yuvahub-web.vercel.app"];
 
 // Initialize Socket.io Singleton
 const io = new SocketIOServer(server, { cors: { origin: corsOrigins, credentials: true } });

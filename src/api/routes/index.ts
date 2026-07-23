@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { apiRouter } from "../../routes/index.js";
 import authRoutes from "./authRoutes.js";
 import userRoutes from "./userRoutes.js";
 import bookmarkRoutes from "./bookmarkRoutes.js";
@@ -24,6 +25,7 @@ const v1Router = Router();
 
 // Define all routers
 const routes = [
+  apiRouter,
   authRoutes,
   userRoutes,
   bookmarkRoutes,

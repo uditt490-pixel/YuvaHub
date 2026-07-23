@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { dbCommand, dbQuery } from "../db.js";
 import { safeObjectId } from "../../lib/utils.js";
 import { deleteFirebaseUser } from "../../middleware/auth.js";
+import { calculateProfileProgress } from "../services/profileProgressService.js";
 
 export const syncUser = (req: Request, res: Response) => {
   res.json({ status: "ok", user: req.user });
@@ -84,6 +85,30 @@ export const getSavedOpportunities = async (req: Request, res: Response) => {
     res.json({ items: sortedOpportunities, total });
   } catch (err: any) {
     console.error("GET /api/users/me/saved-opportunities error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getProfileProgress = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+    if (!dbQuery) return res.status(503).json({ error: "Database not available" });
+
+    const usersCollection = dbQuery.collection("users");
+    const dbUser = await usersCollection.findOne({ uid: user.uid });
+    
+    if (!dbUser) {
+       return res.status(404).json({ error: "User not found" });
+    }
+
+    const resumesCol = dbQuery.collection("resumes");
+    const resumes = await resumesCol.find({ userId: user.uid }).toArray();
+
+    const progress = calculateProfileProgress(dbUser, resumes);
+
+    res.json(progress);
+  } catch (err: any) {
+    console.error("GET /api/users/me/profile-progress error:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

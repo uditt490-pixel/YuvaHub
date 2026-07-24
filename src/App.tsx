@@ -28,6 +28,10 @@ import HackathonStudio from './components/Tabs/HackathonStudio';
 import DeveloperApiPortal from './components/Tabs/DeveloperApiPortal';
 import GrantFellowshipStudio from './components/Tabs/GrantFellowshipStudio';
 import CampusAlumniHub from './components/Tabs/CampusAlumniHub';
+import ResumeAtsStudio from './components/Tabs/ResumeAtsStudio';
+import InterviewPrepStudio from './components/Tabs/InterviewPrepStudio';
+import OpenSourceBountyStudio from './components/Tabs/OpenSourceBountyStudio';
+import OpportunityMatchStudio from './components/Tabs/OpportunityMatchStudio';
 import Legal from './components/Tabs/Legal';
 import Support from './components/Tabs/Support';
 import HelpCenter from './components/Tabs/HelpCenter';
@@ -214,6 +218,10 @@ function App() {
     { id: 'developer_api', label: 'Developer API Portal', icon: Activity },
     { id: 'grant_studio', label: 'Grants & Fellowships', icon: Activity },
     { id: 'campus_alumni', label: 'Campus & Alumni Hub', icon: Activity },
+    { id: 'resume_ats', label: 'Resume ATS Optimizer', icon: Activity },
+    { id: 'interview_prep', label: 'AI Interview Studio', icon: Activity },
+    { id: 'opensource_bounties', label: 'Open Source Bounties', icon: Activity },
+    { id: 'opportunity_match', label: 'AI Opportunity Recommender', icon: Activity },
     { id: 'submit', label: 'Submit Opportunity', icon: PlusCircle },
     { id: 'mentorship', label: 'Mentorship', icon: Users },
     { id: 'bounty_board', label: 'Bounty Board', icon: Sparkles },
@@ -237,6 +245,10 @@ function App() {
       case 'developer_api': return <DeveloperApiPortal />;
       case 'grant_studio': return <GrantFellowshipStudio />;
       case 'campus_alumni': return <CampusAlumniHub />;
+      case 'resume_ats': return <ResumeAtsStudio />;
+      case 'interview_prep': return <InterviewPrepStudio />;
+      case 'opensource_bounties': return <OpenSourceBountyStudio />;
+      case 'opportunity_match': return <OpportunityMatchStudio />;
       case 'submit': return <SubmitOpportunity />;
       case 'mentorship': return <Mentorship />;
       case 'bounty_board': return <BountyBoard />;

@@ -2,6 +2,7 @@ import { Worker, Job } from "bullmq";
 import { connection } from "../queues/connection";
 import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
+// @ts-expect-error — pdf-parse ESM bundle lacks default export; CJS fallback works at runtime
 import pdfParse from "pdf-parse";
 import { GoogleGenAI, Type } from "@google/genai";
 import { normalizeSkills } from "../services/skillTaxonomy";

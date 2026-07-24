@@ -20,7 +20,7 @@ export const aiGenerate = async (req: Request, res: Response) => {
     let responseText = "";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: prompt
       });
       responseText = response.text || "";
@@ -32,7 +32,7 @@ export const aiGenerate = async (req: Request, res: Response) => {
         console.log(`[AI Routing] Switchover triggered due to temporary limit.`);
         try {
           const response = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
+            model: "gemini-2.0-flash",
             contents: prompt
           });
           responseText = response.text || "";
@@ -94,7 +94,7 @@ Return JSON strictly in this format:
     let responseText = "";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: { responseMimeType: "application/json" }
       });
@@ -107,7 +107,7 @@ Return JSON strictly in this format:
         console.log(`[AI Routing] Review switchover active.`);
         try {
           const response = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
+            model: "gemini-2.0-flash",
             contents: prompt,
             config: { responseMimeType: "application/json" }
           });
@@ -210,7 +210,7 @@ Return ONLY a JSON object strictly adhering to this schema:
     let responseText = "";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: { responseMimeType: "application/json" }
       });
@@ -218,7 +218,7 @@ Return ONLY a JSON object strictly adhering to this schema:
     } catch (err: any) {
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-3.1-flash-lite",
+          model: "gemini-2.0-flash",
           contents: prompt,
           config: { responseMimeType: "application/json" }
         });

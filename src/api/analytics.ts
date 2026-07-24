@@ -59,8 +59,8 @@ export class AnalyticsBuffer {
       );
     }
 
-    // 4. If still over capacity after flush, drop oldest events
-    if (this.buffer.length > this.maxBufferSize) {
+    // 4. If still over capacity and not currently flushing, drop oldest events
+    if (this.buffer.length > this.maxBufferSize && !this.isFlushing) {
       const excess = this.buffer.length - this.maxBufferSize;
       this.buffer.splice(0, excess);
       if (!this.overflowWarned) {

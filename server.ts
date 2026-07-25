@@ -2645,13 +2645,13 @@ ${JSON.stringify(userProfile, null, 2)}
 
       let queryId;
       try {
-        queryId = new ObjectId(commentId);
+        queryId = new ObjectId(commentId as string);
       } catch (e) {
         queryId = commentId;
       }
 
       const result = await db.collection("comments").findOneAndUpdate(
-        { _id: queryId, postId },
+        { _id: queryId as any, postId },
         { $set: { content, updatedAt: new Date() } },
         { returnDocument: "after" }
       );

@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const connection = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
+const connection: any = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   retryStrategy: (times) => {

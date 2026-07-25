@@ -29,7 +29,7 @@ async function run() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(scholarshipData)
     });
-    const createData = await createRes.json();
+    const createData = await createRes.json() as any;
     console.log("Create Response:", createData);
     
     const id = createData.id;

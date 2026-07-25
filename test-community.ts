@@ -43,7 +43,7 @@ async function runTests() {
   // Execute concurrent updates
   await Promise.all(
     userIds.map(async (userId) => {
-      await db.collection("posts").updateOne(
+      await (db.collection("posts") as any).updateOne(
         { _id: postId, upvoted_by: { $ne: userId } },
         { $inc: { upvotes: 1 }, $push: { upvoted_by: userId } }
       );

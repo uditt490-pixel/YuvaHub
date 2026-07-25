@@ -19,6 +19,7 @@ import { getFirestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
+
 export const auth = initializeAuth(app, {
   persistence: browserLocalPersistence,
   popupRedirectResolver: browserPopupRedirectResolver
@@ -32,13 +33,22 @@ async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
-    if(error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration: Firestore appears to be offline.");
+    if (
+      error instanceof Error &&
+      error.message.includes('the client is offline')
+    ) {
+      console.error(
+        'Please check your Firebase configuration: Firestore appears to be offline.'
+      );
     } else {
-      console.warn("Firestore connection test failed (this might be expected if the test document doesn't exist, but it confirms reachability if no 'offline' error occurs):", error);
+      console.warn(
+        "Firestore connection test failed (this might be expected if the test document doesn't exist, but it confirms reachability if no 'offline' error occurs):",
+        error
+      );
     }
   }
 }
+
 testConnection();
 
 export const googleProvider = new GoogleAuthProvider();
@@ -50,40 +60,51 @@ export const signInWithGoogle = async () => {
   try {
     return await signInWithPopup(auth, googleProvider);
   } catch (error: any) {
-    if (error?.code === 'auth/unauthorized-domain' || error?.code === 'auth/popup-blocked') {
+    if (
+      error?.code === 'auth/unauthorized-domain' ||
+      error?.code === 'auth/popup-blocked'
+    ) {
       console.log('Popup auth failed, falling back to redirect...');
       return signInWithRedirect(auth, googleProvider);
     }
     throw error;
   }
 };
+
 export const signInWithGithub = async () => {
   try {
     return await signInWithPopup(auth, githubProvider);
   } catch (error: any) {
-    if (error?.code === 'auth/unauthorized-domain' || error?.code === 'auth/popup-blocked') {
+    if (
+      error?.code === 'auth/unauthorized-domain' ||
+      error?.code === 'auth/popup-blocked'
+    ) {
       console.log('Popup auth failed, falling back to redirect...');
       return signInWithRedirect(auth, githubProvider);
     }
     throw error;
   }
 };
+
 export const signInWithApple = async () => {
   try {
     return await signInWithPopup(auth, appleProvider);
   } catch (error: any) {
-    if (error?.code === 'auth/unauthorized-domain' || error?.code === 'auth/popup-blocked') {
+    if (
+      error?.code === 'auth/unauthorized-domain' ||
+      error?.code === 'auth/popup-blocked'
+    ) {
       return signInWithRedirect(auth, appleProvider);
     }
     throw error;
   }
 };
+
 export const logout = () => signOut(auth);
 
-// Handle redirect result when user returns from Google sign-in
-getRedirectResult(auth).catch((error) => {
-  console.warn('Redirect auth result error:', error);
-});
+// Expose redirect result handling so the authentication/UI layer
+// can handle and display redirect authentication errors.
+export const handleRedirectResult = () => getRedirectResult(auth);
 
 export { 
   createUserWithEmailAndPassword, 

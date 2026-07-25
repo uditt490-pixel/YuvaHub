@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, Globe, BrainCircuit, Search, Zap, Code, Lightbulb, Trophy, Target, ArrowRight, Mail, X, Github, Sun, Moon, ChevronDown } from 'lucide-react';
-import { signInWithGoogle, signInWithGithub } from '../lib/firebase';
+import {
+  signInWithGoogle,
+  signInWithGithub,
+  handleRedirectResult
+} from '../lib/firebase';
 import { useAppContext } from '../context/AppContext';
 import HelpCenter from './Tabs/HelpCenter';
 import Security from './Tabs/Security';
@@ -12,7 +16,23 @@ export default function SplashAuth() {
   const [loading, setLoading] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  useEffect(() => {
+  const checkRedirectResult = async () => {
+    try {
+      await handleRedirectResult();
+    } catch (error: any) {
+      console.error('Redirect authentication failed:', error);
 
+      setAuthError(
+        error?.message ||
+          'Sign-in could not be completed. Please try again.'
+      );
+    }
+  };
+
+  checkRedirectResult();
+}, []);
   const handleGoogleLogin = async () => {
     setLoading('google');
     try {
@@ -38,6 +58,39 @@ export default function SplashAuth() {
   const handleLogin = () => {
     setIsModalOpen(true);
   };
+  const handleGoogleLogin = async () => {
+  setLoading('google');
+  setAuthError(null);
+
+  try {
+    await signInWithGoogle();
+  } catch (error: any) {
+    console.error(error);
+    setAuthError(
+      error?.message ||
+        'Google sign-in failed. Please try again.'
+    );
+  } finally {
+    setLoading(null);
+  }
+};
+
+const handleGithubLogin = async () => {
+  setLoading('github');
+  setAuthError(null);
+
+  try {
+    await signInWithGithub();
+  } catch (error: any) {
+    console.error(error);
+    setAuthError(
+      error?.message ||
+        'GitHub sign-in failed. Please try again.'
+    );
+  } finally {
+    setLoading(null);
+  }
+};
 
   return (
     <div className="min-h-screen bg-background font-sans text-text-primary overflow-x-hidden transition-colors duration-250">
@@ -421,6 +474,14 @@ export default function SplashAuth() {
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 w-9 h-9 rounded-full bg-surface-secondary border border-border-theme flex items-center justify-center text-text-secondary hover:text-text-primary hover:brightness-90 dark:hover:brightness-110 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
             >
+            {authError && (
+  <div
+    role="alert"
+    className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
+  >
+    {authError}
+  </div>
+)}
               <X className="w-5 h-5" />
             </button>
             <div className="text-center mb-8">

@@ -17,8 +17,11 @@ const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
 /** Interval (ms) between MongoDB reconnection attempts after fallback to MockDB. */
 const RECONNECT_INTERVAL_MS = 30_000;
 
+export { ObjectId } from "mongodb";
+
 export let dbCommand: any = null;
 export let dbQuery: any = null;
+export { dbQuery as db };
 
 // ── Reconnection subsystem ──────────────────────────────────────────
 

@@ -16,6 +16,8 @@ const connection: any = new Redis(process.env.REDIS_URL || "redis://localhost:63
   }
 });
 
+let redisErrorLogged = false;
+
 connection.on('error', (err) => {
   if (!redisErrorLogged) {
     console.warn('[BullMQ Redis] Offline mode - Redis not detected. Background queues will run in-memory/direct fallback mode.');

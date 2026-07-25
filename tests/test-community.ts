@@ -81,7 +81,10 @@ async function runTests() {
     content: "Root comment 1",
     author: "author_root",
     path: c1Path,
-    createdAt: new Date(),
     isTest: true
   });
-});
+
+  await client.close();
+}
+
+runTests().catch(err => console.error(err));

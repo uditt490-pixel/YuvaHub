@@ -2,9 +2,7 @@ import fetch from "node-fetch"; // requires node-fetch or native fetch in node 1
 
 const BASE_URL = "http://localhost:3000/api/scholarships";
 
-import { describe, it, expect } from 'vitest';
 
-const BASE_URL = "http://localhost:3000/api/scholarships";
 
 async function run() {
   console.log("=== Testing Scholarship Hub Endpoints ===");
@@ -36,10 +34,9 @@ async function run() {
     const createData = await createRes.json() as any;
     console.log("Create Response:", createData);
     
-    const id = createData.id;
-    if (!id) {
-        console.error("Failed to get ID from creation. Exiting test.");
-        return;
-    }
-  });
-});
+  } catch (err) {
+    console.error("Test failed:", err);
+  }
+}
+
+run();

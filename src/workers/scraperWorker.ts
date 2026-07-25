@@ -9,13 +9,21 @@ import { sendAdminAlert } from "../services/adminAlertService.js";
 
 dotenv.config();
 
-const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  throw new Error("[ScraperWorker] MONGODB_URI environment variable is required.");
+}
 const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
 
-// Maintain a single MongoDB client for the worker
-const mongoClient = new MongoClient(uri);
+const mongoClient = new MongoClient(uri, {
+  maxPoolSize: 50,
+  minPoolSize: 5,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+});
 mongoClient.connect().catch((err) => {
   console.error("[ScraperWorker] MongoDB connection error:", err);
+  process.exit(1);
 });
 
 export const scraperWorker = new Worker(

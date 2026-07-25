@@ -8,13 +8,22 @@ import { normalizeSkills } from "../services/skillTaxonomy";
 
 dotenv.config();
 
-const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  throw new Error("[Resume Worker] MONGODB_URI environment variable is required.");
+}
 const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
-const mongoClient = new MongoClient(uri);
+const mongoClient = new MongoClient(uri, {
+  maxPoolSize: 50,
+  minPoolSize: 5,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+});
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 mongoClient.connect().catch((err) => {
   console.error("[Resume Worker] MongoDB connection error:", err);
+  process.exit(1);
 });
 
 export const resumeWorker = new Worker(

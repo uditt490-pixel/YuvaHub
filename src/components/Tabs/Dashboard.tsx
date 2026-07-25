@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Target, Search, Compass, ShieldCheck, Loader2, ArrowRight, RefreshCw, Sparkles, Share2, FileText } from 'lucide-react';
-import { io } from 'socket.io-client';
 import { UserProfile } from '../../types';
+import { useSocket } from '../../context/SocketContext';
 import { fetchSmartFeed, fetchExploreFeed, trackInteraction, runScoutProtocolBackend, generateApplyAssistBackend, fetchLatestFeed } from '../../services/apiClient';
 import { ErrorState } from '../ui/states';
 import ShareModal from '../ui/ShareModal';
@@ -11,6 +11,7 @@ import { FaqPreview } from '../ui/FaqPreview';
 
 export default function Dashboard() {
   const { user, profile, viewOpportunity: onViewDetails } = useAppContext();
+  const { socket } = useSocket();
   const [showScoutModal, setShowScoutModal] = useState(false);
   const [scoutStep, setScoutStep] = useState(1);
   const [scoutData, setScoutData] = useState({ year: '', field: '', tech: '', goal: '' });
@@ -36,28 +37,30 @@ export default function Dashboard() {
     if (user && profile) {
       loadInitialFeed(false, discoveryMode);
       
-      // Initialize Real-Time WebSocket Connection
-      const socket = io(); // Connects to same host/port
+      if (socket) {
+        socket.on("connected", () => {
+          console.log("Connected to Real-Time Feed Pipeline");
+        });
 
-      socket.on("connected", () => {
-        console.log("Connected to Real-Time Feed Pipeline");
-      });
-
-      socket.on("NEW_OPPORTUNITY", (opp: any) => {
-        setNewLiveItems(prev => [opp, ...prev]);
-        setHasNewUpdates(true);
-      });
+        socket.on("NEW_OPPORTUNITY", (opp: any) => {
+          setNewLiveItems(prev => [opp, ...prev]);
+          setHasNewUpdates(true);
+        });
+      }
       
       // Also refresh on window focus
       const handleFocus = () => loadInitialFeed(false, discoveryMode);
       window.addEventListener('focus', handleFocus);
       
       return () => {
-        socket.disconnect();
+        if (socket) {
+          socket.off("connected");
+          socket.off("NEW_OPPORTUNITY");
+        }
         window.removeEventListener('focus', handleFocus);
       };
     }
-  }, [user, profile, discoveryMode]);
+  }, [user, profile, discoveryMode, socket]);
 
   const loadInitialFeed = async (force = false, mode = discoveryMode) => {
     // Only show full loading spinner for first load or force refresh

@@ -99,3 +99,11 @@ pushWorker.on("failed", (job, err) => {
     console.error(`[PushWorker] Job ${job.id} has exhausted all retries. Moving to DLQ (Logged).`);
   }
 });
+
+let pushWorkerErrorLogged = false;
+pushWorker.on("error", (err) => {
+  if (!pushWorkerErrorLogged) {
+    console.warn('[PushWorker] Redis connection offline. Worker listening paused.');
+    pushWorkerErrorLogged = true;
+  }
+});

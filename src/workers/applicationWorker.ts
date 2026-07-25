@@ -114,10 +114,7 @@ export const applicationWorker =
     "application-processing",
     processApplicationJob,
     {
-      connection: {
-  host: process.env.REDIS_HOST || "localhost",
-  port: Number(process.env.REDIS_PORT) || 6379
-},
+      connection: connection as any,
       concurrency: 5,
     }
   );
@@ -148,3 +145,11 @@ applicationWorker.on(
 
   }
 );
+
+let applicationWorkerErrorLogged = false;
+applicationWorker.on("error", (err) => {
+  if (!applicationWorkerErrorLogged) {
+    console.warn('[ApplicationWorker] Redis connection offline. Worker listening paused.');
+    applicationWorkerErrorLogged = true;
+  }
+});

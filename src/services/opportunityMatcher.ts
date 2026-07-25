@@ -3,7 +3,7 @@ import { enqueuePushNotification } from "../queues/pushQueue";
 import { Notification } from "../models/notificationSchema";
 
 // Since Socket.io is initialized in server.ts, we will import a helper to fetch the instance
-import { getSocketIO } from "../../server";
+import { getSocketIO } from "../api/socketInstance.js";
 
 export async function matchOpportunityAndNotify(db: any, opportunity: any): Promise<void> {
   if (!db) {
@@ -106,7 +106,7 @@ export async function matchOpportunityAndNotify(db: any, opportunity: any): Prom
 
         // Insert into database
         const insertRes = await notifCollection.insertOne(notificationDoc);
-        const notificationId = insertRes.insertedId.toString();
+        const notificationId = (insertRes?.insertedId || 'mock_id').toString();
 
         console.log(`[Matcher] Created notification for user ${user.uid} (ID: ${notificationId})`);
 

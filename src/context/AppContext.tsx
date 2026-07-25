@@ -1,12 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import React, { 
-  createContext, 
-  useContext, 
-  useState, 
-  useEffect, 
-  useRef, 
-  useCallback 
-} from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -52,6 +44,13 @@ interface AppContextType {
   toggleTheme: () => void;
   gettingStartedStep: string | null;
   setGettingStartedStep: (step: string | null) => void;
+
+  // Gamified Bounty System (Karma)
+  karmaBalance: number;
+  setKarmaBalance: React.Dispatch<React.SetStateAction<number>>;
+  refreshKarma: () => Promise<void>;
+  karmaBumpFlag: number;
+  triggerKarmaAnimation: () => void;
 }
 
 // ─── Context creation ─────────────────────────────────────────────────────────
@@ -74,12 +73,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-const [activeTab, setActiveTab] = useState("home");
-const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedOppId, setSelectedOppId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const oppMatch = window.location.pathname.match(/^\/opportunity\/([^/]+)/);
+    return oppMatch ? oppMatch[1] : null;
+  });
 
-const [selectedOppId, setSelectedOppId] = useState<string | null>(null);
-
-const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  
   // Authentication state
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -96,20 +97,35 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
     }
     return 'light';
   });
-
-  // ─── Theme sync ──────────────────────────────────────────────────────────────
-
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [selectedOppId, setSelectedOppId] = useState<string | null>(null);
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  
   const [gettingStartedStep, setGettingStartedStep] = useState<string | null>(null);
-  const [selectedOppId, setSelectedOppId] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const oppMatch = window.location.pathname.match(/^\/opportunity\/([^/]+)/);
-    return oppMatch ? oppMatch[1] : null;
-  });
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+
+  // Gamified Bounty System
+  const [karmaBalance, setKarmaBalance] = useState(0);
+  const [karmaBumpFlag, setKarmaBumpFlag] = useState(0);
+
+  const triggerKarmaAnimation = useCallback(() => {
+    setKarmaBumpFlag(prev => prev + 1);
+  }, []);
+
+  const refreshKarma = useCallback(async () => {
+    if (!auth.currentUser) return;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/v1/karma/balance', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setKarmaBalance(prev => {
+           if (prev !== data.balance) triggerKarmaAnimation();
+           return data.balance;
+        });
+      }
+    } catch(e) {
+      console.error('[Karma] Failed to fetch balance', e);
+    }
+  }, [triggerKarmaAnimation]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -291,6 +307,8 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
               setProfile(data.profile as UserProfile);
               // Seed the bookmarks slice from the synced profile
               setBookmarkedIds(data.profile.bookmarks ?? []);
+              // Fetch karma
+              refreshKarma();
             } else {
               throw new Error('No profile returned from sync endpoint');
             }
@@ -301,7 +319,9 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
           console.warn('MongoDB auth sync failed, falling back to Firestore:', error);
           try {
             const docRef = doc(db, 'users', currentUser.uid);
-            const docSnap = await getDoc(docRef);
+            const getDocPromise = getDoc(docRef);
+            const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Firestore getDoc timeout')), 2000));
+            const docSnap = await Promise.race([getDocPromise, timeoutPromise]);
             if (docSnap.exists()) {
               const data = docSnap.data() as UserProfile;
               setProfile(data);
@@ -317,7 +337,7 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
               setBookmarkedIds([]);
             }
           } catch (fsError) {
-            console.error('Firestore fallback sync failed:', fsError);
+            console.error('Firestore fallback sync failed or timed out:', fsError);
             setProfile({
               uid: currentUser.uid,
               name: currentUser.displayName || '',
@@ -440,9 +460,6 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
       profile,
       setProfile,
       loading,
-      bookmarkedIds,
-toggleBookmark,
-isBookmarked,
       backendReady,
       lastSyncedTime,
       appSearchQuery,
@@ -457,7 +474,12 @@ isBookmarked,
       theme,
       toggleTheme,
       gettingStartedStep,
-      setGettingStartedStep
+      setGettingStartedStep,
+      karmaBalance,
+      setKarmaBalance,
+      refreshKarma,
+      karmaBumpFlag,
+      triggerKarmaAnimation
     }}>
       {children}
     </AppContext.Provider>

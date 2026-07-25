@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Bell, Info, Loader2, MapPin, Zap } from 'lucide-react';
-import { io } from 'socket.io-client';
+import { useSocket } from '../../context/SocketContext';
 import {
   fetchNotifications,
   markAllNotificationsRead,
@@ -18,6 +18,7 @@ interface Notification {
 }
 
 export default function NotificationDropdown({ profile }: { profile: any }) {
+  const { socket } = useSocket();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -57,9 +58,7 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
   useEffect(() => {
     void loadNotifications();
 
-    if (profile && profile.uid) {
-      const socket = io();
-
+    if (profile && profile.uid && socket) {
       socket.on(`NOTIFICATION_RECEIVED_${profile.uid}`, (newNotification: any) => {
         try {
           if (!newNotification?.id) return;
@@ -76,10 +75,10 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
       });
 
       return () => {
-        socket.disconnect();
+        socket.off(`NOTIFICATION_RECEIVED_${profile.uid}`);
       };
     }
-  }, [profile, loadNotifications]);
+  }, [profile, loadNotifications, socket]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

@@ -18,9 +18,13 @@ import scholarshipRoutes from "./scholarshipRoutes.js";
 import mentorshipRoutes from "./mentorshipRoutes.js";
 import bookmarkFolderRoutes from "./bookmarkFolderRoutes.js";
 import analyticsRoutes from "./analyticsRoutes.js";
+import { generalLimiter } from "../middlewares/rateLimiter.js";
 
 const rootRouter = Router();
 const v1Router = Router();
+
+// Apply baseline rate limiting to all API routes
+v1Router.use(generalLimiter);
 
 // Define all routers
 const routes = [
@@ -50,7 +54,7 @@ routes.forEach((router) => {
   v1Router.use(router);
 });
 
-// Health check route
+// Health check route (exempt from rate limiting for monitoring tools)
 v1Router.get("/health", (_req, res) => {
   res.json({ status: "healthy", timestamp: new Date().toISOString(), architecture: "modular" });
 });

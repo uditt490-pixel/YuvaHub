@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { aiGenerate, aiResumeReview, handleCareerRoadmap, analyzeResume } from "../controllers/aiController.js";
-import { chatRateLimiter } from "../middlewares/rateLimiter.js";
+import { aiLimiter } from "../middlewares/rateLimiter.js";
 
 const router = Router();
 
-router.post("/ai/generate", chatRateLimiter, aiGenerate);
-router.post("/ai/resume-review", chatRateLimiter, aiResumeReview);
-router.post("/ai/career-roadmap", chatRateLimiter, handleCareerRoadmap);
-router.post("/ai/analyze-resume", chatRateLimiter, analyzeResume);
+router.post("/ai/generate", aiLimiter, aiGenerate);
+router.post("/ai/resume-review", aiLimiter, aiResumeReview);
+router.post("/ai/career-roadmap", aiLimiter, handleCareerRoadmap);
+router.post("/ai/analyze-resume", aiLimiter, analyzeResume);
 
 export default router;

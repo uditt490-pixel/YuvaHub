@@ -1,497 +1,343 @@
 import React, { useState } from 'react';
-import { Shield, Lock, Server, Key, Eye, EyeOff, Clipboard, AlertOctagon, CheckCircle2, ChevronRight, FileText, Download, Mail, Terminal, Send, Search, Printer, Copy } from 'lucide-react';
+import {
+  Shield, Lock, Server, Key, Terminal, CheckCircle2, ArrowRight, FileText,
+  AlertTriangle, ShieldCheck, Eye, Cpu, Database, Send, Check, Activity, Globe, LockKeyhole
+} from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 
-type SecuritySection = 'infrastructure' | 'data-protection' | 'disclosure' | 'compliance';
-
 export default function Security() {
-  const { theme } = useAppContext();
-  const [activeSection, setActiveSection] = useState<SecuritySection>('infrastructure');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isCopied, setIsCopied] = useState(false);
+  const { setActiveTab } = useAppContext();
+  const [activeSection, setActiveSection] = useState<string>('auth');
   const [reportForm, setReportForm] = useState({
     name: '',
     email: '',
-    vulnerabilityType: 'xss',
+    severity: 'medium',
+    component: 'auth',
     description: '',
-    stepsToReproduce: '',
-    impact: ''
+    steps: ''
   });
-  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleReportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (reportForm.email && reportForm.description) {
-      setFormSubmitted(true);
+      setReportSubmitted(true);
     }
   };
 
-  const sections = [
-    { id: 'infrastructure', label: 'Infrastructure & Network Security', icon: Server },
-    { id: 'data-protection', label: 'Data Protection & Encryption', icon: Shield },
-    { id: 'disclosure', label: 'Vulnerability Disclosure Policy', icon: Terminal },
-    { id: 'compliance', label: 'Compliance & Audits', icon: FileText }
+  const securitySections = [
+    {
+      id: 'auth',
+      title: '1. Auth & Zero-Trust Protocol',
+      icon: Key,
+      badge: 'OAUTH 2.0 / OIDC',
+      details: [
+        {
+          heading: 'OAuth 2.0 & Firebase Auth Isolation',
+          text: 'Authentication is delegated to trusted providers (Google OAuth & GitHub OAuth). Passwords are never collected, hashed, or stored directly on YuvaHub servers, eliminating credential leak vectors.'
+        },
+        {
+          heading: 'Stateless Session Verification',
+          text: 'Client sessions rely on cryptographically signed JWT tokens with short lifespans. Re-authentication is required for sensitive administrative and account updates.'
+        },
+        {
+          heading: 'Automated Rate-Limiting & WAF',
+          text: 'Protected by Cloudflare Web Application Firewall (WAF) and Redis rate limiting to mitigate brute-force attacks, DDoS attempts, and automated credential stuffing.'
+        }
+      ]
+    },
+    {
+      id: 'encryption',
+      title: '2. Data Encryption & AI Isolation',
+      icon: Lock,
+      badge: 'AES-256 & TLS 1.3',
+      details: [
+        {
+          heading: 'AES-256 Encryption at Rest',
+          text: 'All student profile records, bookmarks, and application tracking data are encrypted at rest using AES-256 in isolated Google Cloud Firestore and MongoDB Atlas clusters.'
+        },
+        {
+          heading: 'Enforced TLS 1.3 in Transit',
+          text: 'All data transmitted between your browser and YuvaHub microservices is strictly encrypted over TLS 1.3 with HTTPS enforcement and HTTP Strict Transport Security (HSTS).'
+        },
+        {
+          heading: 'Stateless Gemini AI Prompt Sandboxing',
+          text: 'Resumes, cover letters, and technical queries sent to Google Gemini AI API endpoints are processed in ephemeral, stateless sessions. Raw student documents are never used to train public LLM models.'
+        }
+      ]
+    },
+    {
+      id: 'cloud',
+      title: '3. Cloud & Infrastructure Perimeter',
+      icon: Server,
+      badge: 'VPC & RBAC',
+      details: [
+        {
+          heading: 'Isolated Virtual Private Clouds (VPC)',
+          text: 'Production databases and background workers run inside private subnetworks inaccessible directly from the public internet. Access is restricted to authenticated backend services via VPC peering.'
+        },
+        {
+          heading: 'Role-Based Access Control (RBAC)',
+          text: 'Internal developer and operational access strictly follows the Principle of Least Privilege. Multi-Factor Authentication (MFA) and hardware keys are mandatory for all infrastructure access.'
+        },
+        {
+          heading: 'Continuous Automated Audits',
+          text: 'Automated static code analysis (SAST) and software bill of materials (SBOM) scanning pipelines run on every pull request to identify and patch vulnerable dependencies before deployment.'
+        }
+      ]
+    },
+    {
+      id: 'bounty',
+      title: '4. Vulnerability Disclosure & Bug Bounty',
+      icon: Terminal,
+      badge: 'RESPONSIBLE DISCLOSURE',
+      details: []
+    }
   ];
 
   return (
-    <div className="max-w-6xl mx-auto pb-16">
-      {/* Top Banner/Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-gray-200 dark:border-gray-800">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-            <Lock className="w-8 h-8 text-blue-600 dark:text-blue-500" />
-            Security & Trust Center
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            Learn about how we secure your data, monitor infrastructure, and maintain regulatory compliance.
-          </p>
+    <div className="min-h-screen bg-[#fcf9f2] text-[#231f20] font-sans pb-20 selection:bg-[#f3e4bd] selection:text-[#603620]">
+
+      {/* Hero Banner */}
+      <div className="max-w-5xl mx-auto text-center space-y-4 pt-10 pb-12 px-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-[#e8ded1] text-[#603620] text-xs font-bold uppercase tracking-widest rounded-full shadow-sm">
+          <ShieldCheck className="w-4 h-4 text-[#63703d]" /> SOC-2 Type II & ISO 27001 Aligned
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button 
-            onClick={handleCopyLink}
-            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
-          >
-            {isCopied ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                <span>Copied Link</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5" />
-                <span>Share Link</span>
-              </>
-            )}
-          </button>
-          <button 
-            onClick={handlePrint}
-            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>Print Section</span>
-          </button>
-        </div>
+        <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#231f20]">
+          Enterprise Security & <span className="italic text-[#b56b37] underline decoration-[#b5c37c] decoration-wavy decoration-2">Zero-Trust Architecture</span>
+        </h1>
+        <p className="text-base text-[#603620]/90 leading-relaxed max-w-2xl mx-auto">
+          YuvaHub employs defense-in-depth security to protect student profiles, resume data, AI prompts, and verified opportunity databases against unauthorized access.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Navigation Sidebar */}
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search security controls..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 dark:text-white"
-            />
+      {/* Telemetry Live Indicator Bar */}
+      <div className="max-w-5xl mx-auto mb-10 px-6">
+        <div className="bg-[#603620] text-[#fcf9f2] p-5 rounded-2xl border border-[#231f20] grid grid-cols-2 md:grid-cols-4 gap-4 text-center shadow-md">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#fcf9f2]/70">Encryption</span>
+            <p className="text-xs font-serif font-bold text-[#f3e4bd] flex items-center justify-center gap-1">
+              <LockKeyhole className="w-3.5 h-3.5 text-[#b5c37c]" /> AES-256 & TLS 1.3
+            </p>
           </div>
 
-          <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-x-visible gap-1 pb-2 lg:pb-0 scrollbar-none">
-            {sections.map((sect) => {
-              const Icon = sect.icon;
-              const isActive = activeSection === sect.id;
-              return (
-                <button
-                  key={sect.id}
-                  onClick={() => setActiveSection(sect.id as SecuritySection)}
-                  className={`flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap lg:whitespace-normal shrink-0 ${
-                    isActive 
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/10' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{sect.label}</span>
-                </button>
-              );
-            })}
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#fcf9f2]/70">Authentication</span>
+            <p className="text-xs font-serif font-bold text-[#f3e4bd] flex items-center justify-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#b5c37c]" /> OAuth 2.0 Stateless
+            </p>
           </div>
 
-          <div className="hidden lg:block p-4 rounded-xl bg-green-50/50 dark:bg-green-950/20 border border-green-100/50 dark:border-green-900/30">
-            <h4 className="text-xs font-bold text-green-900 dark:text-green-400 flex items-center gap-1.5 mb-2">
-              <Shield className="w-3.5 h-3.5" />
-              Security Status
-            </h4>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-xs text-green-800 dark:text-green-400 font-semibold">All Systems Operational</span>
-            </div>
-            <p className="text-[10px] text-green-800/80 dark:text-green-400/80 leading-normal mt-2">
-              Our engineering team conducts regular mock pen tests and code reviews to secure standard features.
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#fcf9f2]/70">AI Privacy</span>
+            <p className="text-xs font-serif font-bold text-[#f3e4bd] flex items-center justify-center gap-1">
+              <Shield className="w-3.5 h-3.5 text-[#b5c37c]" /> Zero LLM Training
+            </p>
+          </div>
+
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#fcf9f2]/70">System Health</span>
+            <p className="text-xs font-serif font-bold text-[#b5c37c] flex items-center justify-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#b5c37c] animate-pulse" /> 100% Operational
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Main Content Area */}
-        <div className="lg:col-span-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-6 md:p-8 shadow-sm">
-          {activeSection === 'infrastructure' && (
-            <div className="space-y-6 text-gray-700 dark:text-gray-300 text-xs md:text-sm leading-relaxed">
-              <div>
-                <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-[10px] font-bold rounded-full uppercase tracking-wider">
-                  Reference: SEC-INF-01
-                </span>
-                <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mt-3">
-                  Infrastructure & Network Security
-                </h2>
-                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-                  Last Audited: June 2026
-                </p>
-              </div>
+      {/* Main Grid Layout */}
+      <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-8">
 
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  1. Cloud Infrastructure Architecture
-                </h3>
-                <p>
-                  YuvaHub services are hosted exclusively on premium cloud infrastructure providers (specifically Google Cloud Platform and Render). Our systems are architected across multiple Availability Zones to ensure high availability and disaster recovery resilience.
-                </p>
-                <p>
-                  Our server network topology isolates system tiers into virtual networks. Database nodes, storage queues, and worker runtimes operate inside isolated subnets with no public internet ingress. Public endpoints are fronted by managed load balancers which enforce strict HTTPS TLS configurations.
-                </p>
-              </section>
+        {/* Navigation Sidebar */}
+        <div className="md:col-span-4 space-y-2">
+          {securitySections.map(sec => {
+            const Icon = sec.icon;
+            const isActive = activeSection === sec.id;
+            return (
+              <button
+                key={sec.id}
+                onClick={() => setActiveSection(sec.id)}
+                className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${isActive
+                    ? 'bg-[#603620] text-[#fcf9f2] border-[#603620] shadow-md'
+                    : 'bg-white text-[#603620] border-[#e8ded1] hover:border-[#b56b37]'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-[#f3e4bd]' : 'text-[#b56b37]'}`} />
+                  <span className="text-xs font-bold">{sec.title}</span>
+                </div>
+              </button>
+            );
+          })}
 
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  2. Edge Protection and DDoS Mitigation
-                </h3>
-                <p>
-                  We utilize edge networks to detect, mitigate, and filter malicious traffic before it reaches our application servers. Our edge protection stack handles:
-                </p>
-                <ul className="list-disc pl-5 space-y-1.5">
-                  <li>
-                    <strong>DDoS Protection:</strong> High-capacity automatic mitigation filters targeting volumetric and protocol-based distributed denial of service attacks.
-                  </li>
-                  <li>
-                    <strong>Web Application Firewall (WAF):</strong> Automated rules designed to inspect HTTP headers and payloads to intercept common vulnerability patterns (such as SQL injections, Cross-Site Scripting, and Local File Inclusions).
-                  </li>
-                  <li>
-                    <strong>Rate Limiting:</strong> Smart rate limiting configured on auth and submission endpoints to protect against brute-force attacks and abuse.
-                  </li>
-                </ul>
-              </section>
+          {/* Quick Contact Card */}
+          <div className="mt-6 p-5 bg-[#f3e4bd]/50 border border-[#e8ded1] rounded-2xl text-left space-y-2">
+            <h4 className="text-xs font-serif font-bold text-[#603620]">Security Emergency?</h4>
+            <p className="text-[11px] text-[#603620]/80">Contact our Security Operations Center directly at <span className="font-bold underline">security@yuvahub.com</span>.</p>
+          </div>
+        </div>
 
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  3. System Access Control & Authentication
-                </h3>
-                <p>
-                  Administrative access to YuvaHub infrastructure is highly restricted. We enforce the principle of least privilege, ensuring that team members only have access to resources necessary for their job functions.
-                </p>
-                <ul className="list-disc pl-5 space-y-1.5">
-                  <li>
-                    <strong>Multi-Factor Authentication (MFA):</strong> All developer and admin accounts on GCP, Render, Firebase console, and GitHub are protected by mandatory hardware token or app-based multi-factor authentication.
-                  </li>
-                  <li>
-                    <strong>Access Logging:</strong> All infrastructure administrative actions are securely logged to read-only compliance systems and monitored for anomalies.
-                  </li>
-                  <li>
-                    <strong>No Password SSH:</strong> Server access is controlled solely via public-key cryptography combined with bastion host jumpboxes.
-                  </li>
-                </ul>
-              </section>
+        {/* Details Content Box */}
+        <div className="md:col-span-8 bg-white p-8 sm:p-10 rounded-3xl border border-[#e8ded1] shadow-sm space-y-8">
 
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  4. Vulnerability & Configuration Scanning
-                </h3>
-                <p>
-                  Our codebases and systems undergo continuous scanning to identify configuration drift, package vulnerabilities, and potential security lapses:
-                </p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Weekly dependency scanning using GitHub Dependabot.</li>
-                  <li>Static code analysis (SAST) during our continuous integration pipelines.</li>
-                  <li>Container vulnerability scanning during build phases before deployment.</li>
-                </ul>
-              </section>
-            </div>
-          )}
-
-          {activeSection === 'data-protection' && (
-            <div className="space-y-6 text-gray-700 dark:text-gray-300 text-xs md:text-sm leading-relaxed">
-              <div>
-                <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-[10px] font-bold rounded-full uppercase tracking-wider">
-                  Reference: SEC-DAT-02
-                </span>
-                <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mt-3">
-                  Data Protection & Encryption
-                </h2>
-                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-                  Last Audited: June 2026
-                </p>
-              </div>
-
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  1. Encryption in Transit
-                </h3>
-                <p>
-                  All network traffic entering or leaving our Service endpoints is encrypted using Transport Layer Security (TLS) 1.2 or 1.3 protocol. We enforce HTTPS across all web apps, mobile APIs, and backend endpoints using HTTP Strict Transport Security (HSTS).
-                </p>
-                <p>
-                  Our cipher suites prioritize AEAD ciphers with perfect forward secrecy (ECDHE-ECDSA-AES128-GCM-SHA256, etc.) to ensure that captured past communication cannot be decrypted even if private keys are compromised in the future.
-                </p>
-              </section>
-
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  2. Encryption at Rest
-                </h3>
-                <p>
-                  Sensitive user information, including profile data, auth profiles, and internal submissions, is encrypted at rest using industry-standard symmetric encryption algorithms:
-                </p>
-                <ul className="list-disc pl-5 space-y-1.5">
-                  <li>
-                    <strong>Databases:</strong> All database storage volumes, file uploads, and system backups are encrypted using AES-256 with managed cryptographic keys.
-                  </li>
-                  <li>
-                    <strong>Session Identifiers:</strong> Authentication is handled via Firebase JSON Web Tokens (JWT) using cryptographically signed HMAC keys.
-                  </li>
-                  <li>
-                    <strong>API Keys & Credentials:</strong> If API credentials or integration tokens are stored, they are encrypted at the application layer before database commit.
-                  </li>
-                </ul>
-              </section>
-
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  3. Key Management & Secrets Store
-                </h3>
-                <p>
-                  YuvaHub does not hardcode application secrets, API keys, or private keys inside source repositories. All development and production keys are managed dynamically using professional secret management services (like Render Environment variables or Google Secret Manager). Secret access is logged, auditable, and rotated periodically.
-                </p>
-              </section>
-
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  4. Backups and Disaster Recovery
-                </h3>
-                <p>
-                  To prevent data loss and ensure system persistence, we maintain automated backup schedules:
-                </p>
-                <ul className="list-disc pl-5 space-y-1.5">
-                  <li>Daily incremental backups of MongoDB and Firestore databases.</li>
-                  <li>Weekly complete snapshot backups stored across separate physical data centers.</li>
-                  <li>Regular disaster recovery simulation drills to test restore times and pipeline integrity.</li>
-                </ul>
-              </section>
-            </div>
-          )}
-
-          {activeSection === 'disclosure' && (
-            <div className="space-y-6 text-gray-700 dark:text-gray-300 text-xs md:text-sm leading-relaxed">
-              <div>
-                <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-[10px] font-bold rounded-full uppercase tracking-wider">
-                  Reference: SEC-DIS-03
-                </span>
-                <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mt-3">
-                  Vulnerability Disclosure Policy
-                </h2>
-                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-                  Last Updated: July 2026
-                </p>
-              </div>
-
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  1. Policy Statement
-                </h3>
-                <p>
-                  We believe that keeping YuvaHub secure requires collaboration and transparency. We value the work of security researchers, whitehat hackers, and developers who help identify potential bugs. This policy outlines how you should report security concerns to us and what you can expect in return.
-                </p>
-              </section>
-
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  2. Reporting Guidelines
-                </h3>
-                <p>
-                  If you believe you have discovered a vulnerability on YuvaHub, please follow these rules:
-                </p>
-                <ul className="list-disc pl-5 space-y-1.5">
-                  <li>Report the details directly to our security team via the form below or email security@yuvahub.com.</li>
-                  <li>Do not publicly disclose the details of the vulnerability before we have fixed it.</li>
-                  <li>Do not exploit, download excess data, or view other users' private profiles during testing.</li>
-                  <li>Do not perform physical social engineering, physical security tests, or Distributed Denial of Service (DDoS) tests.</li>
-                </ul>
-              </section>
-
-              {/* Vulnerability Report Form Mock */}
-              <div className="border border-gray-100 dark:border-gray-700 p-5 rounded-xl bg-gray-50 dark:bg-gray-900/50">
-                <h4 className="font-bold text-gray-950 dark:text-white text-sm mb-4 flex items-center gap-2">
-                  <AlertOctagon className="w-4 h-4 text-red-500" />
-                  Report a Security Bug
-                </h4>
-                {formSubmitted ? (
-                  <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-150 text-green-700 dark:text-green-400 rounded-lg flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5" />
-                    <div>
-                      <p className="font-bold text-xs">Thank you for your report!</p>
-                      <p className="text-[11px] mt-0.5">Our security team will review and reply within 48 hours.</p>
-                    </div>
-                  </div>
-                ) : (
-                  <form onSubmit={handleFormSubmit} className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-semibold mb-1 text-gray-600 dark:text-gray-400">Your Name</label>
-                        <input 
-                          type="text" 
-                          required
-                          value={reportForm.name}
-                          onChange={(e) => setReportForm({...reportForm, name: e.target.value})}
-                          className="w-full text-xs p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md outline-none focus:ring-1 focus:ring-blue-500"
-                        />
+          {activeSection !== 'bounty' ? (
+            securitySections.filter(s => s.id === activeSection).map(s => {
+              const Icon = s.icon;
+              return (
+                <div key={s.id} className="space-y-6 text-left">
+                  <div className="flex items-center justify-between pb-4 border-b border-[#e8ded1]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-[#f3e4bd] flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-[#b56b37]" />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold mb-1 text-gray-600 dark:text-gray-400">Your Email</label>
-                        <input 
-                          type="email" 
-                          required
-                          value={reportForm.email}
-                          onChange={(e) => setReportForm({...reportForm, email: e.target.value})}
-                          className="w-full text-xs p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md outline-none focus:ring-1 focus:ring-blue-500"
-                        />
+                        <h3 className="text-xl font-serif font-bold text-[#231f20]">{s.title}</h3>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#b56b37]">{s.badge}</span>
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold mb-1 text-gray-600 dark:text-gray-400">Vulnerability Type</label>
-                      <select 
-                        value={reportForm.vulnerabilityType}
-                        onChange={(e) => setReportForm({...reportForm, vulnerabilityType: e.target.value})}
-                        className="w-full text-xs p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md outline-none focus:ring-1 focus:ring-blue-500"
-                      >
-                        <option value="xss">Cross-Site Scripting (XSS)</option>
-                        <option value="sqli">SQL Injection (SQLi)</option>
-                        <option value="auth">Broken Authentication / Access Control</option>
-                        <option value="csrf">Cross-Site Request Forgery (CSRF)</option>
-                        <option value="other">Other / General Leak</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-semibold mb-1 text-gray-600 dark:text-gray-400">Description & Impact</label>
-                      <textarea 
-                        required
-                        rows={3}
-                        value={reportForm.description}
-                        onChange={(e) => setReportForm({...reportForm, description: e.target.value})}
-                        className="w-full text-xs p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md outline-none focus:ring-1 focus:ring-blue-500"
-                      />
-                    </div>
-                    <button type="submit" className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-bold flex items-center justify-center gap-1.5">
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Submit Secure Report</span>
-                    </button>
-                  </form>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeSection === 'compliance' && (
-            <div className="space-y-6 text-gray-700 dark:text-gray-300 text-xs md:text-sm leading-relaxed">
-              <div>
-                <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 text-[10px] font-bold rounded-full uppercase tracking-wider">
-                  Reference: SEC-COM-04
-                </span>
-                <h2 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mt-3">
-                  Compliance & Audits
-                </h2>
-                <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">
-                  Last Audited: June 2026
-                </p>
-              </div>
-
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  1. Regulatory Frameworks
-                </h3>
-                <p>
-                  YuvaHub complies with major regulatory frameworks safeguarding applicant data and candidate integrity. We maintain regular updates to guarantee compliance with the following:
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                  <div className="border border-gray-100 dark:border-gray-700 p-4 rounded-xl">
-                    <h4 className="font-bold text-gray-950 dark:text-white text-xs">GDPR Compliant</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      We offer full data portability, profile export tools, and account deletion functionality in compliance with EU General Data Protection Regulations.
-                    </p>
                   </div>
-                  <div className="border border-gray-100 dark:border-gray-700 p-4 rounded-xl">
-                    <h4 className="font-bold text-gray-950 dark:text-white text-xs">CCPA Compliant</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      We do not sell user data, email profiles, or submission lists to third-party brokers. California users can exercise their CCPA rights via settings.
-                    </p>
+
+                  <div className="space-y-6">
+                    {s.details.map((detail, idx) => (
+                      <div key={idx} className="p-5 rounded-2xl bg-[#fcf9f2] border border-[#e8ded1] space-y-2">
+                        <h4 className="text-sm font-bold text-[#231f20] flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-[#63703d] shrink-0" />
+                          {detail.heading}
+                        </h4>
+                        <p className="text-xs text-[#603620] leading-relaxed pl-6">
+                          {detail.text}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </section>
+              );
+            })
+          ) : (
+            /* Vulnerability Report Form Section */
+            <div className="space-y-6 text-left">
+              <div className="flex items-center justify-between pb-4 border-b border-[#e8ded1]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#f3e4bd] flex items-center justify-center">
+                    <Terminal className="w-5 h-5 text-[#b56b37]" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-serif font-bold text-[#231f20]">Vulnerability Disclosure Form</h3>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#63703d]">RESPONSIBLE DISCLOSURE PROGRAM</span>
+                  </div>
+                </div>
+              </div>
 
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  2. Third-Party Subprocessors
-                </h3>
-                <p>
-                  We utilize subprocessors to provide components of our service. All service providers are audited to verify security posture and signed under Data Processing Addendums (DPAs):
-                </p>
-                <table className="w-full text-xs border border-gray-100 dark:border-gray-700 rounded-lg overflow-hidden mt-3">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 font-bold text-left">
-                      <th className="p-3">Subprocessor</th>
-                      <th className="p-3">Service Provided</th>
-                      <th className="p-3">Data Handled</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-750">
-                    <tr>
-                      <td className="p-3 font-semibold">Firebase (Google)</td>
-                      <td className="p-3">Authentication & Profile Storage</td>
-                      <td className="p-3">Email, UID, Display Name, Photo URL</td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 font-semibold">MongoDB Atlas</td>
-                      <td className="p-3">Core Application Database</td>
-                      <td className="p-3">Submissions, User profiles, Bookmarks</td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 font-semibold">Render Inc.</td>
-                      <td className="p-3">Application Hosting & Cache</td>
-                      <td className="p-3">IP Addresses, Session headers, logs</td>
-                    </tr>
-                    <tr>
-                      <td className="p-3 font-semibold">Google Cloud AI</td>
-                      <td className="p-3">AIAssistant LLM Processing</td>
-                      <td className="p-3">User queries, search history</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </section>
+              {reportSubmitted ? (
+                <div className="p-8 bg-[#fcf9f2] border border-[#e8ded1] rounded-2xl text-center space-y-3">
+                  <CheckCircle2 className="w-10 h-10 text-[#63703d] mx-auto" />
+                  <h4 className="text-lg font-serif font-bold text-[#231f20]">Report Received</h4>
+                  <p className="text-xs text-[#603620] max-w-sm mx-auto">
+                    Thank you for contributing to YuvaHub security. Our security team will review your submission within 24 hours.
+                  </p>
+                  <button
+                    onClick={() => setReportSubmitted(false)}
+                    className="px-5 py-2 bg-[#603620] text-white text-xs font-bold rounded-xl"
+                  >
+                    Submit Another Report
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleReportSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Researcher Name</label>
+                      <input
+                        type="text"
+                        required
+                        value={reportForm.name}
+                        onChange={(e) => setReportForm({ ...reportForm, name: e.target.value })}
+                        placeholder="Your full name or handle"
+                        className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        value={reportForm.email}
+                        onChange={(e) => setReportForm({ ...reportForm, email: e.target.value })}
+                        placeholder="researcher@domain.com"
+                        className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37]"
+                      />
+                    </div>
+                  </div>
 
-              <section className="space-y-3">
-                <h3 className="text-base font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-700 pb-1">
-                  3. Audit & Reporting Schedules
-                </h3>
-                <p>
-                  To verify the health and security of our ecosystem, we coordinate:
-                </p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Quarterly security scans of the Firebase configurations.</li>
-                  <li>Annual independent security assessments and review of compliance pipelines.</li>
-                  <li>Review of security policies and data handling practices at least twice per year.</li>
-                </ul>
-              </section>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Severity Level</label>
+                      <select
+                        value={reportForm.severity}
+                        onChange={(e) => setReportForm({ ...reportForm, severity: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37]"
+                      >
+                        <option value="low">Low (UI glitch / Information Leak)</option>
+                        <option value="medium">Medium (CSRF / Rate Limit bypass)</option>
+                        <option value="high">High (Stored XSS / Privilege escalation)</option>
+                        <option value="critical">Critical (RCE / Authentication bypass)</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Affected Module</label>
+                      <select
+                        value={reportForm.component}
+                        onChange={(e) => setReportForm({ ...reportForm, component: e.target.value })}
+                        className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37]"
+                      >
+                        <option value="auth">Firebase Auth / OAuth Sessions</option>
+                        <option value="api">Backend API / Express Endpoints</option>
+                        <option value="ai">Gemini AI Pipeline / Prompt Gateway</option>
+                        <option value="db">Firestore / MongoDB Storage</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Vulnerability Description & Impact</label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={reportForm.description}
+                      onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
+                      placeholder="Detailed description of the potential vulnerability..."
+                      className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37] resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-[#b56b37] hover:bg-[#603620] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                  >
+                    Submit Disclosure Report <Send className="w-4 h-4" />
+                  </button>
+                </form>
+              )}
             </div>
           )}
+
+          {/* Footer Back Action */}
+          <div className="pt-6 border-t border-[#e8ded1] flex items-center justify-between text-xs text-[#8c7569]">
+            <span className="flex items-center gap-1.5 text-[#63703d] font-bold">
+              <ShieldCheck className="w-4 h-4" /> Continuous Vulnerability Scanning
+            </span>
+            <button
+              onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className="text-[#b56b37] hover:underline font-bold bg-transparent border-none cursor-pointer"
+            >
+              Back to Dashboard →
+            </button>
+          </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }

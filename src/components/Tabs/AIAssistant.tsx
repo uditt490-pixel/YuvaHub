@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Bot, Briefcase, GraduationCap, Sparkles, ChevronRight, CheckCircle, Search, ScrollText, Send, Download } from 'lucide-react';
+import { FileText, Bot, Briefcase, GraduationCap, Sparkles, ChevronRight, CheckCircle, Search, ScrollText, Send, Download, Compass, Clock, Bookmark, Lightbulb } from 'lucide-react';
 import { UserProfile } from '../../types';
 import * as geminiService from '../../services/gemini';
 import { ErrorState } from '../ui/states';
@@ -184,12 +184,109 @@ const generateCoverLetterPdf = (company: string, letterText: string, studentName
   doc.save(`Cover_Letter_${(company || 'Draft').replace(/\s+/g, '_')}.pdf`);
 };
 
+const generateCareerRoadmapPdf = (roadmap: any) => {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'pt',
+    format: 'letter'
+  });
+
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 40;
+  let y = 60;
+
+  const addHeader = (pageNum: number) => {
+    doc.setFillColor(79, 70, 229); // Indigo 600
+    doc.rect(0, 0, pageWidth, 35, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(255, 255, 255);
+    doc.text('YuvaHub AI Career Roadmap', margin, 22);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text(`Role: ${roadmap.targetRole || 'Target Role'} | Page ${pageNum}`, pageWidth - margin - 180, 22);
+  };
+
+  let pageNum = 1;
+  addHeader(pageNum);
+  y = 80;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(17, 24, 39);
+  doc.text(roadmap.title || 'Career Learning Roadmap', margin, y);
+  y += 20;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(107, 114, 128);
+  doc.text(`Estimated Timeframe: ${roadmap.estimatedTimeframe || '6 Months'}`, margin, y);
+  y += 24;
+
+  const writeText = (text: string, fontSize = 10, fontStyle = 'normal', color = [75, 85, 99], indent = 0) => {
+    doc.setFont('helvetica', fontStyle);
+    doc.setFontSize(fontSize);
+    doc.setTextColor(color[0], color[1], color[2]);
+
+    const lines = doc.splitTextToSize(text, pageWidth - (margin * 2) - indent);
+
+    for (const line of lines) {
+      if (y + 16 > pageHeight - margin) {
+        doc.addPage();
+        pageNum++;
+        addHeader(pageNum);
+        y = 60;
+      }
+      doc.text(line, margin + indent, y);
+      y += 16;
+    }
+  };
+
+  if (roadmap.overview) {
+    writeText(roadmap.overview, 10, 'italic', [75, 85, 99], 0);
+    y += 15;
+  }
+
+  if (roadmap.milestones && Array.isArray(roadmap.milestones)) {
+    roadmap.milestones.forEach((m: any, index: number) => {
+      if (y + 40 > pageHeight - margin) {
+        doc.addPage();
+        pageNum++;
+        addHeader(pageNum);
+        y = 60;
+      }
+
+      writeText(`Milestone ${m.step || index + 1}: ${m.title || ''} (${m.duration || ''})`, 12, 'bold', [67, 56, 202], 0);
+      y += 4;
+      if (m.description) {
+        writeText(m.description, 10, 'normal', [55, 65, 81], 10);
+        y += 4;
+      }
+      if (m.topics && m.topics.length > 0) {
+        writeText(`Key Topics: ${m.topics.join(', ')}`, 9.5, 'normal', [107, 114, 128], 10);
+        y += 4;
+      }
+      if (m.projectIdea) {
+        writeText(`Project Idea: ${m.projectIdea}`, 9.5, 'bold', [16, 185, 129], 10);
+        y += 4;
+      }
+      y += 12;
+    });
+  }
+
+  doc.save(`Career_Roadmap_${(roadmap.targetRole || 'Plan').replace(/\s+/g, '_')}.pdf`);
+};
+
 export default function AIAssistant() {
   const { user, profile } = useAppContext();
   const [activeModule, setActiveModule] = useState<string | null>(null);
 
   const modules = [
     { id: 'resume_review', title: 'AI Resume Review', icon: FileText, desc: 'Paste your resume for instant tailored feedback.', color: 'text-purple-600', bg: 'bg-purple-50' },
+    { id: 'career_roadmap', title: 'AI Career Roadmap Generator', icon: Compass, desc: 'Generate a personalized step-by-step career path & project plan.', color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { id: 'cover_letter', title: 'Cover Letter Generator', icon: ScrollText, desc: 'Generate a professional cover letter in seconds.', color: 'text-blue-600', bg: 'bg-blue-50' },
     { id: 'interview_prep', title: 'Mock Interview Prep', icon: Briefcase, desc: 'Practice technical or behavioral interview questions.', color: 'text-green-600', bg: 'bg-green-50' },
     { id: 'career_mentor', title: 'Career Guidance', icon: Bot, desc: 'Ask about paths, skills, or get a personalized roadmap.', color: 'text-orange-600', bg: 'bg-orange-50' },
@@ -260,7 +357,7 @@ export default function AIAssistant() {
     );
   }
 
-  // --- SUB-VIEWS ---
+  // SUB-VIEWS
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-24 relative">
@@ -272,6 +369,7 @@ export default function AIAssistant() {
       </button>
 
       {activeModule === 'resume_review' && <ResumeReview />}
+      {activeModule === 'career_roadmap' && <CareerRoadmap profile={profile} />}
       {activeModule === 'cover_letter' && <CoverLetter profile={profile} />}
       {activeModule === 'interview_prep' && <InterviewPrep profile={profile} />}
       {activeModule === 'career_mentor' && <CareerMentor user={user} />}
@@ -575,10 +673,7 @@ function ResumeReview() {
   );
 }
 
-
-// ---------------------------
 // Cover Letter Component
-// ---------------------------
 function CoverLetter({ profile }: { profile: any }) {
   const [jobDesc, setJobDesc] = useState("");
   const [company, setCompany] = useState("");
@@ -662,9 +757,7 @@ function CoverLetter({ profile }: { profile: any }) {
   );
 }
 
-// ---------------------------
 // Interview Prep Component
-// ---------------------------
 function InterviewPrep({ profile }: { profile: any }) {
   const [topic, setTopic] = useState("");
   const [question, setQuestion] = useState("");
@@ -722,9 +815,7 @@ function InterviewPrep({ profile }: { profile: any }) {
   );
 }
 
-// ---------------------------
 // Career Mentor Component
-// ---------------------------
 function CareerMentor({ user }: { user: any }) {
   const [messages, setMessages] = useState<{ id: string; role: 'user' | 'assistant'; content: string; timestamp: number }[]>([]);
   const [input, setInput] = useState('');
@@ -871,9 +962,7 @@ function CareerMentor({ user }: { user: any }) {
   );
 }
 
-// ---------------------------
 // AI Opportunity Matcher Component
-// ---------------------------
 import { searchOpportunities as clientSearchOpportunities } from '../../services/apiClient';
 
 function AIOpportunityMatcher({ profile }: { profile: any }) {
@@ -1033,6 +1122,351 @@ function AIOpportunityMatcher({ profile }: { profile: any }) {
               <p className="text-xs text-gray-500">Try broadening your description or searching with other keywords.</p>
             </div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Career Roadmap Component
+function CareerRoadmap({ profile }: { profile: UserProfile | null }) {
+  const [targetRole, setTargetRole] = useState('');
+  const [education, setEducation] = useState(profile?.college ? `${profile.field || profile.year || 'Degree'} at ${profile.college}` : 'B.Tech Computer Science');
+  const [currentSkills, setCurrentSkills] = useState(profile?.skills?.join(', ') || 'JavaScript, HTML/CSS, Git');
+  const [timeframe, setTimeframe] = useState('6 Months');
+
+  const [loading, setLoading] = useState(false);
+  const [roadmap, setRoadmap] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [saved, setSaved] = useState(false);
+
+  const rolePresets = [
+    'Full Stack Developer',
+    'Frontend Engineer',
+    'Backend Engineer',
+    'Data Scientist / AI Engineer',
+    'Mobile App Developer (React Native/Flutter)',
+    'DevOps / Cloud Architect',
+    'Product Manager'
+  ];
+
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetRole.trim()) {
+      setError('Please enter or select a target career role.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setRoadmap(null);
+    setCompletedSteps([]);
+    setSaved(false);
+
+    try {
+      const response = await fetch('/api/ai/career-roadmap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetRole,
+          education,
+          currentSkills,
+          timeframe
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      setRoadmap(data);
+    } catch (err: any) {
+      console.error('Roadmap generation error:', err);
+      setError('Could not generate career roadmap. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleStepCompleted = (stepNum: number) => {
+    setCompletedSteps(prev =>
+      prev.includes(stepNum) ? prev.filter(s => s !== stepNum) : [...prev, stepNum]
+    );
+  };
+
+  const handleSaveRoadmap = () => {
+    if (!roadmap) return;
+    try {
+      const existing = JSON.parse(localStorage.getItem('yuvahub_saved_roadmaps') || '[]');
+      const updated = [roadmap, ...existing.filter((r: any) => r.title !== roadmap.title)];
+      localStorage.setItem('yuvahub_saved_roadmaps', JSON.stringify(updated));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (e) {
+      console.error('Error saving roadmap locally:', e);
+    }
+  };
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200/80 shadow-sm space-y-6">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">AI Career Roadmap Generator</h3>
+              <p className="text-xs text-gray-500 font-medium">Build a step-by-step milestone learning path tailored to your goals.</p>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleGenerate} className="space-y-5">
+          {/* Target Role Input & Presets */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+              Target Career Role <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={targetRole}
+              onChange={(e) => setTargetRole(e.target.value)}
+              placeholder="e.g. Full Stack Developer, Data Scientist, DevOps Engineer"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium"
+            />
+            <div className="flex flex-wrap gap-2 mt-3">
+              <span className="text-xs text-gray-400 font-medium py-1">Quick Picks:</span>
+              {rolePresets.map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setTargetRole(role)}
+                  className={`text-xs px-3 py-1 rounded-full font-medium transition-all ${targetRole === role
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                Education Level
+              </label>
+              <input
+                type="text"
+                value={education}
+                onChange={(e) => setEducation(e.target.value)}
+                placeholder="e.g. B.Tech 2nd Year, BCA"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                Current Known Skills
+              </label>
+              <input
+                type="text"
+                value={currentSkills}
+                onChange={(e) => setCurrentSkills(e.target.value)}
+                placeholder="e.g. Python, C++, HTML/CSS"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                Desired Timeframe
+              </label>
+              <select
+                value={timeframe}
+                onChange={(e) => setTimeframe(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium bg-white"
+              >
+                <option value="3 Months">3 Months (Intensive)</option>
+                <option value="6 Months">6 Months (Standard)</option>
+                <option value="1 Year">1 Year (Comprehensive)</option>
+              </select>
+            </div>
+          </div>
+
+          {error && <ErrorState title="Generation Notice" description={error} />}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3.5 px-6 rounded-xl shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 text-sm transition-all disabled:opacity-50"
+          >
+            {loading ? (
+              <>
+                <Sparkles className="w-4 h-4 animate-spin" />
+                Building Customized Career Roadmap...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Generate AI Career Roadmap
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Loading Skeleton */}
+      {loading && (
+        <div className="bg-white rounded-2xl p-8 border border-gray-200/80 shadow-sm space-y-6 animate-pulse">
+          <div className="h-7 bg-gray-200 rounded-lg w-1/3"></div>
+          <div className="h-4 bg-gray-100 rounded-lg w-2/3"></div>
+          <div className="space-y-4 pt-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex gap-4 items-start">
+                <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-3 bg-gray-100 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-100 rounded w-1/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Roadmap Output View */}
+      {roadmap && (
+        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200/80 shadow-sm space-y-8 animate-fade-in">
+          {/* Header & Actions */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-gray-100">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">
+                  {roadmap.targetRole}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> {roadmap.estimatedTimeframe}
+                </span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">{roadmap.title}</h3>
+              {roadmap.overview && <p className="text-sm text-gray-600 mt-1">{roadmap.overview}</p>}
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleSaveRoadmap}
+                className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-gray-200 hover:bg-gray-50 flex items-center gap-1.5 transition-colors text-gray-700"
+              >
+                <Bookmark className="w-4 h-4 text-indigo-600" />
+                {saved ? 'Saved to Profile!' : 'Save Roadmap'}
+              </button>
+              <button
+                onClick={() => generateCareerRoadmapPdf(roadmap)}
+                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5 shadow-sm transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download PDF
+              </button>
+            </div>
+          </div>
+
+          {/* Progress Tracker Bar */}
+          {roadmap.milestones && (
+            <div className="bg-indigo-50/60 p-4 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold text-indigo-900">
+                <CheckCircle className="w-4 h-4 text-indigo-600" />
+                Progress Tracker: {completedSteps.length} of {roadmap.milestones.length} Milestones Completed
+              </div>
+              <div className="w-32 bg-gray-200 h-2 rounded-full overflow-hidden">
+                <div
+                  className="bg-indigo-600 h-full transition-all duration-500"
+                  style={{ width: `${(completedSteps.length / roadmap.milestones.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
+
+          {/* Vertical Timeline Nodes */}
+          <div className="relative pl-6 sm:pl-8 space-y-8 before:absolute before:left-3 sm:before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-indigo-200">
+            {roadmap.milestones?.map((m: any, index: number) => {
+              const stepNum = m.step || index + 1;
+              const isCompleted = completedSteps.includes(stepNum);
+
+              return (
+                <div key={stepNum} className="relative group">
+                  {/* Step Node Marker */}
+                  <button
+                    onClick={() => toggleStepCompleted(stepNum)}
+                    className={`absolute -left-6 sm:-left-8 top-0.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${isCompleted
+                        ? 'bg-emerald-500 text-white shadow-md ring-4 ring-emerald-100'
+                        : 'bg-indigo-600 text-white shadow-md ring-4 ring-indigo-100 group-hover:scale-110'
+                      }`}
+                  >
+                    {isCompleted ? <CheckCircle className="w-4 h-4" /> : stepNum}
+                  </button>
+
+                  <div className={`bg-gray-50/80 rounded-2xl p-5 sm:p-6 border transition-all ${isCompleted ? 'border-emerald-200 bg-emerald-50/20' : 'border-gray-200/70 hover:border-indigo-200 hover:shadow-md'}`}>
+                    {/* Milestone Header */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        {m.title}
+                      </h4>
+                      {m.duration && (
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+                          {m.duration}
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-sm text-gray-600 mb-4">{m.description}</p>
+
+                    {/* Topics Pills */}
+                    {m.topics && m.topics.length > 0 && (
+                      <div className="mb-4">
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Key Skills & Concepts:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {m.topics.map((t: string, i: number) => (
+                            <span key={i} className="px-2.5 py-1 bg-white border border-gray-200 rounded-lg text-xs font-medium text-gray-700 shadow-2xs">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Project Idea Callout */}
+                    {m.projectIdea && (
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 mb-4 flex items-start gap-3">
+                        <Lightbulb className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <div>
+                          <span className="text-xs font-bold text-emerald-900 block">Milestone Portfolio Project:</span>
+                          <p className="text-xs text-emerald-800 font-medium mt-0.5">{m.projectIdea}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recommended Resources */}
+                    {m.recommendedResources && m.recommendedResources.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200/50">
+                        <span className="text-xs font-medium text-gray-500">Suggested Resources:</span>
+                        {m.recommendedResources.map((res: string, i: number) => (
+                          <span key={i} className="inline-flex items-center gap-1 text-xs text-indigo-600 font-semibold hover:underline">
+                            {res}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

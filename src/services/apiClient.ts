@@ -5,7 +5,8 @@
 
 import { auth } from '../lib/firebase';
 import * as geminiService from './gemini';
-import { getFilteredFallbacks } from './staticFallbacks';
+import { getFilteredFallbacks, CURATED_FALLBACKS } from './staticFallbacks';
+import { generateCacheKey } from '../utils/cacheUtils.js';
 
 const API_BASE_URL = "/api/v1";
 
@@ -152,7 +153,7 @@ export async function fetchLatestFeed() {
 }
 
 export async function fetchSmartFeed(profile: any, cursor?: string) {
-  const cacheKey = "smart_feed";
+  const cacheKey = generateCacheKey('smart_feed', { ...profile, cursor });
   try {
     const searchParams = new URLSearchParams();
     if (cursor) searchParams.append('cursor', cursor);
@@ -197,14 +198,13 @@ export async function fetchSmartFeed(profile: any, cursor?: string) {
         console.warn("Gemini supplement failed, resolving to local static fallbacks", geminiError);
       }
 
-      // Statically supplement if Gemini failed or is disabled
-      if (!geminiSuccess || !data.items || data.items.length < 3) {
+      // Only fallback to static items if DB returned absolutely nothing
+      const cleanDbItems = (data.items || []).filter((item: any) => item.id !== "sys_nodeDbMissing");
+      if (cleanDbItems.length === 0) {
         const staticItems = getFilteredFallbacks(profile, 6);
-        const cleanDbItems = (data.items || []).filter((item: any) => item.id !== "sys_nodeDbMissing");
-        data.items = [
-          ...cleanDbItems,
-          ...staticItems.map((item: any) => ({ ...item, isFallback: true }))
-        ];
+        data.items = staticItems.map((item: any) => ({ ...item, isFallback: true }));
+      } else {
+        data.items = cleanDbItems;
       }
     }
 
@@ -296,7 +296,7 @@ export async function chatWithAIMentorBackend(messages: any[], newMessage: strin
 }
 
 export async function fetchExploreFeed(cursor?: string, limit: number = 20) {
-  const cacheKey = "explore_feed";
+  const cacheKey = generateCacheKey('explore_feed', { cursor, limit });
   try {
     const searchParams = new URLSearchParams();
     if (cursor) searchParams.append('cursor', cursor);
@@ -330,12 +330,12 @@ export async function fetchExploreFeed(cursor?: string, limit: number = 20) {
         console.warn("Gemini explore supplement failed", e);
       }
 
-      if (!geminiSuccess || !data.items || data.items.length < 3) {
+      const cleanDbItems = (data.items || []).filter((item: any) => item.id !== "sys_nodeDbMissing");
+      if (cleanDbItems.length === 0) {
         const staticItems = getFilteredFallbacks({}, 6);
-        data.items = [
-          ...(data.items || []).filter((item: any) => item.id !== "sys_nodeDbMissing"),
-          ...staticItems.map((item: any) => ({ ...item, isFallback: true }))
-        ];
+        data.items = staticItems.map((item: any) => ({ ...item, isFallback: true }));
+      } else {
+        data.items = cleanDbItems;
       }
     }
 
@@ -374,10 +374,12 @@ export async function searchOpportunities(
     deadlineType?: string;
     startDate?: string;
     endDate?: string;
+    isFree?: boolean;
+    verifiedOnly?: boolean;
   }, 
   cursor?: string
 ) {
-  const cacheKey = `search_${query.toLowerCase().replace(/\s+/g, '_')}_${JSON.stringify(filters || {})}`;
+  const cacheKey = generateCacheKey('search', { query: query.toLowerCase().trim(), ...filters, cursor });
   try {
     const searchParams = new URLSearchParams();
     searchParams.append('q', query);
@@ -403,6 +405,12 @@ export async function searchOpportunities(
       }
       if (filters.endDate) {
         searchParams.append('endDate', filters.endDate);
+      }
+      if (filters.isFree !== undefined) {
+        searchParams.append('isFree', String(filters.isFree));
+      }
+      if (filters.verifiedOnly !== undefined) {
+        searchParams.append('verifiedOnly', String(filters.verifiedOnly));
       }
     }
     
@@ -436,11 +444,14 @@ export async function searchOpportunities(
            console.warn("Gemini scout supplement failed, resorting to static matchers", e);
         }
 
-        if (!geminiSuccess || !data.results || data.results.length === 0) {
+        const cleanDbItems = (data.results || []).filter((item: any) => item.id !== "sys_nodeDbMissing");
+        if (cleanDbItems.length === 0) {
            const localMatches = getFilteredFallbacks({ field: type }, 6, query);
            data.results = localMatches.map((item: any) => ({ ...item, isFallback: true }));
            data.isFallback = true;
-         }
+        } else {
+           data.results = cleanDbItems;
+        }
     }
     
     if (data.results && data.results.length > 0) saveToCache(cacheKey, data);
@@ -553,6 +564,11 @@ export async function trackInteraction(opportunityId: string, actionType: 'view'
 }
 
 export async function fetchOpportunityById(id: string) {
+  if (id.startsWith("fb_")) {
+    const fallback = CURATED_FALLBACKS.find(fb => fb.id === id);
+    if (fallback) return fallback;
+  }
+
   try {
     const url = `${API_BASE_URL}/opportunity/${id}`;
     const response = await fetchWithRetry(url, {
@@ -564,5 +580,26 @@ export async function fetchOpportunityById(id: string) {
   } catch (error) {
     console.warn(`Could not sync opportunity details for ${id}:`, error);
     return null;
+  }
+}
+
+export async function submitOpportunity(payload: any) {
+  try {
+    const url = `${API_BASE_URL}/opportunities`;
+    const response = await fetchWithRetry(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to submit opportunity");
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("submitOpportunity error:", error);
+    throw error;
   }
 }

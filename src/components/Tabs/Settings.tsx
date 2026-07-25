@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Lock, UserX, Info, ShieldAlert, Loader2, HelpCircle } from 'lucide-react';
+import { Bell, Lock, UserX, Info, ShieldAlert, Loader2, HelpCircle, BookOpen } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { NotificationPreferences } from '../../types';
 
@@ -280,10 +280,18 @@ export default function SettingsTab() {
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => setActiveTab('help')}
-                className="clean-btn text-xs px-4 py-2 cursor-pointer"
+                onClick={() => setActiveTab('faq')}
+                className="clean-btn text-xs px-4 py-2 cursor-pointer flex items-center gap-1.5"
               >
-                Open Help Center
+                <BookOpen className="w-3.5 h-3.5" />
+                FAQ &amp; Help Center
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('help')}
+                className="clean-btn-outline text-xs px-4 py-2 cursor-pointer"
+              >
+                Help Center
               </button>
               <button
                 type="button"
@@ -324,6 +332,13 @@ export default function SettingsTab() {
                   className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
                 >
                   <span>Security Center</span>
+                  <span className="text-sm">→</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('faq')}
+                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+                >
+                  <span>FAQ &amp; Help</span>
                   <span className="text-sm">→</span>
                 </button>
                 <button

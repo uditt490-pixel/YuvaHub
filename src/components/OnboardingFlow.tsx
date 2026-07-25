@@ -41,45 +41,46 @@ export default function OnboardingFlow({ user, profile, onComplete }: Onboarding
   const handleFinish = async () => {
     setStep(4); // AI Generation step
     
-    // Simulate AI generation delay for effect
+    const updatedProfile = {
+      ...profile,
+      uid: user.uid,
+      name: profile?.name || user.displayName || user.email?.split('@')[0] || 'User',
+      email: profile?.email || user.email || '',
+      college: formData.college,
+      year: formData.year,
+      field: formData.field,
+      skills: formData.interests,
+      onboarded: true
+    };
+
     setTimeout(async () => {
+      // 1. Write to Firestore with a 2s timeout so offline/hanging Firestore never blocks onboarding
       try {
-        const updatedProfile = {
-          ...profile,
-          uid: user.uid,
-          name: profile?.name || user.displayName || '',
-          email: profile?.email || user.email || '',
-          college: formData.college,
-          year: formData.year,
-          field: formData.field,
-          skills: formData.interests,
-          onboarded: true
-        };
-
-        // Write to Firestore
-        await setDoc(doc(db, 'users', user.uid), updatedProfile, { merge: true });
-
-        // Write to MongoDB
-        try {
-          const token = await user.getIdToken(true);
-          await fetch("/api/v1/auth/sync", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify(updatedProfile)
-          });
-        } catch (dbErr) {
-          console.warn("MongoDB sync failed on onboarding completion:", dbErr);
-        }
-
-        onComplete(updatedProfile);
-      } catch (error) {
-        console.error("Error saving profile", error);
-        setStep(3); // Go back on error
+        const firestorePromise = setDoc(doc(db, 'users', user.uid), updatedProfile, { merge: true });
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Firestore timeout')), 2000));
+        await Promise.race([firestorePromise, timeoutPromise]);
+      } catch (fsErr) {
+        console.warn("Firestore save skipped or failed during onboarding:", fsErr);
       }
-    }, 2500);
+
+      // 2. Write to MongoDB
+      try {
+        const token = await user.getIdToken(true);
+        await fetch("/api/v1/auth/sync", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(updatedProfile)
+        });
+      } catch (dbErr) {
+        console.warn("MongoDB sync failed on onboarding completion:", dbErr);
+      }
+
+      // 3. Always complete onboarding in UI state
+      onComplete(updatedProfile);
+    }, 1500);
   };
 
   return (

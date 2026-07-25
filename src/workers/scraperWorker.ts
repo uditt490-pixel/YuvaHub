@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import crypto from "crypto";
 import { generateOpportunityEmbedding } from "../services/embedding.js";
 
+import { sendAdminAlert } from "../services/adminAlertService.js";
+
 dotenv.config();
 
 const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
@@ -30,7 +32,7 @@ export const scraperWorker = new Worker(
     const title = `Mock Opportunity from ${domain} - ${Date.now()}`;
     const organization = `Mock Org ${domain}`;
     const dedupeHash = crypto
-      .createHash("md5")
+      .createHash("sha256")
       .update(`${domain}:${title}:${organization}`)
       .digest("hex");
 
@@ -88,6 +90,15 @@ scraperWorker.on("failed", (job, err) => {
   // Alerting mechanism: Check if this was the final attempt
   if (job && job.opts.attempts && job.attemptsMade === job.opts.attempts) {
     console.error(`[ALERT] Scraper Job ${job.id} for domain ${job.data.domain} failed ${job.attemptsMade} times in a row! Maintenance required.`);
-    // TODO: Publish to emailQueue to alert admin
+    
+    sendAdminAlert("ScraperWorker", job, err);
+  }
+});
+
+let scraperWorkerErrorLogged = false;
+scraperWorker.on("error", (err) => {
+  if (!scraperWorkerErrorLogged) {
+    console.warn('[ScraperWorker] Redis connection offline. Worker listening paused.');
+    scraperWorkerErrorLogged = true;
   }
 });

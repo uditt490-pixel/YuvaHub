@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
-import { LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Activity, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Activity, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
 import { useAppContext } from './context/AppContext';
+import { useSocket } from './context/SocketContext';
 import { scrollContentToTop } from './lib/smoothScroll';
 // Tab/View Components
 import Dashboard from './components/Tabs/Dashboard';
@@ -17,12 +18,26 @@ import AdminDashboard from './components/Admin/AdminDashboard';
 import NotificationDropdown from './components/ui/NotificationDropdown';
 import OpportunityDetail from './components/Tabs/OpportunityDetail';
 import AIAssistant from './components/Tabs/AIAssistant';
+import BountyBoard from './components/Tabs/BountyBoard';
 import BackToTopButton from './components/ui/BackToTopButton';import OnboardingFlow from './components/OnboardingFlow';
 import SplashAuth from './components/SplashAuth';
 import Security from './components/Tabs/Security';
+import AuthSecurityCenter from './components/Tabs/AuthSecurityCenter';
+import CareerMatchStudio from './components/Tabs/CareerMatchStudio';
+import HackathonStudio from './components/Tabs/HackathonStudio';
+import DeveloperApiPortal from './components/Tabs/DeveloperApiPortal';
+import GrantFellowshipStudio from './components/Tabs/GrantFellowshipStudio';
+import CampusAlumniHub from './components/Tabs/CampusAlumniHub';
+import ResumeAtsStudio from './components/Tabs/ResumeAtsStudio';
+import InterviewPrepStudio from './components/Tabs/InterviewPrepStudio';
+import OpenSourceBountyStudio from './components/Tabs/OpenSourceBountyStudio';
+import OpportunityMatchStudio from './components/Tabs/OpportunityMatchStudio';
+import TechEcosystemStudio from './components/Tabs/TechEcosystemStudio';
+import HackathonJudgeStudio from './components/Tabs/HackathonJudgeStudio';
 import Legal from './components/Tabs/Legal';
 import Support from './components/Tabs/Support';
 import HelpCenter from './components/Tabs/HelpCenter';
+import FAQ from './components/Tabs/FAQ';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Cookies from './pages/Cookies';
@@ -32,6 +47,8 @@ import AboutTab from './components/Tabs/About';
 import HelpCenterPage from './pages/HelpCenter';
 import GettingStartedDetail from './pages/GettingStartedDetail';
 import { SEO } from './components/SEO';
+import Teams from './components/Tabs/Teams';
+import MockInterviewRoom from './pages/MockInterviewRoom';
 
 const PUBLIC_TABS = ['opportunities', 'about', 'privacy', 'terms', 'cookies', 'guidelines', 'security', 'support', 'legal'];
 
@@ -42,6 +59,8 @@ const getSeoPropsForTab = (tab: string) => {
         title: "YuvaHub | Find Student Hackathons, Scholarships & Mentorships",
         description: "Discovery platform for Indian students. Find hackathons, scholarships, and mentorship opportunities to boost your career. Real-time updates and AI matching."
       };
+    case 'teams':
+      return { title: "Team Builder & Matcher | YuvaHub", description: "Find teammates and join teams for hackathons, projects, and opportunities." };
     case 'opportunities':
       return {
         title: "Explore Opportunities | Internships, Jobs & Hackathons | YuvaHub",
@@ -104,6 +123,8 @@ const getSeoPropsForTab = (tab: string) => {
       return { title: "Admin Dashboard | YuvaHub", description: "YuvaHub administrative operations control panel." };
     case 'ai_assistant':
       return { title: "AI Assistant | YuvaHub", description: "Interact with our intelligent career assistant for optimization and guidance." };
+    case 'faq':
+      return { title: "Help Center & FAQ | YuvaHub", description: "Find answers to common questions, troubleshoot issues, and learn how to use YuvaHub effectively." };
     default:
       return {
         title: "YuvaHub | Find Student Hackathons, Scholarships & Mentorships",
@@ -131,8 +152,12 @@ function App() {
     theme,
     toggleTheme,
     gettingStartedStep,
-    setGettingStartedStep
+    setGettingStartedStep,
+    karmaBalance,
+    karmaBumpFlag
   } = useAppContext();
+
+  const { isConnected, transportMode } = useSocket();
 
   // WebMCP Integration
   useEffect(() => {
@@ -173,30 +198,70 @@ function App() {
     };
   }, [setActiveTab, setAppSearchQuery]);
 
+  const adminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '')
+    .split(',')
+    .map((e: string) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const isAdminUser = Boolean(
+    user?.role === 'admin' || 
+    user?.isAdmin || 
+    (user?.email && adminEmails.includes(user.email.toLowerCase())) || 
+    (import.meta.env.DEV && user?.email)
+  );
+
   const TABS = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'opportunities', label: 'Opportunities', icon: Globe },
+    { id: 'teams', label: 'Team Builder', icon: Users },
     { id: 'bookmarks', label: 'Bookmarks', icon: Bookmark },
     { id: 'ai_assistant', label: 'AI Assistant', icon: Sparkles },
+    { id: 'career_match', label: 'Career Match Studio', icon: Activity },
+    { id: 'hackathon_studio', label: 'Hackathon Studio', icon: Activity },
+    { id: 'developer_api', label: 'Developer API Portal', icon: Activity },
+    { id: 'grant_studio', label: 'Grants & Fellowships', icon: Activity },
+    { id: 'campus_alumni', label: 'Campus & Alumni Hub', icon: Activity },
+    { id: 'resume_ats', label: 'Resume ATS Optimizer', icon: Activity },
+    { id: 'interview_prep', label: 'AI Interview Studio', icon: Activity },
+    { id: 'opensource_bounties', label: 'Open Source Bounties', icon: Activity },
+    { id: 'opportunity_match', label: 'AI Opportunity Recommender', icon: Activity },
+    { id: 'tech_ecosystem', label: 'Tech Ecosystem Studio', icon: Activity },
+    { id: 'hackathon_judge', label: 'Hackathon Judging Console', icon: Activity },
     { id: 'submit', label: 'Submit Opportunity', icon: PlusCircle },
     { id: 'mentorship', label: 'Mentorship', icon: Users },
+    { id: 'bounty_board', label: 'Bounty Board', icon: Sparkles },
     { id: 'community', label: 'Community', icon: MessageSquare },
     { id: 'profile', label: 'My Profile', icon: User },
+    { id: 'auth_security', label: 'Auth & Security', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
-    ...(user?.email === 'uditt490@gmail.com' ? [{ id: 'admin', label: 'Admin', icon: Activity }] : []),
+    { id: 'mock_interview', label: 'Mock Interview', icon: Mic },
+    ...(isAdminUser ? [{ id: 'admin', label: 'Admin', icon: Activity }] : []),
   ];
 
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
       case 'opportunities': return <Opportunities />;
+      case 'teams': return <Teams />;
       case 'bookmarks': return <Bookmarks />;
       case 'ai_assistant': return <AIAssistant />;
+      case 'career_match': return <CareerMatchStudio />;
+      case 'hackathon_studio': return <HackathonStudio />;
+      case 'developer_api': return <DeveloperApiPortal />;
+      case 'grant_studio': return <GrantFellowshipStudio />;
+      case 'campus_alumni': return <CampusAlumniHub />;
+      case 'resume_ats': return <ResumeAtsStudio />;
+      case 'interview_prep': return <InterviewPrepStudio />;
+      case 'opensource_bounties': return <OpenSourceBountyStudio />;
+      case 'opportunity_match': return <OpportunityMatchStudio />;
+      case 'tech_ecosystem': return <TechEcosystemStudio />;
+      case 'hackathon_judge': return <HackathonJudgeStudio />;
       case 'submit': return <SubmitOpportunity />;
       case 'mentorship': return <Mentorship />;
+      case 'bounty_board': return <BountyBoard />;
       case 'community': return <Community />;
       case 'profile': return <Profile />;
       case 'settings': return <SettingsTab />;
+      case 'auth_security': return <AuthSecurityCenter />;
       case 'admin': return <AdminDashboard />;
       case 'security': return <Security />;
       case 'privacy': return <Privacy />;
@@ -207,6 +272,8 @@ function App() {
       case 'support': return <Support />;
       case 'about': return <AboutTab />;
       case 'help': return gettingStartedStep ? <GettingStartedDetail stepId={gettingStartedStep as any} /> : <HelpCenterPage />;
+      case 'mock_interview': return <MockInterviewRoom />;
+      case 'faq': return <FAQ />;
       default: return <Dashboard />;
     }
   };
@@ -227,64 +294,6 @@ function App() {
           <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] animate-bounce" style={{ animationDelay: '150ms' }}></div>
           <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] animate-bounce" style={{ animationDelay: '300ms' }}></div>
         </div>
-      </div>
-    );
-  }
-
-  if ((activeTab === 'legal' || activeTab === 'security' || activeTab === 'support' || activeTab === 'about' || activeTab === 'guidelines') && !user) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
-        {/* Public Header */}
-        <header className="sticky top-0 z-50 h-[60px] bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 lg:px-12">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => { clearSelectedOpportunity(); setActiveTab('dashboard'); }}>
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            </div>
-            <span className="font-bold text-[17px] tracking-tight text-gray-900 dark:text-white">YuvaHub</span>
-          </div>
-          
-          <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-gray-600 dark:text-gray-300">
-            <button onClick={() => { clearSelectedOpportunity(); setActiveTab('opportunities'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Opportunities</button>
-            <button onClick={() => { clearSelectedOpportunity(); setActiveTab('about'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">About Us</button>
-            <button onClick={() => { clearSelectedOpportunity(); setActiveTab('legal'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Legal Index</button>
-            <button onClick={() => { clearSelectedOpportunity(); setActiveTab('support'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Support</button>
-          </nav>
-          
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={toggleTheme} 
-              className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Toggle Dark Mode"
-            >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-            <button onClick={signInWithGoogle} className="px-5 py-2 text-[14px] font-medium bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 transition-colors cursor-pointer">
-              Login
-            </button>
-          </div>
-        </header>
-
-        {/* Centralized SEO component for public pages */}
-        {selectedOppId ? null : (
-          <SEO 
-            title={getSeoPropsForTab(activeTab).title}
-            description={getSeoPropsForTab(activeTab).description}
-            noindex={false}
-          />
-        )}
-
-        {/* Content Area */}
-        <main className="flex-1 max-w-6xl w-full mx-auto py-8 px-4 sm:px-6 lg:px-8 pb-20">
-          <div className="mb-6">
-            <button 
-              onClick={() => { clearSelectedOpportunity(); setActiveTab('dashboard'); }} 
-              className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline font-bold bg-transparent border-none cursor-pointer"
-            >
-              ← Back to Home
-            </button>
-          </div>
-          {activeTab === 'legal' ? <Legal /> : activeTab === 'security' ? <Security /> : activeTab === 'about' ? <AboutTab /> : activeTab === 'guidelines' ? <Guidelines /> : <Support />}
-        </main>
       </div>
     );
   }
@@ -450,10 +459,26 @@ function App() {
               )}
            </div>
            <div className="flex items-center gap-5">
-              <NotificationDropdown profile={profile} />
-              <div className="w-8 h-8 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-sm">
-                {profile?.name ? profile.name.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || 'U')}
+              <button onClick={() => { throw new Error("Frontend Sentry Test Error"); }} className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 transition-colors">Test Error</button>
+              {user && (
+                <div className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-sm bg-yellow-50 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-500 ${karmaBumpFlag ? 'animate-karma-bounce' : ''}`}>
+                  💠 {karmaBalance} Karma
+                </div>
+              )}
+              <div className="hidden md:flex items-center gap-2 text-xs font-medium bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700">
+                <span className={`w-2 h-2 rounded-full ${isConnected ? (transportMode === 'websocket' ? 'bg-green-500' : 'bg-yellow-500') : 'bg-red-500'}`}></span>
+                <span className="text-gray-600 dark:text-gray-300">
+                  {!isConnected ? 'Disconnected (Offline Mode)' : (transportMode === 'websocket' ? 'Connected' : 'Polling mode active')}
+                </span>
               </div>
+              <NotificationDropdown profile={profile} />
+              {profile?.avatarUrl ? (
+                <img src={profile.avatarUrl.includes("cloudinary.com") ? profile.avatarUrl.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_64,h_64/") : profile.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-sm">
+                  {profile?.name ? profile.name.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || 'U')}
+                </div>
+              )}
            </div>
         </div>
 

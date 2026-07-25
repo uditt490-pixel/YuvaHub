@@ -74,3 +74,11 @@ emailWorker.on("failed", (job, err) => {
     console.error(`[EmailWorker] Job ${job.id} has exhausted all retries. Moving to DLQ (Logged).`);
   }
 });
+
+let emailWorkerErrorLogged = false;
+emailWorker.on("error", (err) => {
+  if (!emailWorkerErrorLogged) {
+    console.warn('[EmailWorker] Redis connection offline. Worker listening paused.');
+    emailWorkerErrorLogged = true;
+  }
+});

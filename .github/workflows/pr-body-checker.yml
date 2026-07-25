@@ -1,0 +1,36 @@
+name: "PR Body Checker"
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-body:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR Body
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            
+            // Check for the required sections based on PULL_REQUEST_TEMPLATE.md
+            const hasSummary = /## 📝 Summary/i.test(body) || /(description|summary)/i.test(body);
+            const hasChanges = /## ✨ Changes Made/i.test(body) || /changes made/i.test(body);
+            const hasTesting = /## 🧪 Testing/i.test(body) || /(testing|checklist)/i.test(body);
+            
+            // Check for issue linking keywords (e.g., closes #12, fixes #34) OR the template's "issue : #123"
+            const hasIssueLink = /(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#\d+/i.test(body) || /issue\s*:\s*#\d+/i.test(body);
+            
+            let errors = [];
+            if (!hasSummary) errors.push("📝 - Missing a 'Summary' section.");
+            if (!hasChanges) errors.push("✨ - Missing a 'Changes Made' section.");
+            if (!hasTesting) errors.push("🧪 - Missing a 'Testing' or 'Checklist' section.");
+            if (!hasIssueLink) errors.push("🔗 - Missing an issue linking keyword to close the related issue (e.g., 'Closes #123', 'Fixes #45', or 'issue : #123').");
+            
+            if (errors.length > 0) {
+              const author = context.payload.pull_request.user.login;
+              const errorMessage = `👋 Hi @${author}, your PR description is missing some required elements. Please edit your PR message to include:\n\n` + errors.join('\n');
+              core.setFailed(errorMessage);
+            } else {
+              console.log("✅ PR description looks good!");
+            }

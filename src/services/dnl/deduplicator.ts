@@ -1,5 +1,7 @@
 import crypto from 'crypto';
 import { NormalizedOpportunity } from './types';
+import { eventBus } from '../../events/eventBus';
+import { EventType, OpportunityScrapedEvent } from '../../events/schemas';
 
 export function generateDedupeHash(url: string, title: string, company: string): string {
   const normalizedTitle = (title || '').toLowerCase();
@@ -28,56 +30,33 @@ export async function ingestOpportunities(
     errors: [],
   };
 
-  if (!db) {
-    result.failures = opportunities.length;
-    result.errors.push('Database connection is not available.');
-    return result;
-  }
-
   for (const item of opportunities) {
     const dedupe_hash = generateDedupeHash(item.url, item.title, item.company);
 
-    const doc = {
-      title: item.title,
-      description: item.description,
-      source: item.sourceName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-      source_name: item.sourceName,
-      source_url: item.url,
-      apply_link: item.url,
-      image_url: 'https://yuvahub.xyz/og-image.jpg',
-      tags: item.tags,
-      category: item.opportunityType,
-      deadline: item.deadline,
-      location: item.location,
-      opportunity_type: item.opportunityType.toLowerCase(),
-      dedupe_hash: dedupe_hash,
-      created_at: new Date(),
-      updated_at: new Date(),
+    const event: OpportunityScrapedEvent = {
+      eventId: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      eventType: EventType.enum.OpportunityScraped,
+      payload: {
+        url: item.url,
+        title: item.title,
+        company: item.company,
+        description: item.description,
+        sourceName: item.sourceName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        tags: item.tags,
+        opportunityType: item.opportunityType.toLowerCase(),
+        deadline: item.deadline || null,
+        location: item.location || '',
+        dedupeHash: dedupe_hash,
+      }
     };
 
     try {
-      if (db.isMock) {
-        // Handle mock database unique constraint emulation
-        const existing = db.collection('opportunities').data.find(
-          (o: any) => o.dedupe_hash === dedupe_hash
-        );
-        if (existing) {
-          const err: any = new Error('Duplicate key error');
-          err.code = 11000;
-          throw err;
-        }
-        await db.collection('opportunities').insertOne(doc);
-      } else {
-        await db.collection('opportunities').insertOne(doc);
-      }
-      result.inserted++;
+      await eventBus.publish('opportunity.scraped', event);
+      result.inserted++; // Logged as inserted since it's published to queue successfully
     } catch (err: any) {
-      if (err.code === 11000) {
-        result.duplicates++;
-      } else {
-        result.failures++;
-        result.errors.push(err.stack || err.message || String(err));
-      }
+      result.failures++;
+      result.errors.push(err.stack || err.message || String(err));
     }
   }
 

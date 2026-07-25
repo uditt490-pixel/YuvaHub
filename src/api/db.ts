@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, Db } from "mongodb";
 import dotenv from "dotenv";
 import { CURATED_FALLBACKS } from "../services/staticFallbacks.js";
 import { initializeDNLDatabase } from "../services/dnl/metrics.js";
@@ -17,8 +17,8 @@ const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
 /** Interval (ms) between MongoDB reconnection attempts after fallback to MockDB. */
 const RECONNECT_INTERVAL_MS = 30_000;
 
-export let dbCommand: any = null;
-export let dbQuery: any = null;
+export let dbCommand: Db | MockDB | null = null;
+export let dbQuery: Db | MockDB | null = null;
 
 // ── Reconnection subsystem ──────────────────────────────────────────
 
@@ -92,46 +92,51 @@ function startReconnectLoop(): void {
 // ── MockDB (offline fallback) ───────────────────────────────────────
 
 // VERY simple mock DB for offline fallback
-export class MemoryCollection {
-  data: any[];
-  constructor(initialData: any[] = []) { this.data = initialData; }
-  findSync(query: any = {}) {
-    let result = this.data;
+type AnyRecord = Record<string, unknown>;
+
+export class MemoryCollection<T extends AnyRecord = AnyRecord> {
+  data: T[];
+  constructor(initialData: T[] = []) { this.data = initialData; }
+  findSync(query: Record<string, unknown> = {}) {
+    let result: T[] = this.data;
     for (const key in query) {
       if (key === 'id') {
-        result = result.filter(r => r.id === query.id || r._id === query.id || r._id?.toString() === query.id);
+        result = result.filter(r => (r as any).id === query.id || (r as any)._id === query.id || (r as any)._id?.toString() === query.id);
       } else if (key === '_id') {
-        result = result.filter(r => r.id === query._id.toString() || r._id?.toString() === query._id.toString() || r.id === query._id);
+        result = result.filter(r => (r as any).id === (query._id as any).toString() || (r as any)._id?.toString() === (query._id as any).toString() || (r as any).id === query._id);
       } else if (key === '$text') {
-        result = result.filter(r => JSON.stringify(r).toLowerCase().includes(query.$text.$search.toLowerCase()));
+        const search = (query.$text as any)?.$search?.toLowerCase() || '';
+        result = result.filter(r => JSON.stringify(r).toLowerCase().includes(search));
       } else if (key === '$or') {
+        const orClauses = query.$or as Record<string, unknown>[];
         result = result.filter(r => {
-          return query.$or.some((cond: any) => {
+          return orClauses.some((cond) => {
             for (let k in cond) {
-              if (cond[k].$regex) {
-                const regex = new RegExp(cond[k].$regex, cond[k].$options || "");
-                if (regex.test(r[k])) return true;
-              } else if (cond[k].$in) {
-                if (cond[k].$in.some((val: any) => {
-                  if (typeof val === 'object' && val.equals) return val.equals(r[k]);
-                  if (typeof r[k] === 'object' && r[k].equals) return r[k].equals(val);
-                  return r[k] === val || r[k]?.toString() === val?.toString();
+              const condVal = cond[k] as any;
+              const rVal = (r as any)[k];
+              if (condVal.$regex) {
+                const regex = new RegExp(condVal.$regex, condVal.$options || "");
+                if (regex.test(rVal)) return true;
+              } else if (condVal.$in) {
+                if (condVal.$in.some((val: unknown) => {
+                  if (typeof val === 'object' && val !== null && (val as any).equals) return (val as any).equals(rVal);
+                  if (typeof rVal === 'object' && rVal !== null && (rVal as any).equals) return (rVal as any).equals(val);
+                  return rVal === val || rVal?.toString() === (val as any)?.toString();
                 })) return true;
               } else {
-                if (r[k] === cond[k]) return true;
+                if (rVal === condVal) return true;
               }
             }
             return false;
           });
         });
       } else {
-        // Generic key-value match
-        result = result.filter(r => r[key] === query[key]);
+        result = result.filter(r => (r as any)[key] === query[key]);
       }
     }
     return result;
   }
-  find(query: any = {}) {
+  find(query: Record<string, unknown> = {}) {
     let result = this.findSync(query);
     const cursor = {
       sort: () => cursor,
@@ -141,89 +146,98 @@ export class MemoryCollection {
     };
     return cursor;
   }
-  async countDocuments(query: any = {}) {
+  async countDocuments(query: Record<string, unknown> = {}) {
     const res = await this.find(query).toArray();
     return res.length;
   }
-  async findOne(query: any) {
+  async findOne(query: Record<string, unknown>) {
     const res = this.findSync(query);
     return res[0] || null;
   }
-  async updateOne(query: any, update: any, options: any = {}) {
+  async updateOne(query: Record<string, unknown>, update: Record<string, unknown>, options: Record<string, unknown> = {}) {
     const item = (this.findSync(query))[0] || null;
     if (item) {
-      if (update.$set) {
-        Object.assign(item, update.$set);
+      const setData = update.$set as Partial<T>;
+      if (setData) {
+        Object.assign(item, setData);
       }
-      if (update.$addToSet) {
-        for (const key in update.$addToSet) {
-          if (!Array.isArray(item[key])) {
-            item[key] = [];
+      const addToSet = update.$addToSet as Record<string, unknown>;
+      if (addToSet) {
+        for (const key in addToSet) {
+          const arr = (item as any)[key];
+          if (!Array.isArray(arr)) {
+            (item as any)[key] = [];
           }
-          const val = update.$addToSet[key];
-          if (!item[key].includes(val)) {
-            item[key].push(val);
+          const val = addToSet[key];
+          if (!(item as any)[key].includes(val)) {
+            (item as any)[key].push(val);
           }
         }
       }
-      if (update.$pull) {
-        for (const key in update.$pull) {
-          if (Array.isArray(item[key])) {
-            const val = update.$pull[key];
-            item[key] = item[key].filter((x: any) => x !== val);
+      const pull = update.$pull as Record<string, unknown>;
+      if (pull) {
+        for (const key in pull) {
+          if (Array.isArray((item as any)[key])) {
+            const val = pull[key];
+            (item as any)[key] = (item as any)[key].filter((x: unknown) => x !== val);
           }
         }
       }
-      if (update.$push) {
-        for (const key in update.$push) {
-          if (!Array.isArray(item[key])) {
-            item[key] = [];
+      const push = update.$push as Record<string, unknown>;
+      if (push) {
+        for (const key in push) {
+          if (!Array.isArray((item as any)[key])) {
+            (item as any)[key] = [];
           }
-          const val = update.$push[key];
+          const val = push[key] as any;
           if (val && val.$each) {
-             item[key].push(...val.$each);
-             if (val.$slice !== undefined) {
-               item[key] = item[key].slice(val.$slice);
-             }
+            (item as any)[key].push(...val.$each);
+            if (val.$slice !== undefined) {
+              (item as any)[key] = (item as any)[key].slice(val.$slice);
+            }
           } else {
-             item[key].push(val);
+            (item as any)[key].push(val);
           }
         }
       }
       return { modifiedCount: 1 };
     }
     if (options.upsert) {
-      const doc = { ...query };
-      if (update.$set) Object.assign(doc, update.$set);
+      const doc = { ...query } as unknown as T;
+      const setData = update.$set as Partial<T>;
+      if (setData) Object.assign(doc, setData);
       this.data.push(doc);
       return { upsertedCount: 1, upsertedId: "mock_upsert_id" };
     }
     return { modifiedCount: 0 };
   }
-  async findOneAndUpdate(query: any, update: any, options: any = {}) {
+  async findOneAndUpdate(query: Record<string, unknown>, update: Record<string, unknown>, options: Record<string, unknown> = {}) {
     const matched = this.findSync(query);
     let item = matched[0] || null;
     if (!item && options.upsert) {
-      item = { ...query };
-      if (update.$setOnInsert) {
-        Object.assign(item, update.$setOnInsert);
+      item = { ...query } as unknown as T;
+      const setOnInsert = update.$setOnInsert as Partial<T>;
+      if (setOnInsert) {
+        Object.assign(item, setOnInsert);
       }
-      if (update.$set) {
-        Object.assign(item, update.$set);
+      const setData = update.$set as Partial<T>;
+      if (setData) {
+        Object.assign(item, setData);
       }
       this.data.push(item);
       return { value: item };
     }
     if (item) {
-      if (update.$set) {
-        Object.assign(item, update.$set);
+      const setData = update.$set as Partial<T>;
+      if (setData) {
+        Object.assign(item, setData);
       }
       return { value: item };
     }
     return { value: null };
   }
-  async insertOne(doc: any) { this.data.push(doc); return { insertedId: "mock_id" }; }
-  async deleteOne(query: any) {
+  async insertOne(doc: T) { this.data.push(doc); return { insertedId: "mock_id" }; }
+  async deleteOne(query: Record<string, unknown>) {
     const initialLen = this.data.length;
     const item = await this.findOne(query);
     if (item) {
@@ -231,12 +245,12 @@ export class MemoryCollection {
     }
     return { deletedCount: this.data.length < initialLen ? 1 : 0 };
   }
-  async createIndex(keys: any, options: any) { return "mock_index"; }
-  aggregate() { return { toArray: async () => [] }; }
+  async createIndex(keys: unknown, options: unknown) { return "mock_index"; }
+  aggregate() { return { toArray: async () => [] as T[] }; }
   initializeUnorderedBulkOp() {
-    const ops: any[] = [];
+    const ops: T[] = [];
     return {
-      insert: (doc: any) => {
+      insert: (doc: T) => {
         ops.push(doc);
       },
       execute: async () => {
@@ -254,12 +268,18 @@ export class MockDB {
     interactions: new MemoryCollection(),
     scraper_metrics: new MemoryCollection()
   };
-  collection(name: string) { return this.collections[name] || (this.collections[name] = new MemoryCollection()); }
+  collection<T extends AnyRecord = AnyRecord>(name: string): MemoryCollection<T> {
+    const col = this.collections[name] as MemoryCollection<T> | undefined;
+    if (col) return col;
+    const newCol = new MemoryCollection<T>();
+    this.collections[name] = newCol as unknown as MemoryCollection;
+    return newCol;
+  }
 }
 
 // ── DNL Scheduler setup ─────────────────────────────────────────────
 
-function setupDNL(database: any) {
+function setupDNL(database: Db | MockDB) {
   initializeDNLDatabase(database).then(() => {
     // Stop any previously running dispatcher before creating a new one.
     if (activeDispatcher) {

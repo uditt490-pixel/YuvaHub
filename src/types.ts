@@ -46,6 +46,35 @@ export interface UserProfile {
   canonicalSkills?: string[];
 }
 
+export type PublicUser = Pick<UserProfile,
+  | 'uid'
+  | 'name'
+  | 'college'
+  | 'year'
+  | 'field'
+  | 'city'
+  | 'state'
+  | 'country'
+  | 'skills'
+  | 'githubUrl'
+  | 'linkedinUrl'
+  | 'portfolioUrl'
+  | 'bio'
+  | 'avatarUrl'
+  | 'onboarded'
+  | 'education'
+  | 'workExperience'
+  | 'canonicalSkills'
+>;
+
+export interface AuthenticatedUser {
+  uid: string;
+  email: string;
+  name?: string;
+  picture?: string;
+  role?: string;
+}
+
 export interface ResumeItem {
   id: string;
   userId: string;
@@ -125,7 +154,7 @@ export interface KarmaTransaction {
   amount: number;
   type: 'daily_login' | 'bounty_post' | 'bounty_reward' | 'profile_setup' | 'expired_report' | 'other';
   timestamp: number;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface LeaderboardEntry {

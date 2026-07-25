@@ -1,6 +1,6 @@
 import { Response } from "express";
 
-export interface ApiSuccess<T = any> {
+export interface ApiSuccess<T> {
   success: true;
   data: T;
 }

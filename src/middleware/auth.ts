@@ -3,6 +3,7 @@ import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { dbCommand } from '../api/db.js';
 import jwt from 'jsonwebtoken';
+import type { AuthenticatedUser } from '../types.js';
 
 let isFirebaseInitialized = false;
 
@@ -50,11 +51,11 @@ try {
   console.error('[Auth] Firebase Admin initialization error:', error);
 }
 
-// Extend Request interface to include the user
+// Extend Request interface to include the authenticated user
 declare global {
   namespace Express {
     interface Request {
-      user?: any;
+      user?: AuthenticatedUser;
     }
   }
 }
@@ -72,7 +73,7 @@ export const authenticateUser = (db: any) => {
     const token = authHeader.split(' ')[1];
 
     try {
-      let decodedToken: any = null;
+      let decodedToken: Partial<AuthenticatedUser> | null = null;
       let isCustomToken = false;
 
       // 1. Try Custom JWT first

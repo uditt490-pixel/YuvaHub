@@ -2,12 +2,27 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @theme {
-  --color-primary: #2563eb;
+  --color-primary: var(--primary-blue);
   --color-primary-light: #EFF6FF;
-  --color-text-main: #111827;
-  --color-text-muted: #6b7280;
-  --color-border: #e5e7eb;
-  --color-bg-light: #f9fafb;
+  --color-text-main: var(--text-primary);
+  --color-text-muted: var(--muted);
+  --color-border-theme: var(--border-theme);
+  --color-bg-light: var(--surface-secondary);
+  
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-navbar: var(--navbar);
+  --color-card: var(--card);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-muted: var(--muted);
+  --color-input: var(--input);
+  --color-primary-blue: var(--primary-blue);
+  --color-orange-cta: var(--orange-cta);
+  --color-search-btn: var(--search-btn);
+  --color-focus-ring: var(--focus-ring);
+  --color-shadow-color: var(--shadow-color);
   
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   
@@ -67,8 +82,44 @@
 }
 
 @layer base {
+  :root {
+    --background: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-secondary: #F8FAFC;
+    --navbar: #FFFFFF;
+    --card: #FFFFFF;
+    --border-theme: #E2E8F0;
+    --text-primary: #111827;
+    --text-secondary: #64748B;
+    --muted: #94A3B8;
+    --input: #FFFFFF;
+    --primary-blue: #2563EB;
+    --orange-cta: #F97316;
+    --search-btn: #F97316;
+    --focus-ring: #2563EB;
+    --shadow-color: rgba(0,0,0,0.05);
+  }
+
+  .dark {
+    --background: #0B1120;
+    --surface: #111827;
+    --surface-secondary: #1E293B;
+    --navbar: #111827;
+    --card: #1E293B;
+    --border-theme: #334155;
+    --text-primary: #F8FAFC;
+    --text-secondary: #CBD5E1;
+    --muted: #94A3B8;
+    --input: transparent;
+    --primary-blue: #3B82F6;
+    --orange-cta: #F97316;
+    --search-btn: #EA580C;
+    --focus-ring: #60A5FA;
+    --shadow-color: rgba(0,0,0,0.35);
+  }
+
   body {
-    @apply bg-white text-[var(--color-text-main)] font-sans antialiased transition-colors duration-300 dark:bg-gray-900 dark:text-gray-100;
+    @apply bg-background text-text-primary font-sans antialiased transition-colors duration-250 ease-in-out;
   }
 }
 
@@ -86,4 +137,13 @@
 
 @utility clean-input {
   @apply bg-white border border-[var(--color-border)] text-gray-900 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition-all;
+}
+
+@keyframes karma-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-3px) scale(1.1); }
+}
+
+.animate-karma-bounce {
+  animation: karma-bounce 0.4s ease-out;
 }

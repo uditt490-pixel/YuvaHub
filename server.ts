@@ -1,634 +1,209 @@
 import express from "express";
-import http from "http";
-import { Server } from "socket.io";
-import { createServer as createViteServer } from "vite";
-import path from "path";
 import cors from "cors";
-import { fileURLToPath } from "url";
-import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
-import { GoogleGenAI, Type } from "@google/genai";
-import { z } from "zod";
-import { ScholarshipSchema, AIEvaluationResponseSchema } from "./src/models/scholarshipSchema.js";
-import { isToxic, createToxicityMiddleware } from "./src/services/toxicity.js";
-import rateLimit from "express-rate-limit";
-import { RedisStore } from "rate-limit-redis";
-import Redis from "ioredis";
-import { v2 as cloudinary } from "cloudinary";
+import http from "http";
+import path from "path";
+import { initializeDatabase } from "./src/api/db.js";
+import { Server as SocketIOServer } from "socket.io";
+import { setSocketIO } from "./src/api/socketInstance.js";
+import { setupSocketEvents } from "./src/socket/index.js";
+import { runDeadlineChecks, runWeeklyDigest } from "./src/services/deadlineScheduler.js";
+import { dbCommand, dbQuery } from "./src/api/db.js";
+
+// Import Main API Router
+import apiRoutes from "./src/api/routes/index.js";
+
+import * as Sentry from "@sentry/node";
+
+import { eventBus } from "./src/events/eventBus.js";
+import { createNotificationConsumer } from "./src/consumers/notificationConsumer.js";
+import { createOpportunityScrapedConsumer } from "./src/consumers/opportunityScrapedConsumer.js";
 
 dotenv.config();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
 });
 
-let redisClient: Redis;
-try {
-  redisClient = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-    retryStrategy: (times) => {
-      return Math.min(times * 50, 2000);
-    }
-  });
+const app = express();
+const server = http.createServer(app);
 
-  let redisErrorLogged = false;
-  redisClient.on('error', (err) => {
-    if (!redisErrorLogged) {
-      console.warn('[Redis] Connection failed or Redis is not running. Bypassing rate limiting (fail-open mode).');
-      redisErrorLogged = true;
-    }
-  });
-  redisClient.on('connect', () => {
-    console.log('[Redis] Connected successfully');
-    redisErrorLogged = false;
-  });
-} catch (e: any) {
-  console.error('[Redis] Init error:', e.message);
-}
+// Socket.IO Configuration
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "*",
+    methods: ["GET", "POST"]
+  }
+});
+setSocketIO(io);
 
-const createFailOpenStore = (prefix: string) => {
-  const store = new RedisStore({
-    sendCommand: (...args: string[]) => {
-      const [command, ...commandArgs] = args;
-      return redisClient.call(command, ...commandArgs) as Promise<any>;
-    },
-    prefix: prefix,
-  });
+app.use(cors());
+app.use(express.json({ limit: "10mb" }));
 
-  return {
-    ...store,
-    increment: async (key: string) => {
-      if (!redisClient || redisClient.status !== 'ready') {
-        console.error(`[RateLimit] Redis disconnected. Failing open for key: ${key}`);
-        return { totalHits: 1, resetTime: new Date(Date.now() + 60000) };
-      }
+// Setup API Routes
+app.use("/api", apiRoutes);
+
+// ── SEO Routes (root-level for crawler discovery) ──────────────────────
+
+app.get("/robots.txt", (req, res) => {
+  const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
+  const robotsTxt = [
+    "User-agent: *",
+    "Allow: /",
+    "Allow: /opportunities",
+    "Allow: /about",
+    "Allow: /privacy",
+    "Allow: /terms",
+    "Allow: /cookies",
+    "Allow: /guidelines",
+    "Allow: /security",
+    "Allow: /support",
+    "Allow: /legal",
+    "Allow: /opportunity/",
+    "Disallow: /admin/",
+    "Disallow: /dashboard/",
+    "Disallow: /bookmarks/",
+    "Disallow: /submit/",
+    "Disallow: /settings/",
+    "Disallow: /profile/",
+    "Disallow: /mentorship/",
+    "Disallow: /community/",
+    "Disallow: /ai_assistant/",
+    "Disallow: /api/",
+    "",
+    "Content-Signal: ai-train=no, search=yes, ai-input=no",
+    "",
+    `Sitemap: ${baseUrl}/sitemap.xml`,
+    "",
+  ].join("\n");
+  res.header("Content-Type", "text/plain");
+  res.send(robotsTxt);
+});
+
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
+    const staticPaths = [
+      "",
+      "/opportunities",
+      "/about",
+      "/privacy",
+      "/terms",
+      "/cookies",
+      "/guidelines",
+      "/security",
+      "/support",
+      "/legal",
+    ];
+
+    let urls = staticPaths.map((p) => {
+      return `  <url>
+    <loc>${baseUrl}${p}</loc>
+    <changefreq>daily</changefreq>
+    <priority>${p === "" ? "1.0" : "0.8"}</priority>
+  </url>`;
+    });
+
+    // Fetch opportunities if DB is ready
+    if (dbQuery) {
       try {
-        return await store.increment(key);
-      } catch (err: any) {
-        console.error(`[RateLimit] Redis error. Failing open for key: ${key}`);
-        return { totalHits: 1, resetTime: new Date(Date.now() + 60000) };
-      }
-    },
-    decrement: async (key: string) => {
-      if (!redisClient || redisClient.status !== 'ready') return;
-      try { return await store.decrement(key); } catch(e) {}
-    },
-    resetKey: async (key: string) => {
-      if (!redisClient || redisClient.status !== 'ready') return;
-      try { return await store.resetKey(key); } catch(e) {}
-    },
-  };
-};
+        const items = await dbQuery
+          .collection("opportunities")
+          .find({})
+          .project({ _id: 1, title: 1, created_at: 1 })
+          .toArray();
 
-const resumeRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: true,
-  validate: false,
-  store: createFailOpenStore('rate-limit:ai-resume:'),
-  message: { error: "Too many resume review requests. Please try again later." }
-});
-
-const chatRateLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: true,
-  validate: false,
-  store: createFailOpenStore('rate-limit:ai-chat:'),
-  keyGenerator: (req) => {
-    return req.body?.userId || req.ip || "unknown";
-  },
-  message: { error: "Too many AI generation requests. Please try again after a minute." }
-});
-
-let _genAI: GoogleGenAI | null = null;
-function getGenAI() {
-  if (!_genAI) {
-    if (!process.env.GEMINI_API_KEY) {
-       console.warn("GEMINI_API_KEY not set. AI features will fallback.");
-       return null;
-    }
-    _genAI = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  }
-  return _genAI;
-}
-
-// Composite Feed Ranking Engine based on relevance, freshness, quality, and engagement clicks
-async function getRankedOpportunities(database: any, profile: any, page: number, limit: number) {
-  try {
-    const skip = (page - 1) * limit;
-
-    // Retain mock DB logic as a fallback for offline development
-    if (database.isMock) {
-      const cursor = database.collection("opportunities").find({}).sort({ created_at: -1 }).limit(150);
-      const opportunities = await cursor.toArray();
-      
-      if (opportunities.length === 0) {
-        return { items: [], next_page: null };
-      }
-
-      const oIds = opportunities.map((o: any) => o._id ? o._id.toString() : o.id);
-      const interactions = database ? await database.collection("interactions").find({
-        opportunity_id: { $in: oIds }
-      }).toArray() : [];
-
-      const intMap: Record<string, { total: number, recent: number }> = {};
-      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-
-      interactions.forEach((i: any) => {
-        const oId = i.opportunity_id;
-        if (!intMap[oId]) {
-          intMap[oId] = { total: 0, recent: 0 };
-        }
-        intMap[oId].total += 1;
-        const iTime = i.timestamp ? new Date(i.timestamp) : new Date();
-        if (iTime >= fortyEightHoursAgo) {
-          intMap[oId].recent += 1;
-        }
-      });
-
-      const now = Date.now();
-      const profileSkills = profile.skills ? profile.skills.toLowerCase().split(',') : [];
-      const profileCountry = profile.country ? profile.country.toLowerCase().trim() : "";
-      const profileField = profile.field ? profile.field.toLowerCase().trim() : "";
-
-      const scoredItems = opportunities.map((opp: any) => {
-        const idStr = opp._id ? opp._id.toString() : opp.id;
-        const stats = intMap[idStr] || { total: 0, recent: 0 };
-
-        const engagementScore = stats.total * 15;
-        const trendingScore = stats.recent * 30;
-        const sourceQualityScore = opp.source_quality_score || 70;
-
-        const createdTime = opp.created_at ? new Date(opp.created_at).getTime() : now;
-        const hoursSinceCreation = Math.max(0, (now - createdTime) / (1000 * 60 * 60));
-        const freshnessScore = (100 / (1 + (hoursSinceCreation * 0.15))) * 2.0;
-
-        let profileRelevanceScore = 0;
-        if (profileSkills.length > 0 && opp.tags) {
-          const oppTagsLower = opp.tags.map((t: string) => t.toLowerCase());
-          profileSkills.forEach((skill: string) => {
-            const trimmed = skill.trim();
-            if (trimmed && oppTagsLower.some((tag: string) => tag.includes(trimmed) || trimmed.includes(tag))) {
-              profileRelevanceScore += 50;
-            }
-          });
-        }
-
-        if (profileField && opp.description) {
-          if (opp.description.toLowerCase().includes(profileField) || opp.title.toLowerCase().includes(profileField)) {
-            profileRelevanceScore += 40;
-          }
-        }
-
-        if (profileCountry && opp.location) {
-          const locLower = opp.location.toLowerCase();
-          if (locLower.includes(profileCountry) || profileCountry.includes(locLower) || locLower.includes("online") || locLower.includes("remote")) {
-            profileRelevanceScore += 35;
-          }
-        }
-
-        const totalScore = engagementScore + trendingScore + sourceQualityScore + freshnessScore + profileRelevanceScore;
-
-        return {
-          ...opp,
-          id: idStr,
-          metrics: {
-            totalScore: Math.round(totalScore),
-            relevance: profileRelevanceScore,
-            freshness: Math.round(freshnessScore),
-            interactionRatio: stats.total
-          }
-        };
-      });
-
-      scoredItems.sort((a: any, b: any) => b.metrics.totalScore - a.metrics.totalScore);
-
-      const paginatedItems = scoredItems.slice(skip, skip + limit);
-      
-      const mapped = paginatedItems.map((opp: any) => {
-        const copy = { ...opp };
-        delete copy._id;
-        return copy;
-      });
-
-      return {
-        items: mapped,
-        next_page: skip + limit < scoredItems.length ? page + 1 : null
-      };
-    }
-
-    // Native MongoDB Aggregation Pipeline
-    const profileSkills = profile.skills ? profile.skills.toLowerCase().split(',').map((s: string) => s.trim()).filter(Boolean) : [];
-    const profileCountry = profile.country ? profile.country.toLowerCase().trim() : "";
-    const profileField = profile.field ? profile.field.toLowerCase().trim() : "";
-
-    const pipeline: any[] = [];
-    
-    // 1. Match phase (currently empty to scan collection)
-    pipeline.push({ $match: {} });
-
-    // 2. Lookup interactions
-    pipeline.push({
-      $lookup: {
-        from: "interactions",
-        let: { oppIdStr: { $toString: "$_id" }, oppId: "$id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $or: [
-                  { $eq: ["$opportunity_id", "$$oppIdStr"] },
-                  { $eq: ["$opportunity_id", "$$oppId"] }
-                ]
-              }
-            }
-          }
-        ],
-        as: "interactions"
-      }
-    });
-
-    // 3. Stats Calculation
-    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-    pipeline.push({
-      $addFields: {
-        "stats.total": { $size: "$interactions" },
-        "stats.recent": {
-          $size: {
-            $filter: {
-              input: "$interactions",
-              as: "i",
-              cond: { $gte: [{ $toDate: "$$i.timestamp" }, fortyEightHoursAgo] }
-            }
-          }
-        }
-      }
-    });
-
-    // Clear interactions array to save pipeline memory
-    pipeline.push({ $unset: "interactions" });
-
-    // 4. Build Profile Relevance Logic
-    const relevanceAdditions: any[] = [0]; // default 0 to ensure $add is valid
-
-    if (profileSkills.length > 0) {
-      profileSkills.forEach((skill: string) => {
-        relevanceAdditions.push({
-          $cond: {
-            if: {
-              $and: [
-                { $isArray: "$tags" },
-                { $gt: [{ $size: "$tags" }, 0] },
-                {
-                  $anyElementTrue: {
-                    $map: {
-                      input: "$tags",
-                      as: "tag",
-                      in: { $regexMatch: { input: { $toLower: "$$tag" }, regex: skill } }
-                    }
-                  }
-                }
-              ]
-            },
-            then: 50,
-            else: 0
-          }
+        const oppUrls = items.map((item: any) => {
+          const id = item._id ? item._id.toString() : item.id;
+          const title = item.title || "opportunity";
+          const cleanTitle = title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+          const lastmod = item.created_at
+            ? new Date(item.created_at).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0];
+          return `  <url>
+    <loc>${baseUrl}/opportunity/${id}/${cleanTitle}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
         });
-      });
-    }
-
-    if (profileField) {
-      relevanceAdditions.push({
-        $cond: {
-          if: {
-            $or: [
-              { $regexMatch: { input: { $toLower: { $ifNull: ["$description", ""] } }, regex: profileField } },
-              { $regexMatch: { input: { $toLower: { $ifNull: ["$title", ""] } }, regex: profileField } }
-            ]
-          },
-          then: 40,
-          else: 0
-        }
-      });
-    }
-
-    if (profileCountry) {
-      const cRegex = `${profileCountry}|online|remote`;
-      relevanceAdditions.push({
-        $cond: {
-          if: { $regexMatch: { input: { $toLower: { $ifNull: ["$location", ""] } }, regex: cRegex } },
-          then: 35,
-          else: 0
-        }
-      });
-    }
-
-    // 5. Score Calculation
-    pipeline.push({
-      $addFields: {
-        profileRelevanceScore: { $add: relevanceAdditions },
-        engagementScore: { $multiply: ["$stats.total", 15] },
-        trendingScore: { $multiply: ["$stats.recent", 30] },
-        sourceQualityScore: { $ifNull: ["$source_quality_score", 70] },
-        hoursSinceCreation: {
-          $max: [
-            0,
-            {
-              $divide: [
-                { $dateDiff: { startDate: { $ifNull: [{ $toDate: "$created_at" }, "$$NOW"] }, endDate: "$$NOW", unit: "millisecond" } },
-                1000 * 60 * 60
-              ]
-            }
-          ]
-        }
-      }
-    });
-
-    pipeline.push({
-      $addFields: {
-        freshnessScore: {
-          $multiply: [
-            {
-              $divide: [
-                100,
-                { $add: [1, { $multiply: ["$hoursSinceCreation", 0.15] }] }
-              ]
-            },
-            2.0
-          ]
-        }
-      }
-    });
-
-    pipeline.push({
-      $addFields: {
-        totalScore: {
-          $add: [
-            "$engagementScore",
-            "$trendingScore",
-            "$sourceQualityScore",
-            "$freshnessScore",
-            "$profileRelevanceScore"
-          ]
-        }
-      }
-    });
-
-    pipeline.push({
-      $addFields: {
-        id: { $toString: "$_id" },
-        "metrics.totalScore": { $round: "$totalScore" },
-        "metrics.relevance": "$profileRelevanceScore",
-        "metrics.freshness": { $round: "$freshnessScore" },
-        "metrics.interactionRatio": "$stats.total"
-      }
-    });
-
-    // 6. Sort, Skip, Limit
-    pipeline.push({ $sort: { totalScore: -1 } });
-    pipeline.push({ $skip: skip });
-    pipeline.push({ $limit: limit + 1 });
-
-    const cursor = database.collection("opportunities").aggregate(pipeline);
-    let items = await cursor.toArray();
-
-    let next_page = null;
-    if (items.length > limit) {
-      next_page = page + 1;
-      items = items.slice(0, limit);
-    }
-
-    const mapped = items.map((opp: any) => {
-      const copy = { ...opp };
-      delete copy._id;
-      delete copy.stats;
-      delete copy.engagementScore;
-      delete copy.trendingScore;
-      delete copy.sourceQualityScore;
-      delete copy.hoursSinceCreation;
-      delete copy.freshnessScore;
-      delete copy.profileRelevanceScore;
-      delete copy.totalScore;
-      return copy;
-    });
-
-    return {
-      items: mapped,
-      next_page
-    };
-  } catch (scoreErr) {
-    console.error("Scoring failure:", scoreErr);
-    return { items: [], next_page: null };
-  }
-}
-
-const __filename = typeof import.meta !== "undefined" && import.meta.url
-  ? fileURLToPath(import.meta.url)
-  : "";
-const __dirname = __filename ? path.dirname(__filename) : "";
-
-// MongoDB setup
-const uri = process.env.MONGODB_URI || "";
-const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
-import { CURATED_FALLBACKS } from "./src/services/staticFallbacks.js";
-import fs from "fs";
-import { initializeDNLDatabase } from "./src/services/dnl/metrics.js";
-import { DNLDispatcher } from "./src/services/dnl/scheduler.js";
-import { DevpostAdapter } from "./src/services/dnl/adapters/DevpostAdapter.js";
-import { InternshalaAdapter } from "./src/services/dnl/adapters/InternshalaAdapter.js";
-
-let db: any = null;
-
-// VERY simple mock DB for offline fallback
-class MemoryCollection {
-  data: any[];
-  constructor(initialData: any[] = []) { this.data = initialData; }
-  find(query: any = {}) {
-    let result = this.data;
-    if (query.id) result = result.filter(r => r.id === query.id || r._id === query.id || r._id?.toString() === query.id);
-    if (query._id) result = result.filter(r => r.id === query._id.toString() || r._id?.toString() === query._id.toString() || r.id === query._id);
-    if (query.$text) result = result.filter(r => JSON.stringify(r).toLowerCase().includes(query.$text.$search.toLowerCase()));
-    
-    if (query.$or) {
-      result = result.filter(r => {
-        return query.$or.some((cond: any) => {
-          for (let key in cond) {
-            if (cond[key].$regex) {
-              const regex = new RegExp(cond[key].$regex, cond[key].$options || "");
-              if (regex.test(r[key])) return true;
-            }
-          }
-          return false;
-        });
-      });
-    }
-
-    const cursor = {
-      sort: () => cursor,
-      limit: (n: number) => { result = result.slice(0, n); return cursor; },
-      toArray: async () => result
-    };
-    return cursor;
-  }
-  async findOne(query: any) {
-    const res = await this.find(query).toArray();
-    return res[0] || null;
-  }
-  async updateOne(query: any, update: any, options: any) { return { upsertedCount: 1 }; }
-  async insertOne(doc: any) { this.data.push(doc); return { insertedId: "mock_id" }; }
-  async countDocuments() { return this.data.length; }
-  aggregate() { return { toArray: async () => [] }; }
-  initializeUnorderedBulkOp() {
-    const ops: any[] = [];
-    return {
-      insert: (doc: any) => {
-        ops.push(doc);
-      },
-      execute: async () => {
-        this.data.push(...ops);
-        return { ok: 1, nInserted: ops.length };
-      }
-    };
-  }
-}
-
-class MockDB {
-  isMock = true;
-  collections: Record<string, MemoryCollection> = {
-    opportunities: new MemoryCollection(CURATED_FALLBACKS.map(f => ({...f, created_at: new Date()}))),
-    interactions: new MemoryCollection(),
-    scraper_metrics: new MemoryCollection()
-  };
-  collection(name: string) { return this.collections[name] || (this.collections[name] = new MemoryCollection()); }
-}
-
-function setupDNL(database: any) {
-  initializeDNLDatabase(database).then(() => {
-    const dispatcher = new DNLDispatcher(database);
-    dispatcher.registerAdapter(new DevpostAdapter());
-    dispatcher.registerAdapter(new InternshalaAdapter());
-    dispatcher.start(3600000); // 1 hour
-    console.log("[DNL] Scheduler initialized and started.");
-  }).catch(err => {
-    console.error("[DNL] Setup failed:", err);
-  });
-}
-
-if (uri) {
-  const client = new MongoClient(uri);
-  client.connect().then(() => {
-    db = client.db(dbName);
-    console.log(`[Database] Connected to MongoDB: ${dbName}`);
-    setupDNL(db);
-    
-    // Create required compound indexes asynchronously
-    db.collection("opportunities").createIndex({ created_at: -1, source_quality_score: -1 })
-      .then(() => console.log(`[Database] Created compound index on opportunities`))
-      .catch((err: any) => console.error(`[Database] Failed to create index:`, err));
-  }).catch(err => {
-    console.error("[Database] Connection failed, falling back to Mock Data:", err);
-    db = new MockDB();
-    setupDNL(db);
-  });
-} else {
-  console.log("[Database] No MONGODB_URI provided. Running in Offline Mock mode.");
-  db = new MockDB();
-  setupDNL(db);
-}
-
-class AnalyticsBuffer {
-  private buffer: any[] = [];
-  private flushInterval: NodeJS.Timeout | null = null;
-  private isFlushing = false;
-
-  constructor(private intervalMs: number = 5000) {
-    this.startInterval();
-  }
-
-  public push(event: any) {
-    if (event) {
-      if (Array.isArray(event)) {
-        this.buffer.push(...event);
-      } else {
-        this.buffer.push(event);
+        urls = urls.concat(oppUrls);
+      } catch (dbErr) {
+        console.error("[Sitemap] Error fetching opportunities:", dbErr);
       }
     }
-  }
 
-  private startInterval() {
-    this.flushInterval = setInterval(() => {
-      this.flush().catch(err => console.error("[AnalyticsBuffer] Auto-flush error:", err));
-    }, this.intervalMs);
-  }
+    const sitemapXml = [
+      `<?xml version="1.0" encoding="UTF-8"?>`,
+      `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
+      ...urls,
+      `</urlset>`,
+    ].join("\n");
 
-  public async flush() {
-    if (this.buffer.length === 0 || this.isFlushing) {
-      return;
-    }
-
-    this.isFlushing = true;
-    const batch = [...this.buffer];
-    this.buffer = [];
-
-    try {
-      if (db) {
-        const collection = db.collection("analytics");
-        const bulk = collection.initializeUnorderedBulkOp();
-        for (const doc of batch) {
-          bulk.insert(doc);
-        }
-        await bulk.execute();
-        console.log(`[AnalyticsBuffer] Flushed ${batch.length} events to MongoDB.`);
-      } else {
-        this.buffer.unshift(...batch);
-        console.warn(`[AnalyticsBuffer] DB not ready. Re-queued ${batch.length} events.`);
-      }
-    } catch (err) {
-      console.error("[AnalyticsBuffer] Error flushing batch:", err);
-      this.buffer.unshift(...batch);
-    } finally {
-      this.isFlushing = false;
-    }
-  }
-
-  public stop() {
-    if (this.flushInterval) {
-      clearInterval(this.flushInterval);
-      this.flushInterval = null;
-    }
-  }
-}
-
-const analyticsBuffer = new AnalyticsBuffer(5000);
-
-let isShuttingDown = false;
-const gracefulShutdown = async (signal: string) => {
-  if (isShuttingDown) return;
-  isShuttingDown = true;
-  console.log(`[System] Received ${signal}. Starting graceful shutdown...`);
-  try {
-    analyticsBuffer.stop();
-    await analyticsBuffer.flush();
-    console.log("[System] Analytics buffer flushed successfully.");
+    res.header("Content-Type", "application/xml");
+    res.send(sitemapXml);
   } catch (err) {
-    console.error("[System] Error during graceful shutdown analytics flush:", err);
-  } finally {
-    process.exit(0);
+    console.error("[Sitemap] Generation error:", err);
+    res.status(500).send("Internal Server Error");
   }
+});
+
+// Fallback Route
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: "Endpoint not found" });
+});
+
+const PORT = process.env.PORT || 5000;
+
+async function startServer() {
+  try {
+    // 1. Initialize MongoDB Database Connections
+    await initializeDatabase();
+
+    // 2. Setup Socket.IO Event Handlers
+    setupSocketEvents();
+
+    // 3. Wire Event Bus Consumers (RabbitMQ)
+    try {
+      await eventBus.connect();
+      const notifHandler = await createNotificationConsumer(dbCommand);
+      const scrapedHandler = await createOpportunityScrapedConsumer(dbCommand);
+      await eventBus.subscribe('notifications', 'opportunity.scraped', notifHandler);
+      await eventBus.subscribe('opportunity-scraped', 'opportunity.scraped', scrapedHandler);
+      console.log('[Core] Event Bus consumers wired successfully');
+    } catch (err) {
+      console.warn('[Core] Event Bus unavailable. Consumers will not process background events:', (err as Error).message);
+    }
+
+    // 4. Start Background Services
+    if (process.env.NODE_ENV !== "test") {
+      setInterval(() => runDeadlineChecks(dbCommand), 24 * 60 * 60 * 1000);
+      setInterval(() => runWeeklyDigest(dbCommand), 7 * 24 * 60 * 60 * 1000);
+    }
+
+    // 5. Start HTTP Server
+    server.listen(PORT, () => {
+      console.log(`[Core] Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("[Core] Failed to start server:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+// Graceful Shutdown Handling
+const gracefulShutdown = (signal: string) => {
+  console.log(`[Core] Received ${signal}. Starting graceful shutdown...`);
+  server.close(() => {
+    console.log("[Core] HTTP server closed.");
+    process.exit(0);
+  });
 };
 
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));

@@ -5,6 +5,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { UserProfile } from '../../types';
 import { ErrorState } from '../ui/states';
 import { useAppContext } from '../../context/AppContext';
+import ResumeVersionManager from './ResumeVersionManager';
 
 export default function Profile() {
   const { user, profile, setProfile } = useAppContext();
@@ -52,46 +53,83 @@ export default function Profile() {
     try {
       const token = await user.getIdToken();
       
-      // Step 1: Get signature from backend
-      const sigRes = await fetch('/api/storage/signature', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ fileType: type, extension: fileExt })
-      });
+      let uploadData;
 
-      if (!sigRes.ok) {
-        const errorData = await sigRes.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to generate upload signature");
+      try {
+        // Step 1: Get signature from backend
+        const sigRes = await fetch('/api/storage/signature', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ fileType: type, extension: fileExt })
+        });
+
+        if (!sigRes.ok) {
+          throw new Error("Failed to generate upload signature");
+        }
+
+        const sigData = await sigRes.json();
+
+        if (sigData.isDummy) {
+          throw new Error("Cloudinary not configured on backend");
+        }
+
+        // Step 2: Upload directly to Cloudinary
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('api_key', sigData.apiKey);
+        uploadFormData.append('timestamp', sigData.timestamp.toString());
+        uploadFormData.append('signature', sigData.signature);
+        uploadFormData.append('folder', sigData.folder);
+        if (sigData.allowed_formats) {
+          uploadFormData.append('allowed_formats', sigData.allowed_formats);
+        }
+
+        const uploadUrl = `https://api.cloudinary.com/v1_1/${sigData.cloudName}/auto/upload`;
+        const uploadRes = await fetch(uploadUrl, {
+          method: 'POST',
+          body: uploadFormData
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error("Cloudinary upload failed");
+        }
+
+        uploadData = await uploadRes.json();
+      } catch (err: any) {
+        console.warn("Cloudinary upload failed, attempting fallback.", err);
+        
+        if (import.meta.env.MODE === 'development') {
+          console.log("Development mode: using local file upload fallback");
+          const localFormData = new FormData();
+          localFormData.append('file', file);
+          const localUploadRes = await fetch('/api/storage/upload-local', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: localFormData
+          });
+          
+          if (!localUploadRes.ok) {
+            throw new Error("Local fallback upload failed");
+          }
+          uploadData = await localUploadRes.json();
+        } else {
+          if (type === 'avatar') {
+            const fallbackSeed = user?.displayName || user?.email || 'user';
+            uploadData = {
+              secure_url: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fallbackSeed)}`,
+              public_id: `fallback_${Date.now()}`
+            };
+            console.warn("Using DiceBear fallback avatar due to upload failure.");
+          } else {
+            throw new Error("File upload service is currently unavailable. Please try again later.");
+          }
+        }
       }
-
-      const sigData = await sigRes.json();
-
-      // Step 2: Upload directly to Cloudinary
-      const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
-      uploadFormData.append('api_key', sigData.apiKey);
-      uploadFormData.append('timestamp', sigData.timestamp.toString());
-      uploadFormData.append('signature', sigData.signature);
-      uploadFormData.append('folder', sigData.folder);
-      if (sigData.allowed_formats) {
-        uploadFormData.append('allowed_formats', sigData.allowed_formats);
-      }
-
-      const uploadUrl = `https://api.cloudinary.com/v1_1/${sigData.cloudName}/auto/upload`;
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'POST',
-        body: uploadFormData
-      });
-
-      if (!uploadRes.ok) {
-        const uploadError = await uploadRes.json().catch(() => ({}));
-        throw new Error(uploadError.error?.message || "Cloudinary upload failed");
-      }
-
-      const uploadData = await uploadRes.json();
 
       // Step 3: Save metadata to MongoDB
       const saveRes = await fetch('/api/storage/save', {
@@ -194,7 +232,7 @@ export default function Profile() {
           {formData.avatarUrl ? (
             <img 
               src={formData.avatarUrl.includes("cloudinary.com") ? formData.avatarUrl.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_200,h_200/") : formData.avatarUrl} 
-              alt="Avatar" 
+              alt={`${formData.name || 'User'}'s profile picture`} 
               className="w-20 h-20 rounded-full object-cover border-2 border-blue-500 shadow-sm"
             />
           ) : (
@@ -294,32 +332,11 @@ export default function Profile() {
                 <input type="url" placeholder="Portfolio URL" className="clean-input p-3 md:col-span-2" value={formData.portfolioUrl} onChange={e => setFormData({...formData, portfolioUrl: e.target.value})} />
               </div>
               
+              <div className="pt-4 border-t border-gray-100">
+                <ResumeVersionManager />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 block">Resume (PDF, PNG, JPEG)</label>
-                  <div className="flex items-center gap-3">
-                    <label className="cursor-pointer text-sm font-semibold bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-3 rounded-lg border border-gray-300 transition-colors flex-1 text-center">
-                      {formData.resumeUrl ? "Change Resume" : "Upload Resume"}
-                      <input 
-                        type="file" 
-                        accept=".pdf, image/png, image/jpeg" 
-                        className="hidden" 
-                        onChange={(e) => handleFileUpload(e, 'resume')} 
-                      />
-                    </label>
-                    {uploadingType === 'resume' && <span className="text-xs text-gray-500 animate-pulse">Uploading...</span>}
-                  </div>
-                  {formData.resumeUrl && (
-                    <a 
-                      href={formData.resumeUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1"
-                    >
-                      View Uploaded Resume <ExternalLink className="w-3.5 h-3.5 inline-block ml-0.5" />
-                    </a>
-                  )}
-                </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 block">Cover Letter (PDF, PNG, JPEG)</label>

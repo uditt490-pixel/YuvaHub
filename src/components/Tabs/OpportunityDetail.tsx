@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, FileText, ChevronRight, Clock, ExternalLink, Zap, CheckCircle, Award, Bookmark } from 'lucide-react';
 import { SEO } from '../SEO';
-import { fetchOpportunityById, trackInteraction, generateApplyAssistBackend } from '../../services/apiClient';
+import { fetchOpportunityById, trackInteraction, generateApplyAssistBackend, searchOpportunities } from '../../services/apiClient';
 import ShareModal from '../ui/ShareModal';
 import ApplyAssistModal from '../ui/ApplyAssistModal';
+import { OpportunityCard } from '../OpportunityCard';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import ShareCalendarActions from '../ui/ShareCalendarActions';
@@ -11,11 +12,12 @@ import { ErrorState, LoadingState } from '../ui/states';
 import { useAppContext } from '../../context/AppContext';
 
 export default function OpportunityDetail() {
-  const { selectedOppId, clearSelectedOpportunity: onBack, profile, setProfile } = useAppContext();
+  const { selectedOppId, clearSelectedOpportunity: onBack, profile, setProfile, viewOpportunity } = useAppContext();
   const id = selectedOppId || '';
   const [opp, setOpp] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [relatedOpps, setRelatedOpps] = useState<any[]>([]);
   const [shareOpp, setShareOpp] = useState<{title: string, link: string} | null>(null);
   
   const isBookmarked = profile?.bookmarks?.includes(id);
@@ -64,6 +66,20 @@ export default function OpportunityDetail() {
       if (item) {
         setOpp(item);
         trackInteraction(id, 'view');
+        
+        // Fetch related opportunities
+        try {
+          const cat = item.category || item.type || "";
+          const results = await searchOpportunities(cat, undefined);
+          if (results && results.results) {
+            const filtered = results.results
+              .filter((related: any) => related.id !== item.id)
+              .slice(0, 3);
+            setRelatedOpps(filtered);
+          }
+        } catch (relatedErr) {
+          console.warn("Could not load related opportunities", relatedErr);
+        }
       } else {
         setOpp(null);
         setError('This opportunity is unavailable.');
@@ -351,6 +367,26 @@ export default function OpportunityDetail() {
           </div>
         </div>
       </div>
+
+      {/* Related Opportunities Section */}
+      {relatedOpps.length > 0 && (
+        <section className="pt-8 border-t border-gray-200 dark:border-gray-750">
+          <h2 className="text-xl font-extrabold text-gray-900 dark:text-white mb-6">
+            Related Opportunities
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {relatedOpps.map((item) => (
+              <OpportunityCard 
+                key={item.id} 
+                opportunity={item} 
+                onViewDetails={(id, title) => {
+                  viewOpportunity(id, title);
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Shared Modals */}
       <ShareModal 

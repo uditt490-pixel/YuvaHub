@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Target, Search, Compass, ShieldCheck, Loader2, ArrowRight, RefreshCw, Sparkles, Share2, FileText } from 'lucide-react';
-import { io } from 'socket.io-client';
 import { UserProfile } from '../../types';
+import { useSocket } from '../../context/SocketContext';
 import { fetchSmartFeed, fetchExploreFeed, trackInteraction, runScoutProtocolBackend, generateApplyAssistBackend, fetchLatestFeed } from '../../services/apiClient';
 import { ErrorState } from '../ui/states';
 import ShareModal from '../ui/ShareModal';
 import ApplyAssistModal from '../ui/ApplyAssistModal';
 import { useAppContext } from '../../context/AppContext';
+import { FaqPreview } from '../ui/FaqPreview';
 
 export default function Dashboard() {
   const { user, profile, viewOpportunity: onViewDetails } = useAppContext();
+  const { socket } = useSocket();
   const [showScoutModal, setShowScoutModal] = useState(false);
   const [scoutStep, setScoutStep] = useState(1);
   const [scoutData, setScoutData] = useState({ year: '', field: '', tech: '', goal: '' });
@@ -35,28 +37,30 @@ export default function Dashboard() {
     if (user && profile) {
       loadInitialFeed(false, discoveryMode);
       
-      // Initialize Real-Time WebSocket Connection
-      const socket = io(); // Connects to same host/port
+      if (socket) {
+        socket.on("connected", () => {
+          console.log("Connected to Real-Time Feed Pipeline");
+        });
 
-      socket.on("connected", () => {
-        console.log("Connected to Real-Time Feed Pipeline");
-      });
-
-      socket.on("NEW_OPPORTUNITY", (opp: any) => {
-        setNewLiveItems(prev => [opp, ...prev]);
-        setHasNewUpdates(true);
-      });
+        socket.on("NEW_OPPORTUNITY", (opp: any) => {
+          setNewLiveItems(prev => [opp, ...prev]);
+          setHasNewUpdates(true);
+        });
+      }
       
       // Also refresh on window focus
       const handleFocus = () => loadInitialFeed(false, discoveryMode);
       window.addEventListener('focus', handleFocus);
       
       return () => {
-        socket.disconnect();
+        if (socket) {
+          socket.off("connected");
+          socket.off("NEW_OPPORTUNITY");
+        }
         window.removeEventListener('focus', handleFocus);
       };
     }
-  }, [user, profile, discoveryMode]);
+  }, [user, profile, discoveryMode, socket]);
 
   const loadInitialFeed = async (force = false, mode = discoveryMode) => {
     // Only show full loading spinner for first load or force refresh
@@ -152,9 +156,9 @@ export default function Dashboard() {
     <div className="max-w-[1200px] mx-auto space-y-10 pb-12 font-sans px-4 md:px-0">
       <header className="pt-2 flex justify-between items-start">
         <div>
-          <h2 className="text-[28px] font-[800] tracking-tight text-gray-900 mb-2">
+          <h1 className="text-[28px] font-[800] tracking-tight text-gray-900 mb-2">
             Dashboard
-          </h2>
+          </h1>
           <p className="text-[15px] text-[#64748B]">Here is your personalized intelligence briefing.</p>
         </div>
         <button 
@@ -181,7 +185,7 @@ export default function Dashboard() {
           <div className="inline-block px-3 py-1 bg-[#2563EB] text-white text-[11px] font-[800] uppercase tracking-wide rounded-full mb-4">
             New Feature
           </div>
-          <h3 className="text-[24px] font-[800] text-gray-900 mb-3">Scout Protocol</h3>
+          <h2 className="text-[24px] font-[800] text-gray-900 mb-3">Scout Protocol</h2>
           <p className="text-[15px] text-[#475569] max-w-xl leading-relaxed">Find your best matches in seconds. Our AI will calibrate your feed based on your specific requirements and background, updating in real-time.</p>
           <div className="flex flex-wrap items-center gap-3 mt-6 text-[13px] font-[600] text-[#1D4ED8]">
             <span className="flex items-center gap-[6px]"><span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold shadow-sm">1</span> Year</span>
@@ -202,9 +206,9 @@ export default function Dashboard() {
       <div className="space-y-6 pt-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-[20px] font-[800] text-gray-900 flex items-center gap-2">
+            <h2 className="text-[20px] font-[800] text-gray-900 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-[#F59E0B]" /> {discoveryMode === 'daily' ? "Daily Summary" : "Personalized Feed"}
-            </h3>
+            </h2>
             {lastUpdated && !loading && (
               <p className="text-[12px] font-[500] text-[#64748B] mt-1.5 flex items-center gap-1.5">
                 <RefreshCw className="w-3 h-3" /> Last checked: {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -415,8 +419,13 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* FAQ Preview */}
+      <div className="mt-12 mb-8">
+        <FaqPreview />
+      </div>
+
       {/* Newsletter Signup */}
-      <div className="mt-12 bg-white border border-[#E2E8F0] rounded-[16px] p-8 text-center shadow-sm relative overflow-hidden mb-8">
+      <div className="bg-white border border-[#E2E8F0] rounded-[16px] p-8 text-center shadow-sm relative overflow-hidden mb-8">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#2563EB] to-[#4F46E5]"></div>
         <div className="w-16 h-16 bg-[#EFF6FF] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#DBEAFE]">
            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#2563EB]"><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z"></path><polyline points="15,9 18,9 18,11"></polyline><path d="M5.5 19C7.4 19 9 17.4 9 15.5S7.4 12 5.5 12"></path><polyline points="2 5 12 12 22 5"></polyline></svg>

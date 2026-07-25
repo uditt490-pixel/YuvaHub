@@ -1,0 +1,93 @@
+name: "PR Assistant"
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize]
+
+jobs:
+  pr-checks:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Check PR Title
+        uses: amannn/action-semantic-pull-request@v6
+        id: semantic_check
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+            Feature
+            [Feature]
+            Update
+            [Update]
+            Bug
+            [Bug]
+            Fix
+            [Fix]
+            Docs
+            [Docs]
+            Chore
+            [Chore]
+            Style
+            [Style]
+            Refactor
+            [Refactor]
+            Perf
+            [Perf]
+            Test
+            [Test]
+          requireScope: false
+          ignoreLabels: |
+            bot
+            ignore-semantic-pull-request
+
+      - name: Validate PR Body and Notify
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+            const author = context.payload.pull_request.user.login;
+            let errors = [];
+            
+            // 1. Check Title (from previous step)
+            const titleFailed = '${{ steps.semantic_check.outcome }}' === 'failure';
+            if (titleFailed) {
+              errors.push("🏷️ - Your PR title doesn't follow the semantic formatting rules! Please update it to start with one of the allowed prefixes (e.g. `feat:`, `fix:`, `chore:`).");
+            }
+            
+            // 2. Check Body
+            const hasSummary = /## 📝 Summary/i.test(body) || /(description|summary)/i.test(body);
+            const hasChanges = /## ✨ Changes Made/i.test(body) || /changes made/i.test(body);
+            const hasTesting = /## 🧪 Testing/i.test(body) || /(testing|checklist)/i.test(body);
+            const hasIssueLink = /(close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#\d+/i.test(body) || /issue\s*:\s*#\d+/i.test(body);
+            
+            if (!hasSummary) errors.push("📝 - Missing a 'Summary' section.");
+            if (!hasChanges) errors.push("✨ - Missing a 'Changes Made' section.");
+            if (!hasTesting) errors.push("🧪 - Missing a 'Testing' or 'Checklist' section.");
+            if (!hasIssueLink) errors.push("🔗 - Missing an issue linking keyword to close the related issue (e.g., 'Closes #123', 'Fixes #45', or 'issue : #123').");
+            
+            if (errors.length > 0) {
+              const errorMessage = `👋 Hi @${author}, please review your PR to resolve the following:\n\n` + errors.join('\n');
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: errorMessage
+              });
+            } else {
+              console.log("✅ PR title and description look good!");
+            }

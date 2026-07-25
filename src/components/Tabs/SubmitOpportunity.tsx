@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Check, Loader2 } from 'lucide-react';
-import { db } from '../../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { submitOpportunity } from '../../services/apiClient';
 import { ErrorState } from '../ui/states';
 import { useAppContext } from '../../context/AppContext';
 
@@ -37,7 +36,7 @@ export default function SubmitOpportunity() {
       
       const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean);
       
-      await addDoc(collection(db, 'opportunities'), {
+      await submitOpportunity({
         type: formData.type,
         title: formData.title,
         organization: formData.org,
@@ -50,18 +49,15 @@ export default function SubmitOpportunity() {
         link: formData.link,
         deadline: formData.deadline,
         tags: tagsArray,
-        contactEmail: formData.email,
-        status: 'pending_review',
-        submitterUid: user.uid,
-        createdAt: serverTimestamp()
+        contactEmail: formData.email
       });
       
       setSuccess(true);
       setFormData({
         type: 'Internship', title: '', org: '', desc: '', year: 'Any', field: 'Any', location: '', link: '', deadline: '', tags: '', email: '', confirmed: false
       });
-    } catch {
-      setSubmitError('Unable to submit the opportunity. Please try again.');
+    } catch (err: any) {
+      setSubmitError(err.message || 'Unable to submit the opportunity. Please try again.');
     } finally {
       setLoading(false);
     }

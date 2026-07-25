@@ -11,6 +11,18 @@ export interface FallbackOpportunity {
   match_score?: number;
   match_reason?: string;
   isLive?: boolean;
+  applicationFee?: {
+    isFree: boolean;
+    amount?: number;
+    currency?: string;
+  };
+  verificationDetails?: {
+    isVerified: boolean;
+    verifiedBy: string;
+    verifiedAt: string;
+    auditSourceUrl: string;
+    reviewerNotes?: string;
+  };
 }
 
 export const CURATED_FALLBACKS: FallbackOpportunity[] = [
@@ -26,7 +38,15 @@ export const CURATED_FALLBACKS: FallbackOpportunity[] = [
     location: "Remote / Online",
     match_score: 98,
     match_reason: "Matches your programming interests and provides structural open source exposure.",
-    isLive: true
+    isLive: true,
+    applicationFee: { isFree: true, amount: 0, currency: "USD" },
+    verificationDetails: {
+      isVerified: true,
+      verifiedBy: "YuvaHub Audit Team",
+      verifiedAt: "2026-07-20",
+      auditSourceUrl: "https://summerofcode.withgoogle.com",
+      reviewerNotes: "Verified official Google Open Source program page. Zero application fees required."
+    }
   },
   {
     id: "fb_imagine_cup",

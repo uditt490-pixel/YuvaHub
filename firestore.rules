@@ -10,33 +10,55 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == uid;
     }
 
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isOrganizer() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'organizer';
+    }
+
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      allow create: if isOwner(userId) && (!request.resource.data.keys().hasAny(['isAdmin', 'isVerified']) || (request.resource.data.get('isAdmin', false) == false && request.resource.data.get('isVerified', false) == false));
+      allow update: if isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'isVerified']);
+      allow delete: if isOwner(userId);
+      allow write: if isOwner(userId) || isAdmin();
     }
 
     match /opportunities/{oppId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && request.resource.data.submitterUid == request.auth.uid;
-      allow update: if isOwner(resource.data.submitterUid);
-      allow delete: if isOwner(resource.data.submitterUid);
+      allow update: if isOwner(resource.data.submitterUid) || isAdmin() || isOrganizer();
+      allow delete: if isOwner(resource.data.submitterUid) || isAdmin();
     }
 
     match /mentor_applications/{appId} {
-      allow read: if isAuthenticated() && resource.data.submitterUid == request.auth.uid;
+      allow read: if isAuthenticated() && resource.data.submitterUid == request.auth.uid || isAdmin();
       allow create: if isAuthenticated() && request.resource.data.submitterUid == request.auth.uid;
-      allow update: if isOwner(resource.data.submitterUid);
-      allow delete: if isOwner(resource.data.submitterUid);
+      allow update: if isOwner(resource.data.submitterUid) || isAdmin();
+      allow delete: if isOwner(resource.data.submitterUid) || isAdmin();
     }
+    
     match /user_feeds/{feedId} {
-      allow read, write: if isOwner(feedId) || (feedId.size() > 0 && isOwner(feedId.split('_')[0]));
+      allow read, write: if isOwner(feedId) || (feedId.size() > 0 && isOwner(feedId.split('_')[0])) || isAdmin();
     }
     
     match /community_posts/{postId} {
       allow read: if true;
       allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
-      allow update: if isOwner(resource.data.uid);
-      allow delete: if isOwner(resource.data.uid);
+      allow update: if isOwner(resource.data.uid) || isAdmin();
+      allow delete: if isOwner(resource.data.uid) || isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isOrganizer();
+    }
+
+    match /groups/{groupId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isOrganizer();
     }
   }
 }

@@ -19,7 +19,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId) && (!request.resource.data.keys().hasAny(['isAdmin', 'isVerified']) || (request.resource.data.get('isAdmin', false) == false && request.resource.data.get('isVerified', false) == false));
       allow update: if isOwner(userId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'isVerified']);
       allow delete: if isOwner(userId);
@@ -59,6 +59,11 @@ service cloud.firestore {
     match /groups/{groupId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin() || isOrganizer();
+    }
+
+    // Explicit catch-all deny — all unmatch collections default to denied
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

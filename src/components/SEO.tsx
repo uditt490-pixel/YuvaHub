@@ -7,6 +7,7 @@ interface SEOProps {
   url?: string;
   structuredSchemaType?: 'JobPosting' | 'Event' | 'WebApplication';
   schemaData?: any;
+  noindex?: boolean;
 }
 
 /**
@@ -16,9 +17,10 @@ export const SEO: React.FC<SEOProps> = ({
   title = "YuvaHub | Find Student Hackathons, Scholarships & Mentorships", 
   description = "Discovery platform for Indian students. Find hackathons, scholarships, and mentorship opportunities to boost your career. Real-time updates and AI matching.",
   image = "https://yuvahub.xyz/og-image.jpg",
-  url = "https://yuvahub.xyz",
+  url = "",
   structuredSchemaType = "WebApplication",
-  schemaData = null
+  schemaData = null,
+  noindex = false
 }) => {
   useEffect(() => {
     // Dynamic document title
@@ -46,25 +48,34 @@ export const SEO: React.FC<SEOProps> = ({
       link.setAttribute('href', hrefValue);
     };
 
+    const finalUrl = url || (typeof window !== 'undefined' ? window.location.href : "https://yuvahub.xyz");
+
     // Update standard description
     setMetaTag('name', 'description', description);
     
+    // Update robots index instructions
+    if (noindex) {
+      setMetaTag('name', 'robots', 'noindex, nofollow');
+    } else {
+      setMetaTag('name', 'robots', 'index, follow');
+    }
+
     // Update OpenGraph details for rich social cards
     setMetaTag('property', 'og:type', 'website');
-    setMetaTag('property', 'og:url', url);
+    setMetaTag('property', 'og:url', finalUrl);
     setMetaTag('property', 'og:title', title);
     setMetaTag('property', 'og:description', description);
     setMetaTag('property', 'og:image', image);
 
     // Update Twitter details
     setMetaTag('name', 'twitter:card', 'summary_large_image');
-    setMetaTag('name', 'twitter:url', url);
+    setMetaTag('name', 'twitter:url', finalUrl);
     setMetaTag('name', 'twitter:title', title);
     setMetaTag('name', 'twitter:description', description);
     setMetaTag('name', 'twitter:image', image);
 
     // Update Canonical URL
-    setCanonicalTag(url);
+    setCanonicalTag(finalUrl);
 
     // Schema Markup Construction
     const baseSchema = {
@@ -92,7 +103,7 @@ export const SEO: React.FC<SEOProps> = ({
       document.head.appendChild(scriptTag);
     }
     scriptTag.text = JSON.stringify(finalSchema);
-  }, [title, description, image, url, structuredSchemaType, schemaData]);
+  }, [title, description, image, url, structuredSchemaType, schemaData, noindex]);
 
   return null;
 };

@@ -27,10 +27,13 @@ const MockInterviewRoom: React.FC = () => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [feedback, setFeedback] = useState<{ score: number; feedback: string } | null>(null);
+  const [mediaError, setMediaError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
   const recognitionRef = useRef<any>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
   const { socket, isConnected } = useSocket();
 
@@ -43,11 +46,13 @@ const MockInterviewRoom: React.FC = () => {
     if (!socket) return;
     
     const handleResponse = (data: { text: string }) => {
+      setIsProcessing(false);
       setHistory((prev) => [...prev, { role: 'ai', content: data.text }]);
       speakText(data.text);
     };
     
     const handleEnd = (data: { success: boolean; score: number; feedback: string }) => {
+      setIsProcessing(false);
       setFeedback({ score: data.score, feedback: data.feedback });
     };
 
@@ -63,7 +68,19 @@ const MockInterviewRoom: React.FC = () => {
   const initSpeechRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert('Your browser does not support Speech Recognition. Please try Chrome.');
+      setMediaError('Your browser does not support Speech Recognition. Please try Chrome.');
+      return;
+    }
+
+    try {
+      navigator.mediaDevices?.getUserMedia({ audio: true }).then(stream => {
+        mediaStreamRef.current = stream;
+      }).catch(err => {
+        setMediaError('Microphone access denied. Please allow microphone permissions.');
+        return;
+      });
+    } catch (err) {
+      setMediaError('Failed to access microphone.');
       return;
     }
 
@@ -96,7 +113,17 @@ const MockInterviewRoom: React.FC = () => {
       setIsListening(false);
       // We don't automatically restart here; user flow dictates when to listen.
     };
-    recognition.onerror = (event: any) => console.error('Speech recognition error', event.error);
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+      if (event.error === 'not-allowed') {
+        setMediaError('Microphone access denied. Please allow microphone permissions in your browser settings.');
+      } else if (event.error === 'no-speech') {
+        setMediaError('No speech detected. Please try again.');
+      } else {
+        setMediaError(`Speech recognition error: ${event.error}`);
+      }
+    };
 
     recognitionRef.current = recognition;
   };
@@ -144,6 +171,7 @@ const MockInterviewRoom: React.FC = () => {
   const handleUserSpeechFinal = (text: string) => {
     setHistory((prev) => [...prev, { role: 'user', content: text }]);
     setCurrentSpeech('');
+    setIsProcessing(true);
 
     if (socket && isConnected) {
       socket.emit('mock_interview_message', {
@@ -154,6 +182,7 @@ const MockInterviewRoom: React.FC = () => {
       });
     } else {
       console.warn("Socket not connected");
+      setIsProcessing(false);
     }
   };
 
@@ -182,7 +211,19 @@ const MockInterviewRoom: React.FC = () => {
         window.speechSynthesis.cancel();
       }
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        try {
+          recognitionRef.current.stop();
+        } catch (_) {}
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(t => t.stop());
+        mediaStreamRef.current = null;
+      }
+      if (socketRef.current) {
+        socketRef.current.off('mock_interview_response');
+        socketRef.current.off('mock_interview_ended');
+        socketRef.current.disconnect();
+        socketRef.current = null;
       }
     };
   }, []);
@@ -193,6 +234,19 @@ const MockInterviewRoom: React.FC = () => {
         <h1>AI Mock Interview</h1>
         <p>Practice for your dream job with real-time voice feedback</p>
       </div>
+
+      {mediaError && (
+        <div className="mock-error" style={{background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', color: '#B91C1C', fontSize: '14px'}}>
+          {mediaError}
+          <button onClick={() => setMediaError(null)} style={{marginLeft: '12px', background: 'none', border: 'none', color: '#B91C1C', cursor: 'pointer', fontWeight: 'bold'}}>Dismiss</button>
+        </div>
+      )}
+
+      {isProcessing && (
+        <div className="mock-loading" style={{textAlign: 'center', padding: '16px', color: '#6B7280', fontSize: '14px'}}>
+          <div className="animate-pulse">AI is processing your response...</div>
+        </div>
+      )}
 
       {!isSessionActive && !feedback && (
         <div className="mock-setup">

@@ -1,53 +1,97 @@
-import React, { useEffect } from 'react';
+import React, { Component, lazy, Suspense, useEffect } from 'react';
 import { LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Activity, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
 import { useAppContext } from './context/AppContext';
 import { useSocket } from './context/SocketContext';
 import { scrollContentToTop } from './lib/smoothScroll';
-// Tab/View Components
-import Dashboard from './components/Tabs/Dashboard';
-import Opportunities from './components/Tabs/Opportunities';
-import SubmitOpportunity from './components/Tabs/SubmitOpportunity';
-import Mentorship from './components/Tabs/Mentorship';
-import Profile from './components/Tabs/Profile';
-import Community from './components/Tabs/Community';
-import Bookmarks from './components/Tabs/Bookmarks';
-import SettingsTab from './components/Tabs/Settings';
-import AdminDashboard from './components/Admin/AdminDashboard';
-import NotificationDropdown from './components/ui/NotificationDropdown';
-import OpportunityDetail from './components/Tabs/OpportunityDetail';
-import AIAssistant from './components/Tabs/AIAssistant';
-import BountyBoard from './components/Tabs/BountyBoard';
-import BackToTopButton from './components/ui/BackToTopButton';import OnboardingFlow from './components/OnboardingFlow';
-import SplashAuth from './components/SplashAuth';
-import Security from './components/Tabs/Security';
-import AuthSecurityCenter from './components/Tabs/AuthSecurityCenter';
-import CareerMatchStudio from './components/Tabs/CareerMatchStudio';
-import HackathonStudio from './components/Tabs/HackathonStudio';
-import DeveloperApiPortal from './components/Tabs/DeveloperApiPortal';
-import GrantFellowshipStudio from './components/Tabs/GrantFellowshipStudio';
-import CampusAlumniHub from './components/Tabs/CampusAlumniHub';
-import ResumeAtsStudio from './components/Tabs/ResumeAtsStudio';
-import InterviewPrepStudio from './components/Tabs/InterviewPrepStudio';
-import OpenSourceBountyStudio from './components/Tabs/OpenSourceBountyStudio';
-import OpportunityMatchStudio from './components/Tabs/OpportunityMatchStudio';
-import TechEcosystemStudio from './components/Tabs/TechEcosystemStudio';
-import Legal from './components/Tabs/Legal';
-import Support from './components/Tabs/Support';
-import HelpCenter from './components/Tabs/HelpCenter';
-import FAQ from './components/Tabs/FAQ';
-import Privacy from './pages/Privacy';
-import Terms from './pages/Terms';
-import Cookies from './pages/Cookies';
-import Guidelines from './components/Tabs/Guidelines';
-import About from './pages/About';
-import AboutTab from './components/Tabs/About';
-import HelpCenterPage from './pages/HelpCenter';
-import GettingStartedDetail from './pages/GettingStartedDetail';
+
+const Dashboard = lazy(() => import('./components/Tabs/Dashboard'));
+const Opportunities = lazy(() => import('./components/Tabs/Opportunities'));
+const SubmitOpportunity = lazy(() => import('./components/Tabs/SubmitOpportunity'));
+const Mentorship = lazy(() => import('./components/Tabs/Mentorship'));
+const Profile = lazy(() => import('./components/Tabs/Profile'));
+const Community = lazy(() => import('./components/Tabs/Community'));
+const Bookmarks = lazy(() => import('./components/Tabs/Bookmarks'));
+const SettingsTab = lazy(() => import('./components/Tabs/Settings'));
+const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard'));
+const NotificationDropdown = lazy(() => import('./components/ui/NotificationDropdown'));
+const OpportunityDetail = lazy(() => import('./components/Tabs/OpportunityDetail'));
+const AIAssistant = lazy(() => import('./components/Tabs/AIAssistant'));
+const BountyBoard = lazy(() => import('./components/Tabs/BountyBoard'));
+const BackToTopButton = lazy(() => import('./components/ui/BackToTopButton'));
+const OnboardingFlow = lazy(() => import('./components/OnboardingFlow'));
+const SplashAuth = lazy(() => import('./components/SplashAuth'));
+const Security = lazy(() => import('./components/Tabs/Security'));
+const AuthSecurityCenter = lazy(() => import('./components/Tabs/AuthSecurityCenter'));
+const CareerMatchStudio = lazy(() => import('./components/Tabs/CareerMatchStudio'));
+const HackathonStudio = lazy(() => import('./components/Tabs/HackathonStudio'));
+const DeveloperApiPortal = lazy(() => import('./components/Tabs/DeveloperApiPortal'));
+const GrantFellowshipStudio = lazy(() => import('./components/Tabs/GrantFellowshipStudio'));
+const CampusAlumniHub = lazy(() => import('./components/Tabs/CampusAlumniHub'));
+const ResumeAtsStudio = lazy(() => import('./components/Tabs/ResumeAtsStudio'));
+const InterviewPrepStudio = lazy(() => import('./components/Tabs/InterviewPrepStudio'));
+const OpenSourceBountyStudio = lazy(() => import('./components/Tabs/OpenSourceBountyStudio'));
+const OpportunityMatchStudio = lazy(() => import('./components/Tabs/OpportunityMatchStudio'));
+const TechEcosystemStudio = lazy(() => import('./components/Tabs/TechEcosystemStudio'));
+const Legal = lazy(() => import('./components/Tabs/Legal'));
+const Support = lazy(() => import('./components/Tabs/Support'));
+const HelpCenter = lazy(() => import('./components/Tabs/HelpCenter'));
+const FAQ = lazy(() => import('./components/Tabs/FAQ'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Cookies = lazy(() => import('./pages/Cookies'));
+const Guidelines = lazy(() => import('./components/Tabs/Guidelines'));
+const AboutTab = lazy(() => import('./components/Tabs/About'));
+const HelpCenterPage = lazy(() => import('./pages/HelpCenter'));
+const GettingStartedDetail = lazy(() => import('./pages/GettingStartedDetail'));
 import { SEO } from './components/SEO';
-import Teams from './components/Tabs/Teams';
-import MockInterviewRoom from './pages/MockInterviewRoom';
+const Teams = lazy(() => import('./components/Tabs/Teams'));
+const MockInterviewRoom = lazy(() => import('./pages/MockInterviewRoom'));
+
+class ErrorBoundary extends Component<{ children: React.ReactNode, fallback?: React.ReactNode }, { hasError: boolean, error: Error | null }> {
+  constructor(props: { children: React.ReactNode, fallback?: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[ErrorBoundary] Caught:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center p-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h2>
+            <p className="text-gray-500 mb-4">{this.state.error?.message}</p>
+            <button
+              onClick={() => this.setState({ hasError: false, error: null })}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="flex gap-2">
+        <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] animate-bounce" style={{ animationDelay: '0ms' }}></div>
+        <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] animate-bounce" style={{ animationDelay: '150ms' }}></div>
+        <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] animate-bounce" style={{ animationDelay: '300ms' }}></div>
+      </div>
+    </div>
+  );
+}
 
 const PUBLIC_TABS = ['opportunities', 'about', 'privacy', 'terms', 'cookies', 'guidelines', 'security', 'support', 'legal'];
 
@@ -236,43 +280,49 @@ function App() {
   ];
 
   const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard': return <Dashboard />;
-      case 'opportunities': return <Opportunities />;
-      case 'teams': return <Teams />;
-      case 'bookmarks': return <Bookmarks />;
-      case 'ai_assistant': return <AIAssistant />;
-      case 'career_match': return <CareerMatchStudio />;
-      case 'hackathon_studio': return <HackathonStudio />;
-      case 'developer_api': return <DeveloperApiPortal />;
-      case 'grant_studio': return <GrantFellowshipStudio />;
-      case 'campus_alumni': return <CampusAlumniHub />;
-      case 'resume_ats': return <ResumeAtsStudio />;
-      case 'interview_prep': return <InterviewPrepStudio />;
-      case 'opensource_bounties': return <OpenSourceBountyStudio />;
-      case 'opportunity_match': return <OpportunityMatchStudio />;
-      case 'tech_ecosystem': return <TechEcosystemStudio />;
-      case 'submit': return <SubmitOpportunity />;
-      case 'mentorship': return <Mentorship />;
-      case 'bounty_board': return <BountyBoard />;
-      case 'community': return <Community />;
-      case 'profile': return <Profile />;
-      case 'settings': return <SettingsTab />;
-      case 'auth_security': return <AuthSecurityCenter />;
-      case 'admin': return <AdminDashboard />;
-      case 'security': return <Security />;
-      case 'privacy': return <Privacy />;
-      case 'terms': return <Terms />;
-      case 'cookies': return <Cookies />;
-      case 'guidelines': return <Guidelines />;
-      case 'legal': return <Legal />;
-      case 'support': return <Support />;
-      case 'about': return <AboutTab />;
-      case 'help': return gettingStartedStep ? <GettingStartedDetail stepId={gettingStartedStep as any} /> : <HelpCenterPage />;
-      case 'mock_interview': return <MockInterviewRoom />;
-      case 'faq': return <FAQ />;
-      default: return <Dashboard />;
-    }
+    const tabMap: Record<string, React.ReactNode> = {
+      dashboard: <Dashboard />,
+      opportunities: <Opportunities />,
+      teams: <Teams />,
+      bookmarks: <Bookmarks />,
+      ai_assistant: <AIAssistant />,
+      career_match: <CareerMatchStudio />,
+      hackathon_studio: <HackathonStudio />,
+      developer_api: <DeveloperApiPortal />,
+      grant_studio: <GrantFellowshipStudio />,
+      campus_alumni: <CampusAlumniHub />,
+      resume_ats: <ResumeAtsStudio />,
+      interview_prep: <InterviewPrepStudio />,
+      opensource_bounties: <OpenSourceBountyStudio />,
+      opportunity_match: <OpportunityMatchStudio />,
+      tech_ecosystem: <TechEcosystemStudio />,
+      submit: <SubmitOpportunity />,
+      mentorship: <Mentorship />,
+      bounty_board: <BountyBoard />,
+      community: <Community />,
+      profile: <Profile />,
+      settings: <SettingsTab />,
+      auth_security: <AuthSecurityCenter />,
+      admin: <AdminDashboard />,
+      security: <Security />,
+      privacy: <Privacy />,
+      terms: <Terms />,
+      cookies: <Cookies />,
+      guidelines: <Guidelines />,
+      legal: <Legal />,
+      support: <Support />,
+      about: <AboutTab />,
+      help: gettingStartedStep ? <GettingStartedDetail stepId={gettingStartedStep as any} /> : <HelpCenterPage />,
+      mock_interview: <MockInterviewRoom />,
+      faq: <FAQ />,
+    };
+    return (
+      <ErrorBoundary key={activeTab}>
+        <Suspense fallback={<PageLoader />}>
+          {tabMap[activeTab] || <Dashboard />}
+        </Suspense>
+      </ErrorBoundary>
+    );
   };
 
   if (loading) {

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Target, Loader2, User, BookOpen, CheckCircle, Sparkles } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { UserProfile } from '../types';
+
+const STORAGE_KEY = 'yuvahub_onboarding_step';
 
 interface OnboardingProps {
   user: any;
@@ -11,7 +13,14 @@ interface OnboardingProps {
 }
 
 export default function OnboardingFlow({ user, profile, onComplete }: OnboardingProps) {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      return saved ? parseInt(saved, 10) : 1;
+    } catch {
+      return 1;
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     college: profile?.college || '',
@@ -21,8 +30,36 @@ export default function OnboardingFlow({ user, profile, onComplete }: Onboarding
   });
 
   const [interestInput, setInterestInput] = useState('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const handleNext = () => setStep(step + 1);
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, String(step));
+    } catch {}
+  }, [step]);
+
+  const validateStep1 = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (!formData.college.trim()) errors.college = 'College/University is required';
+    if (!formData.year) errors.year = 'Year of study is required';
+    if (!formData.field.trim()) errors.field = 'Field of study is required';
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateStep2 = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (formData.interests.length === 0) errors.interests = 'Add at least one interest';
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep1()) {
+      setStep(step + 1);
+      setValidationErrors({});
+    }
+  };
 
   const handleAddInterest = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && interestInput.trim() !== '') {
@@ -39,6 +76,7 @@ export default function OnboardingFlow({ user, profile, onComplete }: Onboarding
   };
 
   const handleFinish = async () => {
+    if (!validateStep2()) return;
     setStep(4); // AI Generation step
     
     // Simulate AI generation delay for effect
@@ -110,17 +148,18 @@ export default function OnboardingFlow({ user, profile, onComplete }: Onboarding
                 <label className="block text-sm font-medium text-gray-700 mb-1">College/University</label>
                 <input 
                   type="text" 
-                  className="clean-input w-full p-3" 
+                  className={`clean-input w-full p-3 ${validationErrors.college ? 'border-red-500' : ''}`}
                   value={formData.college}
                   onChange={(e) => setFormData({...formData, college: e.target.value})}
                   placeholder="e.g. IIT Bombay"
                 />
+                {validationErrors.college && <p className="text-red-500 text-xs mt-1">{validationErrors.college}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Year of Study</label>
                   <select 
-                    className="clean-input w-full p-3"
+                    className={`clean-input w-full p-3 ${validationErrors.year ? 'border-red-500' : ''}`}
                     value={formData.year}
                     onChange={(e) => setFormData({...formData, year: e.target.value})}
                   >
@@ -132,22 +171,23 @@ export default function OnboardingFlow({ user, profile, onComplete }: Onboarding
                     <option value="5th">5th Year</option>
                     <option value="Graduated">Graduated</option>
                   </select>
+                  {validationErrors.year && <p className="text-red-500 text-xs mt-1">{validationErrors.year}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Field of Study</label>
                   <input 
                     type="text" 
-                    className="clean-input w-full p-3" 
+                    className={`clean-input w-full p-3 ${validationErrors.field ? 'border-red-500' : ''}`}
                     value={formData.field}
                     onChange={(e) => setFormData({...formData, field: e.target.value})}
                     placeholder="e.g. Computer Science"
                   />
+                  {validationErrors.field && <p className="text-red-500 text-xs mt-1">{validationErrors.field}</p>}
                 </div>
               </div>
             </div>
             <button 
               onClick={handleNext}
-              disabled={!formData.college || !formData.year || !formData.field}
               className="clean-btn w-full p-4 mt-8"
             >
               Next Step
@@ -176,20 +216,21 @@ export default function OnboardingFlow({ user, profile, onComplete }: Onboarding
                   placeholder="e.g. AI, Hackathons, Web Dev, Marketing..."
                 />
               </div>
-              <div className="flex flex-wrap gap-2 min-h-16 border rounded-lg p-4 bg-gray-50 border-gray-200">
-                 {formData.interests.length === 0 && <span className="text-sm text-gray-400">No interests added yet.</span>}
-                 {formData.interests.map((interest: string) => (
-                   <span key={interest} className="px-3 py-1 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium flex items-center gap-1 shadow-sm">
-                     {interest}
-                     <button onClick={() => handleRemoveInterest(interest)} className="text-gray-400 hover:text-red-500 rounded-full w-4 h-4 flex items-center justify-center ml-1">&times;</button>
-                   </span>
-                 ))}
-              </div>
-            </div>
-            <div className="flex gap-4 mt-8">
-               <button onClick={() => setStep(1)} className="clean-btn-outline px-6 py-4">Back</button>
-               <button onClick={handleFinish} className="clean-btn flex-1 py-4">Generate Profile</button>
-            </div>
+               <div className={`flex flex-wrap gap-2 min-h-16 border rounded-lg p-4 bg-gray-50 ${validationErrors.interests ? 'border-red-500' : 'border-gray-200'}`}>
+                  {formData.interests.length === 0 && <span className="text-sm text-gray-400">No interests added yet.</span>}
+                  {formData.interests.map((interest: string) => (
+                    <span key={interest} className="px-3 py-1 bg-white border border-gray-200 text-gray-700 rounded-full text-sm font-medium flex items-center gap-1 shadow-sm">
+                      {interest}
+                      <button onClick={() => handleRemoveInterest(interest)} className="text-gray-400 hover:text-red-500 rounded-full w-4 h-4 flex items-center justify-center ml-1">&times;</button>
+                    </span>
+                  ))}
+               </div>
+               {validationErrors.interests && <p className="text-red-500 text-xs mt-1">{validationErrors.interests}</p>}
+             </div>
+             <div className="flex gap-4 mt-8">
+                <button onClick={() => setStep(1)} className="clean-btn-outline px-6 py-4">Back</button>
+                <button onClick={handleFinish} className="clean-btn flex-1 py-4">Generate Profile</button>
+             </div>
           </div>
         )}
 

@@ -8,6 +8,21 @@ import Security from './Tabs/Security';
 import Legal from './Tabs/Legal';
 import Support from './Tabs/Support';
 
+function sanitizeText(str: string): string {
+  const el = document.createElement('div');
+  el.textContent = str;
+  return el.innerHTML;
+}
+
+function isValidUrl(str: string): boolean {
+  try {
+    const url = new URL(str);
+    return ['http:', 'https:'].includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
+
 export default function SplashAuth() {
   const { activeTab, setActiveTab, theme, toggleTheme } = useAppContext();
   const [loading, setLoading] = useState<string | null>(null);

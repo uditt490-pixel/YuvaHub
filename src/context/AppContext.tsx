@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -448,37 +448,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // ─── Context value ────────────────────────────────────────────────────────────
 
+  const contextValue = useMemo(() => ({
+    activeTab,
+    setActiveTab,
+    isMobileMenuOpen,
+    setIsMobileMenuOpen,
+    user,
+    profile,
+    setProfile,
+    loading,
+    backendReady,
+    lastSyncedTime,
+    appSearchQuery,
+    setAppSearchQuery,
+    selectedOppId,
+    setSelectedOppId,
+    viewOpportunity,
+    clearSelectedOpportunity,
+    bookmarkedIds,
+    toggleBookmark,
+    isBookmarked,
+    theme,
+    toggleTheme,
+    gettingStartedStep,
+    setGettingStartedStep,
+    karmaBalance,
+    setKarmaBalance,
+    refreshKarma,
+    karmaBumpFlag,
+    triggerKarmaAnimation,
+  }), [
+    activeTab, isMobileMenuOpen, user, profile, loading,
+    backendReady, lastSyncedTime, appSearchQuery, selectedOppId,
+    viewOpportunity, clearSelectedOpportunity, bookmarkedIds,
+    toggleBookmark, isBookmarked, theme, toggleTheme,
+    gettingStartedStep, setGettingStartedStep, karmaBalance,
+    setKarmaBalance, refreshKarma, karmaBumpFlag, triggerKarmaAnimation,
+  ]);
+
   return (
-    <AppContext.Provider value={{
-      activeTab,
-      setActiveTab,
-      isMobileMenuOpen,
-      setIsMobileMenuOpen,
-      user,
-      profile,
-      setProfile,
-      loading,
-      backendReady,
-      lastSyncedTime,
-      appSearchQuery,
-      setAppSearchQuery,
-      selectedOppId,
-      setSelectedOppId,
-      viewOpportunity,
-      clearSelectedOpportunity,
-      bookmarkedIds,
-      toggleBookmark,
-      isBookmarked,
-      theme,
-      toggleTheme,
-      gettingStartedStep,
-      setGettingStartedStep,
-      karmaBalance,
-      setKarmaBalance,
-      refreshKarma,
-      karmaBumpFlag,
-      triggerKarmaAnimation
-    }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

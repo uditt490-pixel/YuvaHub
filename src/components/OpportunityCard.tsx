@@ -34,6 +34,30 @@ export interface Opportunity {
     };
 }
 
+export function SkeletonOpportunityCard() {
+    return (
+        <div className="flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[12px] border border-[#E2E8F0] bg-white animate-pulse" aria-hidden="true">
+            <div className="h-[132px] bg-gray-200" />
+            <div className="flex flex-1 flex-col p-4 sm:p-5 gap-3">
+                <div className="h-3 w-24 bg-gray-200 rounded" />
+                <div className="h-5 w-full bg-gray-200 rounded" />
+                <div className="h-5 w-3/4 bg-gray-200 rounded" />
+                <div className="flex gap-2 mt-2">
+                    <div className="h-6 w-16 bg-gray-200 rounded-full" />
+                    <div className="h-6 w-20 bg-gray-200 rounded-full" />
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div className="h-14 bg-gray-100 rounded-lg" />
+                    <div className="h-14 bg-gray-100 rounded-lg" />
+                </div>
+                <div className="mt-auto border-t pt-3">
+                    <div className="h-8 w-full bg-gray-200 rounded-lg" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 interface OpportunityCardProps {
     opportunity: Opportunity;
     onViewDetails?: (id: string, title: string) => void;

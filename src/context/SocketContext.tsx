@@ -24,12 +24,19 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    // Initialize socket with explicitly allowed transports for robust fallback
-    const socketInstance = io({
+    // Connect WebSocket only when an explicit backend WS URL is configured (e.g. Render/Railway)
+    const backendUrl = import.meta.env.VITE_WS_URL || import.meta.env.VITE_API_URL;
+    if (!backendUrl) {
+      console.log('[SocketContext] WebSockets inactive — running in pure REST API fallback mode');
+      return;
+    }
+
+    const socketInstance = io(backendUrl, {
       transports: ['websocket', 'polling'],
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      timeout: 10000,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+      timeout: 5000,
+      autoConnect: true,
     });
 
     socketRef.current = socketInstance;

@@ -355,3 +355,69 @@ export const analyzeResume = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const generateOutreach = async (req: Request, res: Response) => {
+  try {
+    const { recruiterName, company, jobRole, outreachType, resumeContext } = req.body;
+    
+    if (!recruiterName || !company || !jobRole || !outreachType) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const typeStr = outreachType === 'LinkedIn Connect' ? 'LinkedIn connection request' : 'cold email';
+    const lengthConstraint = outreachType === 'LinkedIn Connect' ? 'under 300 characters' : 'under 150 words';
+    
+    const prompt = `You are an expert career coach helping a student write a highly personalized, punchy ${typeStr} to a recruiter.
+Target Recruiter: ${recruiterName}
+Target Company: ${company}
+Target Role: ${jobRole}
+Student Resume Context: ${resumeContext || "A proactive student looking for opportunities"}
+
+Constraints:
+- Length: ${lengthConstraint}.
+- DO NOT use generic openings like "I hope this email finds you well" or "My name is...". Get straight to the point.
+- Be professional, confident, and action-oriented.
+- Provide only the plain text message, no additional formatting or explanations.`;
+
+    const cacheKey = `outreach:${recruiterName}:${company}:${jobRole}:${outreachType}`;
+    const cached = getCachedResponse(cacheKey);
+    if (cached) {
+      return res.json({ text: cached });
+    }
+
+    const ai = getGenAI();
+    if (!ai) {
+      return res.json({ text: `Hi ${recruiterName}, I'm reaching out about the ${jobRole} role at ${company}. Given my background, I'd love to connect and learn more.` });
+    }
+
+    let responseText = "";
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt
+      });
+      responseText = response.text || "";
+    } catch (err: any) {
+      try {
+        const response = await ai.models.generateContent({
+          model: "gemini-3.1-flash-lite",
+          contents: prompt
+        });
+        responseText = response.text || "";
+      } catch (liteErr) {
+        responseText = `Hi ${recruiterName}, I'm reaching out about the ${jobRole} role at ${company}. Given my background, I'd love to connect and learn more.`;
+      }
+    }
+
+    if (!responseText) {
+      responseText = `Hi ${recruiterName}, I'm reaching out about the ${jobRole} role at ${company}. Given my background, I'd love to connect and learn more.`;
+    }
+
+    setCachedResponse(cacheKey, responseText);
+    res.json({ text: responseText });
+
+  } catch (err) {
+    console.error("/api/ai/outreach error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

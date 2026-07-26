@@ -52,6 +52,11 @@ routes.forEach((router) => {
   v1Router.use(router);
 });
 
+// Health check route
+v1Router.get("/health", (_req, res) => {
+  res.json({ status: "healthy", timestamp: new Date().toISOString(), architecture: "modular" });
+});
+
 // For dual-version support, mount v1Router on both /api/v1 and /api
 rootRouter.use("/v1", v1Router);
 rootRouter.use("/", v1Router);

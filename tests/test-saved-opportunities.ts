@@ -36,7 +36,7 @@ describe('test-saved-opportunities.ts', () => {
         let fullOutput = "";
         serverProcess.stdout?.on('data', (data) => {
           fullOutput += data.toString();
-          if (fullOutput.includes('Server running on') && !started) {
+          if (fullOutput.includes('listening on port') && !started) {
             started = true;
             setTimeout(resolve, 1000);
           }

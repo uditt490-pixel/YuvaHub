@@ -319,7 +319,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.warn('MongoDB auth sync failed, falling back to Firestore:', error);
           try {
             const docRef = doc(db, 'users', currentUser.uid);
-            const docSnap = await getDoc(docRef);
+            const getDocPromise = getDoc(docRef);
+            const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Firestore getDoc timeout')), 2000));
+            const docSnap = await Promise.race([getDocPromise, timeoutPromise]);
             if (docSnap.exists()) {
               const data = docSnap.data() as UserProfile;
               setProfile(data);
@@ -335,7 +337,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               setBookmarkedIds([]);
             }
           } catch (fsError) {
-            console.error('Firestore fallback sync failed:', fsError);
+            console.error('Firestore fallback sync failed or timed out:', fsError);
             setProfile({
               uid: currentUser.uid,
               name: currentUser.displayName || '',

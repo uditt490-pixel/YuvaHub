@@ -165,7 +165,7 @@ Provide these keys in your `.env` file to fully enable application databases and
 | :--- | :--- | :--- |
 | `MONGODB_URI` | Connection URI for the MongoDB Atlas Cluster. | MongoDB Atlas Dashboard |
 | `MONGODB_DB_NAME` | Target database collection name. | `yuvahub` |
-| `GEMINI_API_KEY` | Authentication key for Google Gemini model access. | [Google AI Studio](https://aistudio.google.com/) |
+| `GEMINI_API_KEY` | **Server-only secret.** Used by backend Gemini services; never expose it through Vite or browser code. | [Google AI Studio](https://aistudio.google.com/) |
 | `APP_URL` | Base host URL of the local or deployed server. | `http://localhost:3000` |
 | `FRONTEND_URL` | Allowed client origin to enforce CORS security policy. | `http://localhost:5173` (or Vercel URL) |
 | `VITE_EMAILJS_SERVICE_ID` | EmailJS service connection ID. | [EmailJS Dashboard](https://www.emailjs.com/) |

@@ -89,6 +89,7 @@ export default function Teams() {
         opportunityTitle: createForm.opportunityTitle || undefined,
         description: createForm.description,
         requiredRoles: rolesArray,
+        skills: rolesArray,
         maxMembers: Number(createForm.maxMembers) || 4,
       });
 

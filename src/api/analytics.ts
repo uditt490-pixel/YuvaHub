@@ -1,4 +1,4 @@
-import { dbCommand } from "./db.js";
+import { getDbCommand } from "./db.js";
 
 export class AnalyticsBuffer {
   private buffer: any[] = [];
@@ -117,8 +117,9 @@ export class AnalyticsBuffer {
     this.buffer = [];
 
     try {
-      if (dbCommand) {
-        const collection = dbCommand.collection("analytics");
+      const db = getDbCommand();
+      if (db) {
+        const collection = db.collection("analytics");
         const bulk = collection.initializeUnorderedBulkOp();
         for (const doc of batch) {
           bulk.insert(doc);
@@ -127,6 +128,7 @@ export class AnalyticsBuffer {
         console.log(`[AnalyticsBuffer] Flushed ${batch.length} events to MongoDB.`);
       } else {
         // DB not ready — re-queue, but only up to maxBufferSize to prevent unbounded growth
+        console.warn(`[AnalyticsBuffer] DB not ready. db=${db}, typeof db=${typeof db}, isNull=${db === null}. Re-queued ${batch.length} events.`);
         const spaceRemaining = this.maxBufferSize - this.buffer.length;
         if (spaceRemaining > 0) {
           const reQueue = batch.slice(Math.max(0, batch.length - spaceRemaining));

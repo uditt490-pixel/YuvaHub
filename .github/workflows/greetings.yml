@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Greet on Issue Creation
         if: github.event_name == 'issues' && github.event.action == 'opened'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
@@ -33,7 +33,7 @@ jobs:
 
       - name: Greet on PR Creation
         if: github.event_name == 'pull_request_target' && github.event.action == 'opened'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
@@ -41,11 +41,17 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `Thank you @${context.actor} for opening this pull request! A maintainer will review your changes shortly.`
-            })
+            });
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['ECSoC26']
+            });
 
       - name: Greet on PR Merge
         if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({

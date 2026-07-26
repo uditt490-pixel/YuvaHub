@@ -39,7 +39,7 @@ export const addBookmark = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Opportunity not found" });
     }
 
-    const usersCollection = dbQuery.collection("users");
+    const usersCollection = dbCommand.collection("users");
     // Add to bookmarks, ensuring uniqueness (duplicate prevention)
     await usersCollection.updateOne(
       { uid: user.uid },
@@ -63,7 +63,7 @@ export const deleteBookmark = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Missing opportunityId" });
     }
 
-    const usersCollection = dbQuery.collection("users");
+    const usersCollection = dbCommand.collection("users");
     await usersCollection.updateOne(
       { uid: user.uid },
       { $pull: { bookmarks: opportunityId } }

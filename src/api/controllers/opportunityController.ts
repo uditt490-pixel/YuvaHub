@@ -193,7 +193,7 @@ export async function getRankedOpportunities(database: any, profile: any, page: 
     const nowTime = new Date().getTime();
     items = items.filter((item: any) => {
       if (item.endDate && new Date(item.endDate).getTime() < nowTime) return false;
-      if (item.startDate && new Date(item.startDate).getTime() < nowTime) return false;
+      if (item.startDate && new Date(item.startDate).getTime() > nowTime) return false;
       if (item.deadlineDate && new Date(item.deadlineDate).getTime() < nowTime) return false;
       if (item.deadline && typeof item.deadline === 'string') {
         const dStr = item.deadline.toLowerCase();

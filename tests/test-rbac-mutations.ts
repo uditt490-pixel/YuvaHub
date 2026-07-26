@@ -63,4 +63,10 @@ async function testRbacMutations() {
   console.log("[Security Test Complete] All security validations passed.");
 }
 
-testRbacMutations();
+import { describe, it } from 'vitest';
+
+describe('test-rbac-mutations.ts', () => {
+  it('should execute without errors', async () => {
+    await testRbacMutations();
+  });
+});

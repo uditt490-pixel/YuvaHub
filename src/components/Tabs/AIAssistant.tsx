@@ -291,7 +291,7 @@ export default function AIAssistant() {
     { id: 'interview_prep', title: 'Mock Interview Prep', icon: Briefcase, desc: 'Practice technical or behavioral interview questions.', color: 'text-green-600', bg: 'bg-green-50' },
     { id: 'career_mentor', title: 'Career Guidance', icon: Bot, desc: 'Ask about paths, skills, or get a personalized roadmap.', color: 'text-orange-600', bg: 'bg-orange-50' },
     { id: 'opp_finder', title: 'AI Opportunity Matcher', icon: Search, desc: 'Describe what you are looking for in plain language to get matched.', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  ];
+    { id: 'outreach_gen', title: 'Outreach Message Generator', icon: Send, desc: 'Generate personalized cold emails and LinkedIn messages.', color: 'text-pink-600', bg: 'bg-pink-50' },  ];
 
   if (!activeModule) {
     return (
@@ -374,6 +374,7 @@ export default function AIAssistant() {
       {activeModule === 'interview_prep' && <InterviewPrep profile={profile} />}
       {activeModule === 'career_mentor' && <CareerMentor user={user} />}
       {activeModule === 'opp_finder' && <AIOpportunityMatcher profile={profile} />}
+      {activeModule === 'outreach_gen' && <OutreachGenerator profile={profile} />}
 
     </div>
   );
@@ -1469,6 +1470,120 @@ function CareerRoadmap({ profile }: { profile: UserProfile | null }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function OutreachGenerator({ profile }: { profile: any }) {
+  const [recruiterName, setRecruiterName] = useState("");
+  const [company, setCompany] = useState("");
+  const [jobRole, setJobRole] = useState("");
+  const [outreachType, setOutreachType] = useState("Email");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!recruiterName || !company || !jobRole || !outreachType) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/v1/ai/outreach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          recruiterName, 
+          company, 
+          jobRole, 
+          outreachType,
+          resumeContext: JSON.stringify(profile)
+        })
+      });
+      const data = await res.json();
+      setResult(data.text || "Failed to generate.");
+    } catch (e) {
+      console.error(e);
+      setResult(`Hi ${recruiterName}, I'm reaching out about the ${jobRole} role at ${company}. Given my background, I'd love to connect and learn more.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(result);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      <header>
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
+          <Send className="w-8 h-8 text-pink-600" /> Outreach Message Generator
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400">Generate personalized, punchy cold emails and LinkedIn messages to recruiters and founders.</p>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="clean-card p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Recruiter / Contact Name</label>
+            <input className="clean-input w-full p-3 text-sm" value={recruiterName} onChange={e => setRecruiterName(e.target.value)} placeholder="e.g. Jane Doe" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Target Company</label>
+            <input className="clean-input w-full p-3 text-sm" value={company} onChange={e => setCompany(e.target.value)} placeholder="e.g. Google" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Target Job Role</label>
+            <input className="clean-input w-full p-3 text-sm" value={jobRole} onChange={e => setJobRole(e.target.value)} placeholder="e.g. Frontend Engineer" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Outreach Type</label>
+            <div className="flex gap-4 mt-2">
+              <label className="flex items-center gap-2 text-sm cursor-pointer text-gray-700">
+                <input type="radio" name="outreachType" value="Email" checked={outreachType === 'Email'} onChange={() => setOutreachType('Email')} className="text-pink-600 focus:ring-pink-500 w-4 h-4" />
+                Email
+              </label>
+              <label className="flex items-center gap-2 text-sm cursor-pointer text-gray-700">
+                <input type="radio" name="outreachType" value="LinkedIn Connect" checked={outreachType === 'LinkedIn Connect'} onChange={() => setOutreachType('LinkedIn Connect')} className="text-pink-600 focus:ring-pink-500 w-4 h-4" />
+                LinkedIn
+              </label>
+            </div>
+          </div>
+          <button
+            onClick={handleGenerate}
+            disabled={loading || !recruiterName || !company || !jobRole}
+            className="w-full py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-bold shadow-md disabled:bg-gray-300 transition-colors flex items-center justify-center gap-2 mt-4 cursor-pointer"
+          >
+            {loading ? <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            Generate Message
+          </button>
+        </div>
+
+        <div className="clean-card bg-gray-50 p-6 flex flex-col relative overflow-hidden">
+          {result ? (
+            <div className="flex flex-col h-full justify-between">
+              <div className="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed overflow-y-auto max-h-[350px] mb-4 p-3 bg-white border border-gray-200 rounded-xl shadow-sm">
+                {result}
+              </div>
+              <div className="pt-3 flex justify-end">
+                <button
+                  onClick={copyToClipboard}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-pink-50 text-pink-700 hover:bg-pink-100 font-bold rounded-lg border border-pink-200 transition-colors text-sm cursor-pointer"
+                >
+                  {copied ? <CheckCircle className="w-4 h-4" /> : <Send className="w-4 h-4" />} 
+                  {copied ? 'Copied!' : 'Copy to Clipboard'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="m-auto text-gray-400 text-sm flex flex-col items-center justify-center text-center p-4">
+              <Send className="w-12 h-12 mb-3 opacity-50 text-pink-300" />
+              Your generated outreach message will appear here.
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -10,7 +10,7 @@ export const createScholarship = async (req: Request, res: Response, next: NextF
   try {
     if (!dbCommand || !dbQuery) return res.status(503).json({ success: false, error: "Database not available" });
     const parsedData = req.body;
-    const collection = dbQuery.collection("scholarships");
+    const collection = dbCommand.collection("scholarships");
     const result = await collection.insertOne(parsedData);
     res.status(201).json({ success: true, id: result.insertedId, ...parsedData });
   } catch (err: any) {
@@ -64,7 +64,7 @@ export const updateScholarship = async (req: Request, res: Response, next: NextF
     const rawId = req.params.id;
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
     const parsedData = { ...req.body, updated_at: new Date() };
-    const collection = dbQuery.collection("scholarships");
+    const collection = dbCommand.collection("scholarships");
     const oid = safeObjectId(id);
     const queryId = oid || id;
 
@@ -80,7 +80,7 @@ export const deleteScholarship = async (req: Request, res: Response) => {
     if (!dbCommand || !dbQuery) return res.status(503).json({ error: "Database not available" });
     const rawId = req.params.id;
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
-    const collection = dbQuery.collection("scholarships");
+    const collection = dbCommand.collection("scholarships");
     const oid = safeObjectId(id);
     const queryId = oid || id;
     let deleted = true;

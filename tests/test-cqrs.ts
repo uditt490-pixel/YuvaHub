@@ -62,7 +62,7 @@ describe('test-cqrs.ts', () => {
     serverProcess.stdout?.on('data', (data) => {
       fullOutput += data.toString();
       console.log(`[Server Stdout] ${data.toString().trim()}`);
-      if (fullOutput.includes('Server running on')) serverReady = true;
+      if (fullOutput.includes('listening on port')) serverReady = true;
       if (fullOutput.includes('Connected to Command and Query MongoDB pools')) dbReady = true;
       
       if (serverReady && dbReady && !started) {

@@ -114,7 +114,7 @@ export const authenticateUser = (db: any) => {
 
       const activeDb = db || dbCommand;
 
-      if (activeDb) {
+      if (activeDb && !(isDevelopment && mockAuthEnabled)) {
         try {
           const usersCollection = activeDb.collection('users');
 
@@ -147,6 +147,8 @@ export const authenticateUser = (db: any) => {
             dbError,
           );
         }
+      } else if (isDevelopment && mockAuthEnabled) {
+        req.user.role = 'student';
       }
 
       next();

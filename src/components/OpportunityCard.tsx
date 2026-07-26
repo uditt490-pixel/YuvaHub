@@ -1,5 +1,5 @@
 import React, { KeyboardEvent, MouseEvent, useState } from "react";
-import { Bookmark, Shield, ExternalLink, X, CheckCircle, DollarSign } from "lucide-react";
+import { Bookmark, Shield, ExternalLink, X, CheckCircle, DollarSign, Coins, Users } from "lucide-react";
 import { TypeBadge, Badge } from "./Badge";
 
 export interface Opportunity {
@@ -222,13 +222,16 @@ export function OpportunityCard({
                         </div>
 
                         {opp.stipend && (
-                            <div className="text-[12px] font-medium text-[#16A34A]">💰 {opp.stipend}</div>
+                            <div className="text-[12px] font-medium text-[#16A34A] flex items-center gap-1">
+                                <Coins className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span>{opp.stipend}</span>
+                            </div>
                         )}
                     </div>
 
                     <div className="mt-auto flex flex-col gap-2 border-t border-[#F1F5F9] pt-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex items-center gap-1 text-[12px] text-[#64748B]">
-                            <span aria-hidden="true">👥</span>
+                        <div className="flex items-center gap-1.5 text-[12px] text-[#64748B]">
+                            <Users className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                             <span className="truncate">1-4 Members</span>
                         </div>
                         <div className="inline-flex items-center justify-center rounded-lg bg-[#2563EB] px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-blue-700 sm:self-auto">

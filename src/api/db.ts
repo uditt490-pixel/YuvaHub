@@ -16,12 +16,15 @@ const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
 
 /** Interval (ms) between MongoDB reconnection attempts after fallback to MockDB. */
 const RECONNECT_INTERVAL_MS = 30_000;
-
 export { ObjectId } from "mongodb";
 
 export let dbCommand: any = null;
 export let dbQuery: any = null;
 export { dbQuery as db };
+
+export const getDbCommand = () => {
+  return dbCommand;
+};
 
 // ── Reconnection subsystem ──────────────────────────────────────────
 
@@ -73,7 +76,7 @@ async function attemptReconnect(): Promise<boolean> {
 
     return true;
   } catch (err) {
-    console.error("[Database] Reconnection attempt failed:", (err as Error).message);
+    console.warn("[Database] Reconnection attempt failed — continuing in Mock Mode.");
     return false;
   }
 }
@@ -312,7 +315,7 @@ export async function initializeDatabase(): Promise<void> {
         .then(() => console.log(`[Database] Created compound index on opportunities`))
         .catch((err: any) => console.error(`[Database] Failed to create index:`, err));
 
-      dbQuery.collection("users").createIndex({ uid: 1 }, { unique: true })
+      dbQuery.collection("users").createIndex({ uid: 1 }, { unique: true, sparse: true })
         .then(() => console.log(`[Database] Created unique index on users.uid`))
         .catch((err: any) => console.error(`[Database] Failed to create index on users.uid:`, err));
       dbCommand.collection("users").createIndex({ firebaseUid: 1 }, { unique: true, sparse: true })

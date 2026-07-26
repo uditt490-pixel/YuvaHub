@@ -46,35 +46,9 @@
   }
 }
 
+/* Keep default system cursor visible across all screens */
 #custom-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 24px;
-  height: 24px;
-  margin-left: -12px;
-  margin-top: -12px;
-  border-radius: 50%;
-  background: var(--color-primary, #2563eb);
-  box-shadow: 0 0 12px 4px var(--color-primary, #2563eb);
-  opacity: 0.6;
-  pointer-events: none;
-  z-index: 9999;
-  will-change: transform;
-}
-
-/* Hide it on touch devices so it doesn't get stuck on screen */
-@media (pointer: coarse) {
-  #custom-cursor {
-    display: none;
-  }
-}
-
-/* Hide the real system cursor only on devices with a mouse */
-@media (pointer: fine) {
-  body {
-    cursor: none;
-  }
+  display: none;
 }
 
 #app-content {
@@ -83,21 +57,29 @@
 
 @layer base {
   :root {
-    --background: #FFFFFF;
-    --surface: #FFFFFF;
-    --surface-secondary: #F8FAFC;
-    --navbar: #FFFFFF;
-    --card: #FFFFFF;
-    --border-theme: #E2E8F0;
-    --text-primary: #111827;
-    --text-secondary: #64748B;
-    --muted: #94A3B8;
-    --input: #FFFFFF;
-    --primary-blue: #2563EB;
-    --orange-cta: #F97316;
-    --search-btn: #F97316;
-    --focus-ring: #2563EB;
-    --shadow-color: rgba(0,0,0,0.05);
+    --background: #fcf9f2; /* mist */
+    --surface: #ffffff;
+    --surface-secondary: #f6efe2; /* soft golden mist */
+    --navbar: #fcf9f2; /* mist */
+    --card: #ffffff;
+    --border-theme: #e8ded1;
+    --text-primary: #231f20; /* coal */
+    --text-secondary: #603620; /* cacao */
+    --muted: #8c7569;
+    --input: #ffffff;
+    --primary-blue: #b56b37; /* rust */
+    --orange-cta: #b56b37; /* rust */
+    --search-btn: #603620; /* cacao */
+    --focus-ring: #b56b37;
+    --shadow-color: rgba(35, 31, 32, 0.08);
+
+    --color-mist: #fcf9f2;
+    --color-coal: #231f20;
+    --color-cacao: #603620;
+    --color-rust: #b56b37;
+    --color-golden: #f3e4bd;
+    --color-moss: #63703d;
+    --color-meadow: #b5c37c;
   }
 
   .dark {

@@ -4,12 +4,13 @@ let _genAI: GoogleGenAI | null = null;
 
 export function getGenAI(): GoogleGenAI | null {
   if (!_genAI) {
-    if (!process.env.GEMINI_API_KEY) {
+    const processEnv = (globalThis as any).process?.env || {};
+    if (!processEnv.GEMINI_API_KEY) {
       console.warn("GEMINI_API_KEY not set. AI features will fallback.");
       return null;
     }
     _genAI = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey: processEnv.GEMINI_API_KEY,
       httpOptions: {
         headers: {
           'User-Agent': 'aistudio-build',
@@ -20,11 +21,24 @@ export function getGenAI(): GoogleGenAI | null {
   return _genAI;
 }
 
+import { redisClient } from "./redis.js";
+
 // In-memory cache for AI generation prompts and resume reviews
 const aiCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-export function getCachedResponse(key: string): any | null {
+export async function getCachedResponse(key: string): Promise<any | null> {
+  if ((globalThis as any).REDIS_AVAILABLE && redisClient) {
+    try {
+      const val = await redisClient.get(`ai_cache:${key}`);
+      if (val) {
+        return JSON.parse(val);
+      }
+    } catch (err: any) {
+      console.error("[AICache] Redis read error:", err.message);
+    }
+  }
+
   const entry = aiCache.get(key);
   if (entry && (Date.now() - entry.timestamp < CACHE_TTL_MS)) {
     return entry.data;
@@ -32,9 +46,17 @@ export function getCachedResponse(key: string): any | null {
   return null;
 }
 
-export function setCachedResponse(key: string, data: any) {
+export async function setCachedResponse(key: string, data: any) {
+  if ((globalThis as any).REDIS_AVAILABLE && redisClient) {
+    try {
+      await redisClient.set(`ai_cache:${key}`, JSON.stringify(data), "EX", 3600); // 1 hour expiry
+    } catch (err: any) {
+      console.error("[AICache] Redis write error:", err.message);
+    }
+  }
   aiCache.set(key, { data, timestamp: Date.now() });
 }
+
 
 export function getAIFallback(prompt: string, expectJson: boolean): string {
   const lower = prompt.toLowerCase();

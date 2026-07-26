@@ -1,12 +1,64 @@
 import { Request, Response } from "express";
 import { getGenAI, getAIFallback, getCachedResponse, setCachedResponse } from "../genai.js";
+import { dbCommand } from "../db.js";
+
+async function isUserOverBudget(userId: string): Promise<boolean> {
+  if (!dbCommand || !userId) return false;
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const usage = await dbCommand.collection("ai_usage").findOne({ userId, date: today });
+    return usage ? (usage.totalCost >= 0.05) : false;
+  } catch (err: any) {
+    console.error("[AI Budget Check] Error:", err.message);
+    return false;
+  }
+}
+
+async function verifyAndTrackAIUsage(req: Request, prompt: string, responseText: string, modelName: string): Promise<void> {
+  if (!req.user || !req.user.uid || !dbCommand) return;
+  
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const userId = req.user.uid;
+
+    let inputCostPerM = 0.075;
+    let outputCostPerM = 0.30;
+
+    if (modelName.includes("lite")) {
+      inputCostPerM = 0.025;
+      outputCostPerM = 0.10;
+    } else if (modelName.includes("pro")) {
+      inputCostPerM = 1.25;
+      outputCostPerM = 5.00;
+    }
+
+    const promptTokens = Math.ceil(prompt.length / 4);
+    const responseTokens = Math.ceil(responseText.length / 4);
+    const estimatedCost = (promptTokens * (inputCostPerM / 1000000)) + (responseTokens * (outputCostPerM / 1000000));
+
+    await dbCommand.collection("ai_usage").updateOne(
+      { userId, date: today },
+      {
+        $inc: { totalCost: estimatedCost, promptTokens, responseTokens, requestCount: 1 },
+        $setOnInsert: { userId, date: today, createdAt: new Date() }
+      },
+      { upsert: true }
+    );
+  } catch (err: any) {
+    console.error("[AI Usage Tracking] Failed to track cost:", err.message);
+  }
+}
 
 export const aiGenerate = async (req: Request, res: Response) => {
   try {
     const { prompt, expectJson } = req.body;
     if (!prompt) return res.status(400).json({ error: "No prompt" });
 
-    const cached = getCachedResponse(prompt);
+    if (req.user && req.user.uid && await isUserOverBudget(req.user.uid)) {
+      return res.status(429).json({ error: "Daily AI usage budget exceeded. Please try again tomorrow." });
+    }
+
+    const cached = await getCachedResponse(prompt);
     if (cached) {
       return res.json({ text: cached });
     }
@@ -18,12 +70,14 @@ export const aiGenerate = async (req: Request, res: Response) => {
     }
 
     let responseText = "";
+    const primaryModel = "gemini-3.5-flash";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: primaryModel,
         contents: prompt
       });
       responseText = response.text || "";
+      await verifyAndTrackAIUsage(req, prompt, responseText, primaryModel);
     } catch (err: any) {
       const is503 = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('high demand');
       const isTimeout = err?.message?.toLowerCase().includes('timeout') || err?.message?.toLowerCase().includes('abort');
@@ -31,11 +85,13 @@ export const aiGenerate = async (req: Request, res: Response) => {
       if (is503 || isTimeout || is429) {
         console.log(`[AI Routing] Switchover triggered due to temporary limit.`);
         try {
+          const fallbackModel = "gemini-3.1-flash-lite";
           const response = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
+            model: fallbackModel,
             contents: prompt
           });
           responseText = response.text || "";
+          await verifyAndTrackAIUsage(req, prompt, responseText, fallbackModel);
         } catch (liteErr: any) {
           console.log(`[AI Routing] Alternate model restriction. Invoking static fallback strategy.`);
           responseText = getAIFallback(prompt, !!expectJson);
@@ -49,7 +105,7 @@ export const aiGenerate = async (req: Request, res: Response) => {
       responseText = getAIFallback(prompt, !!expectJson);
     }
 
-    setCachedResponse(prompt, responseText);
+    await setCachedResponse(prompt, responseText);
     res.json({ text: responseText });
   } catch (err) {
     const { prompt, expectJson } = req.body;
@@ -63,8 +119,12 @@ export const aiResumeReview = async (req: Request, res: Response) => {
     const { resume } = req.body;
     if (!resume) return res.status(400).json({ error: "No resume provided" });
 
+    if (req.user && req.user.uid && await isUserOverBudget(req.user.uid)) {
+      return res.status(429).json({ error: "Daily AI usage budget exceeded. Please try again tomorrow." });
+    }
+
     const cacheKey = `resume_review:${resume.substring(0, 300)}`;
-    const cached = getCachedResponse(cacheKey);
+    const cached = await getCachedResponse(cacheKey);
     if (cached) {
       return res.json(cached);
     }
@@ -92,13 +152,15 @@ Return JSON strictly in this format:
 }`;
 
     let responseText = "";
+    const primaryModel = "gemini-3.5-flash";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: primaryModel,
         contents: prompt,
         config: { responseMimeType: "application/json" }
       });
       responseText = response.text || "";
+      await verifyAndTrackAIUsage(req, prompt, responseText, primaryModel);
     } catch (err: any) {
       const is503 = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('high demand');
       const isTimeout = err?.message?.toLowerCase().includes('timeout') || err?.message?.toLowerCase().includes('abort');
@@ -106,12 +168,14 @@ Return JSON strictly in this format:
       if (is503 || isTimeout || is429) {
         console.log(`[AI Routing] Review switchover active.`);
         try {
+          const fallbackModel = "gemini-3.1-flash-lite";
           const response = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
+            model: fallbackModel,
             contents: prompt,
             config: { responseMimeType: "application/json" }
           });
           responseText = response.text || "";
+          await verifyAndTrackAIUsage(req, prompt, responseText, fallbackModel);
         } catch (liteErr) {
           console.log(`[AI Routing] Review fallback activated.`);
         }
@@ -129,11 +193,11 @@ Return JSON strictly in this format:
           if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
             parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
           }
-        } catch (e2) { }
+        } catch (e2) {}
       }
     }
 
-    setCachedResponse(cacheKey, parsed);
+    await setCachedResponse(cacheKey, parsed);
     res.json(parsed);
   } catch (err) {
     res.json({
@@ -152,13 +216,17 @@ export const handleCareerRoadmap = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Target role is required" });
     }
 
+    if (req.user && req.user.uid && await isUserOverBudget(req.user.uid)) {
+      return res.status(429).json({ error: "Daily AI usage budget exceeded. Please try again tomorrow." });
+    }
+
     const roleStr = targetRole || "Software Engineer";
     const eduStr = education || "Computer Science Student";
     const skillsStr = currentSkills || "Programming Basics, Problem Solving";
     const timeStr = timeframe || "6 Months";
 
     const cacheKey = `career_roadmap:${roleStr}:${eduStr}:${skillsStr}:${timeStr}`;
-    const cached = getCachedResponse(cacheKey);
+    const cached = await getCachedResponse(cacheKey);
     if (cached) {
       return res.json(cached);
     }
@@ -208,22 +276,26 @@ Return ONLY a JSON object strictly adhering to this schema:
 }`;
 
     let responseText = "";
+    const primaryModel = "gemini-3.5-flash";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: primaryModel,
         contents: prompt,
         config: { responseMimeType: "application/json" }
       });
       responseText = response.text || "";
+      await verifyAndTrackAIUsage(req, prompt, responseText, primaryModel);
     } catch (err: any) {
       try {
+        const fallbackModel = "gemini-3.1-flash-lite";
         const response = await ai.models.generateContent({
-          model: "gemini-3.1-flash-lite",
+          model: fallbackModel,
           contents: prompt,
           config: { responseMimeType: "application/json" }
         });
         responseText = response.text || "";
-      } catch (liteErr) { }
+        await verifyAndTrackAIUsage(req, prompt, responseText, fallbackModel);
+      } catch (liteErr) {}
     }
 
     let parsed = defaultFallback;
@@ -237,11 +309,11 @@ Return ONLY a JSON object strictly adhering to this schema:
           if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
             parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
           }
-        } catch (e2) { }
+        } catch (e2) {}
       }
     }
 
-    setCachedResponse(cacheKey, parsed);
+    await setCachedResponse(cacheKey, parsed);
     res.json(parsed);
   } catch (err) {
     console.error("/api/ai/career-roadmap error:", err);
@@ -259,9 +331,13 @@ export const analyzeResume = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "No job description provided" });
     }
 
+    if (req.user && req.user.uid && await isUserOverBudget(req.user.uid)) {
+      return res.status(429).json({ error: "Daily AI usage budget exceeded. Please try again tomorrow." });
+    }
+
     const cacheInput = resumeBase64 ? resumeBase64.substring(0, 200) : (resumeText || "").substring(0, 200);
     const cacheKey = `resume_analysis:${cacheInput}:${jobDescription.substring(0, 100)}`;
-    const cached = getCachedResponse(cacheKey);
+    const cached = await getCachedResponse(cacheKey);
     if (cached) {
       return res.json(cached);
     }
@@ -292,8 +368,7 @@ export const analyzeResume = async (req: Request, res: Response) => {
       contents.push({ text: `Resume plain text content:\n${resumeText}` });
     }
 
-    contents.push({
-      text: `You are an expert recruiter and resume reviewer.
+    const resumeAnalyzePrompt = `You are an expert recruiter and resume reviewer.
         Analyze this resume for compatibility with the following target Job Description.
         
         Job Description:
@@ -307,27 +382,33 @@ export const analyzeResume = async (req: Request, res: Response) => {
           "strengths": string[],
           "weaknesses": string[],
           "suggestions": string[]
-        }
-        `
+        }`;
+
+    contents.push({
+      text: resumeAnalyzePrompt
     });
 
     let responseText = "";
+    const primaryModel = "gemini-2.5-flash";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: primaryModel,
         contents: contents,
         config: { responseMimeType: "application/json" }
       });
       responseText = response.text || "";
+      await verifyAndTrackAIUsage(req, resumeAnalyzePrompt, responseText, primaryModel);
     } catch (err: any) {
       console.error("Gemini API call failed:", err);
       try {
+        const fallbackModel = "gemini-2.0-flash";
         const response = await ai.models.generateContent({
-          model: "gemini-2.0-flash",
+          model: fallbackModel,
           contents: contents,
           config: { responseMimeType: "application/json" }
         });
         responseText = response.text || "";
+        await verifyAndTrackAIUsage(req, resumeAnalyzePrompt, responseText, fallbackModel);
       } catch (liteErr) {
         console.error("Gemini Alternate model failed:", liteErr);
       }
@@ -344,11 +425,11 @@ export const analyzeResume = async (req: Request, res: Response) => {
           if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
             parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
           }
-        } catch (e2) { }
+        } catch (e2) {}
       }
     }
 
-    setCachedResponse(cacheKey, parsed);
+    await setCachedResponse(cacheKey, parsed);
     res.json(parsed);
   } catch (err) {
     console.error("/api/ai/analyze-resume error:", err);
@@ -362,6 +443,10 @@ export const generateOutreach = async (req: Request, res: Response) => {
     
     if (!recruiterName || !company || !jobRole || !outreachType) {
       return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (req.user && req.user.uid && await isUserOverBudget(req.user.uid)) {
+      return res.status(429).json({ error: "Daily AI usage budget exceeded. Please try again tomorrow." });
     }
 
     const typeStr = outreachType === 'LinkedIn Connect' ? 'LinkedIn connection request' : 'cold email';
@@ -380,7 +465,7 @@ Constraints:
 - Provide only the plain text message, no additional formatting or explanations.`;
 
     const cacheKey = `outreach:${recruiterName}:${company}:${jobRole}:${outreachType}`;
-    const cached = getCachedResponse(cacheKey);
+    const cached = await getCachedResponse(cacheKey);
     if (cached) {
       return res.json({ text: cached });
     }
@@ -391,19 +476,23 @@ Constraints:
     }
 
     let responseText = "";
+    const primaryModel = "gemini-3.5-flash";
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: primaryModel,
         contents: prompt
       });
       responseText = response.text || "";
+      await verifyAndTrackAIUsage(req, prompt, responseText, primaryModel);
     } catch (err: any) {
       try {
+        const fallbackModel = "gemini-3.1-flash-lite";
         const response = await ai.models.generateContent({
-          model: "gemini-3.1-flash-lite",
+          model: fallbackModel,
           contents: prompt
         });
         responseText = response.text || "";
+        await verifyAndTrackAIUsage(req, prompt, responseText, fallbackModel);
       } catch (liteErr) {
         responseText = `Hi ${recruiterName}, I'm reaching out about the ${jobRole} role at ${company}. Given my background, I'd love to connect and learn more.`;
       }
@@ -413,7 +502,7 @@ Constraints:
       responseText = `Hi ${recruiterName}, I'm reaching out about the ${jobRole} role at ${company}. Given my background, I'd love to connect and learn more.`;
     }
 
-    setCachedResponse(cacheKey, responseText);
+    await setCachedResponse(cacheKey, responseText);
     res.json({ text: responseText });
 
   } catch (err) {
@@ -421,3 +510,4 @@ Constraints:
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+

@@ -176,6 +176,11 @@ export const respondToRequest = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Team is already full" });
       }
 
+      // Check if applicant is already a member
+      if (team.members && team.members.some((m: any) => m.uid === joinReq.applicantUid)) {
+        return res.status(400).json({ error: "Applicant is already a member of this team" });
+      }
+
       const newMember = {
         uid: joinReq.applicantUid, name: joinReq.applicantName, email: joinReq.applicantEmail,
         role: joinReq.role, joinedAt: new Date().toISOString(),
@@ -200,3 +205,102 @@ export const respondToRequest = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to respond to join request" });
   }
 };
+
+export const leaveTeam = async (req: Request, res: Response) => {
+  try {
+    const teamId = req.params.id;
+    const userId = req.user.uid;
+
+    const oid = safeObjectId(teamId);
+    const filter = oid ? { _id: oid } : { _id: String(teamId) };
+
+    const team = await dbCommand.collection("teams").findOne(filter);
+    if (!team) return res.status(404).json({ error: "Team not found" });
+
+    const isMember = team.members && team.members.some((m: any) => m.uid === userId);
+    if (!isMember) {
+      return res.status(400).json({ error: "You are not a member of this team" });
+    }
+
+    if (team.leaderUid === userId) {
+      // Leader is leaving
+      const otherMembers = team.members.filter((m: any) => m.uid !== userId);
+      if (otherMembers.length > 0) {
+        const nextLeader = otherMembers[0];
+        // Promote next leader
+        nextLeader.role = "Leader";
+        
+        await dbCommand.collection("teams").updateOne(filter, {
+          $set: {
+            leaderUid: nextLeader.uid,
+            leaderName: nextLeader.name || nextLeader.email || "New Leader",
+            members: otherMembers,
+            updatedAt: new Date().toISOString()
+          }
+        });
+        return res.json({ message: `Successfully left team. Leadership promoted to ${nextLeader.name || nextLeader.email}.` });
+      } else {
+        // Disband the team if leader leaves and no other members remain
+        await dbCommand.collection("teams").deleteOne(filter);
+        return res.json({ message: "Successfully left team. The team was disbanded as there were no other members." });
+      }
+    } else {
+      // Regular member is leaving
+      const updatedMembers = team.members.filter((m: any) => m.uid !== userId);
+      await dbCommand.collection("teams").updateOne(filter, {
+        $set: {
+          members: updatedMembers,
+          status: "open", // reopen if team was closed
+          updatedAt: new Date().toISOString()
+        }
+      });
+      return res.json({ message: "Successfully left team" });
+    }
+  } catch (err: any) {
+    console.error("[Team API] Error leaving team:", err);
+    return res.status(500).json({ error: "Failed to leave team" });
+  }
+};
+
+export const removeMember = async (req: Request, res: Response) => {
+  try {
+    const teamId = req.params.id;
+    const memberUid = req.params.uid;
+    const currentUserId = req.user.uid;
+
+    const oid = safeObjectId(teamId);
+    const filter = oid ? { _id: oid } : { _id: String(teamId) };
+
+    const team = await dbCommand.collection("teams").findOne(filter);
+    if (!team) return res.status(404).json({ error: "Team not found" });
+
+    // Authorization Check: only team leader can remove members
+    if (team.leaderUid !== currentUserId) {
+      return res.status(403).json({ error: "Only team leaders can remove members" });
+    }
+
+    if (memberUid === team.leaderUid) {
+      return res.status(400).json({ error: "Team leaders cannot remove themselves. Please use the leave endpoint instead." });
+    }
+
+    const isMember = team.members && team.members.some((m: any) => m.uid === memberUid);
+    if (!isMember) {
+      return res.status(400).json({ error: "User is not a member of this team" });
+    }
+
+    const updatedMembers = team.members.filter((m: any) => m.uid !== memberUid);
+    await dbCommand.collection("teams").updateOne(filter, {
+      $set: {
+        members: updatedMembers,
+        status: "open", // reopen
+        updatedAt: new Date().toISOString()
+      }
+    });
+
+    return res.json({ message: "Member successfully removed from the team" });
+  } catch (err: any) {
+    console.error("[Team API] Error removing member:", err);
+    return res.status(500).json({ error: "Failed to remove member" });
+  }
+};
+

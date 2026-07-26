@@ -87,55 +87,97 @@ async function getAuthHeaders() {
   };
 }
 
-async function fetchWithRetry(url: string, options: RequestInit, retries = 2): Promise<Response> {
-  const headers = await getAuthHeaders();
-  const mergedOptions = {
-    ...options,
-    headers: {
-      ...headers,
-      ...(options.headers || {})
-    }
-  };
+class RequestThrottler {
+  private queue: (() => Promise<void>)[] = [];
+  private processing = false;
+  private minIntervalMs = 200; // max 5 requests per second
 
-  try {
-    const response = await fetch(url, mergedOptions);
-    if (response.ok) {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('backend-status', { detail: { online: true, timestamp: Date.now() } }));
+  async throttle<T>(fn: () => Promise<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const res = await fn();
+          resolve(res);
+        } catch (err) {
+          reject(err);
+        }
+      });
+      this.processQueue();
+    });
+  }
+
+  private async processQueue() {
+    if (this.processing || this.queue.length === 0) return;
+    this.processing = true;
+
+    while (this.queue.length > 0) {
+      const task = this.queue.shift();
+      if (task) {
+        await task();
+        if (this.queue.length > 0) {
+          await new Promise((resolve) => setTimeout(resolve, this.minIntervalMs));
+        }
       }
-      return response;
     }
-    
-    // Don't retry on 4xx (client errors) other than 429
-    if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('backend-status', { detail: { online: true, timestamp: Date.now() } }));
-      }
-      return response;
-    }
-    
-    if (retries > 0) {
-      await new Promise(r => setTimeout(r, 1000));
-      return fetchWithRetry(url, options, retries - 1);
-    }
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('backend-status', { detail: { online: true, timestamp: Date.now() } }));
-    }
-    return response;
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw error;
-    }
-    if (retries > 0) {
-      await new Promise(r => setTimeout(r, 1000));
-      return fetchWithRetry(url, options, retries - 1);
-    }
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('backend-status', { detail: { online: false, timestamp: Date.now() } }));
-    }
-    throw error;
+
+    this.processing = false;
   }
 }
+
+const throttler = new RequestThrottler();
+
+async function fetchWithRetry(url: string, options: RequestInit, retries = 2): Promise<Response> {
+  return throttler.throttle(async () => {
+    const headers = await getAuthHeaders();
+    const mergedOptions = {
+      ...options,
+      headers: {
+        ...headers,
+        ...(options.headers || {})
+      }
+    };
+
+    try {
+      const response = await fetch(url, mergedOptions);
+      if (response.ok) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('backend-status', { detail: { online: true, timestamp: Date.now() } }));
+        }
+        return response;
+      }
+      
+      // Don't retry on 4xx (client errors) other than 429
+      if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('backend-status', { detail: { online: true, timestamp: Date.now() } }));
+        }
+        return response;
+      }
+      
+      if (retries > 0) {
+        await new Promise(r => setTimeout(r, 1000));
+        return fetchWithRetry(url, options, retries - 1);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('backend-status', { detail: { online: true, timestamp: Date.now() } }));
+      }
+      return response;
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw error;
+      }
+      if (retries > 0) {
+        await new Promise(r => setTimeout(r, 1000));
+        return fetchWithRetry(url, options, retries - 1);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('backend-status', { detail: { online: false, timestamp: Date.now() } }));
+      }
+      throw error;
+    }
+  });
+}
+
 
 export async function fetchLatestFeed() {
   try {

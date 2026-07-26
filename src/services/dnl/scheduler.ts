@@ -6,7 +6,7 @@ import { createBreaker } from '../circuitBreaker';
 export class DNLDispatcher {
   private db: any;
   private adapters: IOpportunityAdapter[] = [];
-  private intervalId: NodeJS.Timeout | null = null;
+  private intervalId: any = null;
   private breakers: Record<string, any> = {};
 
   constructor(db: any) {
@@ -21,24 +21,41 @@ export class DNLDispatcher {
     if (!this.breakers[sourceName]) {
       const fetchCb = async (url: string) => {
         const fetchStart = performance.now();
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        let retries = 3;
+        let delay = 1000; // Start with 1 second delay
+        let lastError: any = null;
+
+        while (retries > 0) {
+          try {
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            let ttfb = 0;
+            // In Node.js environment, response.body might not have getReader if it's node-fetch.
+            // We'll do a simple fallback if reader is not available.
+            if (response.body && typeof (response.body as any).getReader === 'function') {
+              const reader = (response.body as any).getReader();
+              await reader.read();
+              ttfb = Math.round(performance.now() - fetchStart);
+            } else {
+              ttfb = Math.round(performance.now() - fetchStart);
+            }
+            
+            const text = await response.text();
+            return { text, ttfb };
+          } catch (err: any) {
+            lastError = err;
+            retries--;
+            if (retries > 0) {
+              console.warn(`[DNLDispatcher] Fetch failed for ${url}. Retrying in ${delay}ms... Error: ${err.message}`);
+              await new Promise((resolve) => setTimeout(resolve, delay));
+              delay *= 2; // Exponential backoff
+            }
+          }
         }
-        
-        let ttfb = 0;
-        // In Node.js environment, response.body might not have getReader if it's node-fetch.
-        // We'll do a simple fallback if reader is not available.
-        if (response.body && typeof (response.body as any).getReader === 'function') {
-          const reader = (response.body as any).getReader();
-          await reader.read();
-          ttfb = Math.round(performance.now() - fetchStart);
-        } else {
-          ttfb = Math.round(performance.now() - fetchStart);
-        }
-        
-        const text = await response.text();
-        return { text, ttfb };
+        throw lastError || new Error(`Failed to fetch scraper URL ${url} after 3 attempts.`);
       };
       
       const breaker = createBreaker(
@@ -152,19 +169,31 @@ export class DNLDispatcher {
   private async dispatchAll() {
     console.log(`[DNLDispatcher] Cron trigger: Dispatching ${this.adapters.length} scraper run(s)...`);
 
-    const results = await Promise.allSettled(
-      this.adapters.map(async (adapter) => {
-        const sourceName = adapter.sourceName;
-        const configUrl = process.env[`SCRAPER_URL_${sourceName.toUpperCase()}`];
+    const results: any[] = [];
+    for (let i = 0; i < this.adapters.length; i++) {
+      const adapter = this.adapters[i];
+      const sourceName = adapter.sourceName;
+      const processEnvObj = (globalThis as any).process;
+      const configUrl = processEnvObj?.env?.[`SCRAPER_URL_${sourceName.toUpperCase()}`];
 
-        if (configUrl) {
-          console.log(`[DNLDispatcher] Running scraper for ${sourceName} via URL: ${configUrl}`);
+      if (configUrl) {
+        console.log(`[DNLDispatcher] Running scraper for ${sourceName} via URL: ${configUrl}`);
+        try {
           await this.runScrape(adapter, configUrl);
-        } else {
-          console.warn(`[DNLDispatcher] No SCRAPER_URL_${sourceName.toUpperCase()} configured. Skipping ${sourceName}.`);
+          results.push({ status: 'fulfilled', value: undefined });
+        } catch (err: any) {
+          results.push({ status: 'rejected', reason: err });
         }
-      })
-    );
+      } else {
+        console.warn(`[DNLDispatcher] No SCRAPER_URL_${sourceName.toUpperCase()} configured. Skipping ${sourceName}.`);
+      }
+
+      // Add a throttle spacing delay of 5 seconds between scraper launches
+      if (i < this.adapters.length - 1) {
+        console.log(`[DNLDispatcher] Throttling: waiting 5 seconds before dispatching next scraper adapter...`);
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }
+    }
 
     const failed = results.filter(r => r.status === 'rejected').length;
     if (failed > 0) {
@@ -173,4 +202,5 @@ export class DNLDispatcher {
       console.log(`[DNLDispatcher] All ${this.adapters.length} scraper run(s) completed.`);
     }
   }
+
 }

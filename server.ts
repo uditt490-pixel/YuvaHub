@@ -20,6 +20,17 @@ import { eventBus } from "./src/events/eventBus.js";
 import { createNotificationConsumer } from "./src/consumers/notificationConsumer.js";
 import { createOpportunityScrapedConsumer } from "./src/consumers/opportunityScrapedConsumer.js";
 
+import { createBullBoard } from "@bull-board/api";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+import { ExpressAdapter } from "@bull-board/express";
+
+import { emailQueue } from "./src/queues/emailQueue.js";
+import { pushQueue } from "./src/queues/pushQueue.js";
+import { scraperQueue } from "./src/queues/scraperQueue.js";
+import { agentQueue } from "./src/queues/agentQueue.js";
+import { resumeParserQueue } from "./src/queues/resumeQueue.js";
+import { applicationQueue } from "./src/queues/applicationQueue.js";
+
 dotenv.config();
 
 Sentry.init({
@@ -44,6 +55,24 @@ app.use(express.json({ limit: "10mb" }));
 
 // Setup API Routes
 app.use("/api", apiRoutes);
+
+// Bull Board Dashboard configuration
+const serverAdapter = new ExpressAdapter();
+serverAdapter.setBasePath("/admin/queues");
+
+createBullBoard({
+  queues: [
+    new BullMQAdapter(emailQueue),
+    new BullMQAdapter(pushQueue),
+    new BullMQAdapter(scraperQueue),
+    new BullMQAdapter(agentQueue),
+    new BullMQAdapter(resumeParserQueue),
+    new BullMQAdapter(applicationQueue)
+  ],
+  serverAdapter: serverAdapter
+});
+
+app.use("/admin/queues", serverAdapter.getRouter());
 
 // ── SEO Routes (root-level for crawler discovery) ──────────────────────
 

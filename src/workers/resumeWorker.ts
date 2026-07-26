@@ -1,5 +1,6 @@
 import { Worker, Job } from "bullmq";
 import { connection } from "../queues/connection";
+import { QueueName } from "../queues/queueNames.js";
 import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
 import { PDFParse } from "pdf-parse";
@@ -18,7 +19,7 @@ mongoClient.connect().catch((err) => {
 });
 
 export const resumeWorker = new Worker(
-  "resume-parser",
+  QueueName.RESUME,
   async (job: Job) => {
     const { userId, resumeUrl } = job.data;
     if (!userId || !resumeUrl) {
@@ -128,5 +129,42 @@ export const resumeWorker = new Worker(
       throw err; // Trigger BullMQ retry
     }
   },
-  { connection }
+  {
+    connection,
+    concurrency: 5,
+  }
 );
+
+resumeWorker.on("completed", (job) => {
+  console.log(`[ResumeWorker] Job ${job.id} completed successfully`);
+});
+
+resumeWorker.on("failed", async (job, err) => {
+  console.error(`[ResumeWorker] Job ${job?.id} failed with error: ${err.message}`);
+  
+  if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
+    console.error(`[ResumeWorker] Job ${job.id} has exhausted all retries. Logging to dead_letter_jobs DB collection.`);
+    try {
+      const db = mongoClient.db(dbName);
+      await db.collection("dead_letter_jobs").insertOne({
+        queue: QueueName.RESUME,
+        jobId: job.id,
+        data: job.data,
+        failedAt: new Date(),
+        attemptsMade: job.attemptsMade,
+        error: err.message,
+        stack: err.stack
+      });
+    } catch (dbErr: any) {
+      console.error("[ResumeWorker] Failed to write to dead_letter_jobs collection:", dbErr.message);
+    }
+  }
+});
+
+let resumeWorkerErrorLogged = false;
+resumeWorker.on("error", (err) => {
+  if (!resumeWorkerErrorLogged) {
+    console.warn('[ResumeWorker] Redis connection offline. Worker listening paused.');
+    resumeWorkerErrorLogged = true;
+  }
+});

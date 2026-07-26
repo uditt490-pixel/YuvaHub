@@ -1,5 +1,6 @@
 import { Worker, Job } from "bullmq";
 import { connection } from "../queues/connection";
+import { QueueName } from "../queues/queueNames.js";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import crypto from "crypto";
@@ -19,7 +20,7 @@ mongoClient.connect().catch((err) => {
 });
 
 export const scraperWorker = new Worker(
-  "scraper-jobs",
+  QueueName.SCRAPER,
   async (job: Job) => {
     const { domain, url, type } = job.data;
     console.log(`[ScraperWorker] Processing job ${job.id} for domain: ${domain}, url: ${url}`);
@@ -72,6 +73,7 @@ export const scraperWorker = new Worker(
   },
   {
     connection: connection as any,
+    concurrency: 5,
     // Rate Limiting: max 5 jobs per second
     limiter: {
       max: 5,
@@ -84,14 +86,30 @@ scraperWorker.on("completed", (job) => {
   console.log(`[ScraperWorker] Job ${job.id} completed successfully.`);
 });
 
-scraperWorker.on("failed", (job, err) => {
+scraperWorker.on("failed", async (job, err) => {
   console.error(`[ScraperWorker] Job ${job?.id} failed with error: ${err.message}`);
   
   // Alerting mechanism: Check if this was the final attempt
-  if (job && job.opts.attempts && job.attemptsMade === job.opts.attempts) {
+  const maxAttempts = job?.opts?.attempts || 5;
+  if (job && job.attemptsMade >= maxAttempts) {
     console.error(`[ALERT] Scraper Job ${job.id} for domain ${job.data.domain} failed ${job.attemptsMade} times in a row! Maintenance required.`);
     
     sendAdminAlert("ScraperWorker", job, err);
+
+    try {
+      const db = mongoClient.db(dbName);
+      await db.collection("dead_letter_jobs").insertOne({
+        queue: QueueName.SCRAPER,
+        jobId: job.id,
+        data: job.data,
+        failedAt: new Date(),
+        attemptsMade: job.attemptsMade,
+        error: err.message,
+        stack: err.stack
+      });
+    } catch (dbErr: any) {
+      console.error("[ScraperWorker] Failed to write to dead_letter_jobs collection:", dbErr.message);
+    }
   }
 });
 

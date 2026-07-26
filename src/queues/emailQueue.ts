@@ -1,8 +1,9 @@
 import { Queue } from "bullmq";
 import { connection, isRedisReady } from "./connection";
+import { QueueName } from "./queueNames.js";
 import nodemailer from "nodemailer";
 
-export const emailQueue = new Queue("emailQueue", { connection: connection as any });
+export const emailQueue = new Queue(QueueName.EMAIL, { connection: connection as any });
 
 export interface EmailJobData {
   to: string;

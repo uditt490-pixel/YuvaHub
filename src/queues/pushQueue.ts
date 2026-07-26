@@ -1,7 +1,8 @@
 import { Queue } from "bullmq";
 import { connection, isRedisReady } from "./connection";
+import { QueueName } from "./queueNames.js";
 
-export const pushQueue = new Queue("pushQueue", { connection: connection as any });
+export const pushQueue = new Queue(QueueName.PUSH, { connection: connection as any });
 
 export interface PushJobData {
   userId: string;

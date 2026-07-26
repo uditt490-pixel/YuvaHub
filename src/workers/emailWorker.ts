@@ -1,6 +1,8 @@
 import { Worker, Job } from "bullmq";
 import { connection } from "../queues/connection";
 import { EmailJobData } from "../queues/emailQueue";
+import { QueueName } from "../queues/queueNames.js";
+import { getCommandDB } from "../lib/mongodb.js";
 import nodemailer from "nodemailer";
 
 // Retrieve SMTP settings from environment with secure defaults
@@ -28,7 +30,7 @@ if (smtpHost && smtpUser && smtpPass) {
 }
 
 export const emailWorker = new Worker<EmailJobData>(
-  "emailQueue",
+  QueueName.EMAIL,
   async (job: Job<EmailJobData>) => {
     const { to, subject, body, html } = job.data;
     console.log(`[EmailWorker] Processing job ${job.id} for ${to}`);
@@ -60,18 +62,35 @@ export const emailWorker = new Worker<EmailJobData>(
       console.log(`[EmailWorker] Mock Sent: To: ${to} | Subject: ${subject} | Body: ${body}`);
     }
   },
-  { connection: connection as any }
+  {
+    connection: connection as any,
+    concurrency: 15,
+  }
 );
 
 emailWorker.on("completed", (job) => {
   console.log(`[EmailWorker] Job ${job.id} completed successfully`);
 });
 
-emailWorker.on("failed", (job, err) => {
+emailWorker.on("failed", async (job, err) => {
   console.error(`[EmailWorker] Job ${job?.id} failed with error: ${err.message}`);
   
-  if (job && job.attemptsMade >= (job.opts.attempts || 1)) {
-    console.error(`[EmailWorker] Job ${job.id} has exhausted all retries. Moving to DLQ (Logged).`);
+  if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
+    console.error(`[EmailWorker] Job ${job.id} has exhausted all retries. Logging to dead_letter_jobs DB collection.`);
+    try {
+      const db = await getCommandDB();
+      await db.collection("dead_letter_jobs").insertOne({
+        queue: QueueName.EMAIL,
+        jobId: job.id,
+        data: job.data,
+        failedAt: new Date(),
+        attemptsMade: job.attemptsMade,
+        error: err.message,
+        stack: err.stack
+      });
+    } catch (dbErr: any) {
+      console.error("[EmailWorker] Failed to write to dead_letter_jobs collection:", dbErr.message);
+    }
   }
 });
 

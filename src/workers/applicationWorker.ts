@@ -13,6 +13,8 @@
 import { Worker, Job } from "bullmq";
 import { connection } from "../queues/connection";
 import { ApplicationJobData } from "../queues/applicationQueue";
+import { QueueName } from "../queues/queueNames.js";
+import { getCommandDB } from "../lib/mongodb.js";
 
 
 async function processApplicationJob(
@@ -111,11 +113,11 @@ async function processApplicationJob(
 
 export const applicationWorker =
   new Worker<ApplicationJobData>(
-    "application-processing",
+    QueueName.APPLICATION,
     processApplicationJob,
     {
       connection: connection as any,
-      concurrency: 5,
+      concurrency: 2,
     }
   );
 
@@ -136,13 +138,29 @@ applicationWorker.on(
 
 applicationWorker.on(
   "failed",
-  (job, error) => {
-
+  async (job, error) => {
     console.error(
       `[ApplicationWorker] Job ${job?.id} failed`,
       error
     );
 
+    if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
+      console.error(`[ApplicationWorker] Job ${job.id} has exhausted all retries. Logging to dead_letter_jobs DB collection.`);
+      try {
+        const db = await getCommandDB();
+        await db.collection("dead_letter_jobs").insertOne({
+          queue: QueueName.APPLICATION,
+          jobId: job.id,
+          data: job.data,
+          failedAt: new Date(),
+          attemptsMade: job.attemptsMade,
+          error: error.message,
+          stack: error.stack
+        });
+      } catch (dbErr: any) {
+        console.error("[ApplicationWorker] Failed to write to dead_letter_jobs collection:", dbErr.message);
+      }
+    }
   }
 );
 

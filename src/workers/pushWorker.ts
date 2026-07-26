@@ -1,6 +1,8 @@
 import { Worker, Job } from "bullmq";
 import { connection } from "../queues/connection";
 import { PushJobData } from "../queues/pushQueue";
+import { QueueName } from "../queues/queueNames.js";
+import { getCommandDB } from "../lib/mongodb.js";
 
 // Retrieve FCM configuration from environment
 const serviceAccountKeyRaw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || "";
@@ -25,7 +27,7 @@ if (serviceAccountKeyRaw) {
 }
 
 export const pushWorker = new Worker<PushJobData>(
-  "pushQueue",
+  QueueName.PUSH,
   async (job: Job<PushJobData>) => {
     const { userId, message } = job.data;
     console.log(`[PushWorker] Processing job ${job.id} for userId ${userId}`);
@@ -85,18 +87,35 @@ export const pushWorker = new Worker<PushJobData>(
       console.log(`[PushWorker] Simulated Push Sent. To: ${userId} | Message: ${message}`);
     }
   },
-  { connection: connection as any }
+  {
+    connection: connection as any,
+    concurrency: 15,
+  }
 );
 
 pushWorker.on("completed", (job) => {
   console.log(`[PushWorker] Job ${job.id} completed successfully`);
 });
 
-pushWorker.on("failed", (job, err) => {
+pushWorker.on("failed", async (job, err) => {
   console.error(`[PushWorker] Job ${job?.id} failed with error: ${err.message}`);
   
-  if (job && job.attemptsMade >= (job.opts.attempts || 1)) {
-    console.error(`[PushWorker] Job ${job.id} has exhausted all retries. Moving to DLQ (Logged).`);
+  if (job && job.attemptsMade >= (job.opts.attempts || 3)) {
+    console.error(`[PushWorker] Job ${job.id} has exhausted all retries. Logging to dead_letter_jobs DB collection.`);
+    try {
+      const db = await getCommandDB();
+      await db.collection("dead_letter_jobs").insertOne({
+        queue: QueueName.PUSH,
+        jobId: job.id,
+        data: job.data,
+        failedAt: new Date(),
+        attemptsMade: job.attemptsMade,
+        error: err.message,
+        stack: err.stack
+      });
+    } catch (dbErr: any) {
+      console.error("[PushWorker] Failed to write to dead_letter_jobs collection:", dbErr.message);
+    }
   }
 });
 

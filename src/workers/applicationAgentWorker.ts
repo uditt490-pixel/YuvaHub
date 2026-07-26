@@ -1,6 +1,7 @@
 import { Worker, Job } from "bullmq";
 import { connection, isRedisReady } from "../queues/connection";
 import { AgentJobData } from "../queues/agentQueue";
+import { QueueName } from "../queues/queueNames.js";
 import { chromium, Browser } from "playwright";
 import { getCommandDB } from "../lib/mongodb";
 import { safeObjectId } from "../lib/utils.js";
@@ -90,7 +91,7 @@ export function initAgentWorker() {
     return null;
   }
 
-  worker = new Worker<AgentJobData>("agent-processing", processAgentJob, {
+  worker = new Worker<AgentJobData>(QueueName.AGENT, processAgentJob, {
     connection: connection as any,
     concurrency: 2, // Headless browsers are heavy, limit concurrency
   });
@@ -99,8 +100,26 @@ export function initAgentWorker() {
     console.log(`Agent job ${job.id} completed successfully`);
   });
 
-  worker.on("failed", (job, err) => {
+  worker.on("failed", async (job, err) => {
     console.error(`Agent job ${job?.id} failed with ${err.message}`);
+    
+    if (job && job.attemptsMade >= (job.opts.attempts || 1)) {
+      console.error(`[AgentWorker] Job ${job.id} has exhausted all retries. Logging to dead_letter_jobs DB collection.`);
+      try {
+        const db = await getCommandDB();
+        await db.collection("dead_letter_jobs").insertOne({
+          queue: QueueName.AGENT,
+          jobId: job.id,
+          data: job.data,
+          failedAt: new Date(),
+          attemptsMade: job.attemptsMade,
+          error: err.message,
+          stack: err.stack
+        });
+      } catch (dbErr: any) {
+        console.error("[AgentWorker] Failed to write to dead_letter_jobs collection:", dbErr.message);
+      }
+    }
   });
 
   console.log("🛠️ Agent worker initialized");

@@ -9,6 +9,7 @@
 
 import { Queue } from "bullmq";
 import { connection, isRedisReady } from "./connection";
+import { QueueName } from "./queueNames.js";
 
 export interface ApplicationJobData {
   userId: string;
@@ -28,7 +29,7 @@ export interface ApplicationJobData {
 }
 
 export const applicationQueue = new Queue<ApplicationJobData>(
-  "application-processing",
+  QueueName.APPLICATION,
   {
     connection: connection as any,
     defaultJobOptions: {

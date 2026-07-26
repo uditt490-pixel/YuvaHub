@@ -7,6 +7,7 @@
 
 import { Queue } from "bullmq";
 import { connection, isRedisReady } from "./connection";
+import { QueueName } from "./queueNames";
 
 export interface AgentJobData {
   userId: string;
@@ -15,7 +16,7 @@ export interface AgentJobData {
 }
 
 export const agentQueue = new Queue<AgentJobData>(
-  "agent-processing",
+  QueueName.AGENT,
   {
     connection: connection as any,
     defaultJobOptions: {

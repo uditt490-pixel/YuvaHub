@@ -2,6 +2,35 @@ import CircuitBreaker from 'opossum';
 import * as Sentry from '@sentry/node';
 import { redisClient } from '../api/redis.js';
 
+async function getFailureCount(service: string): Promise<number> {
+  if (!(globalThis as any).REDIS_AVAILABLE || !redisClient) return 0;
+  try {
+    const count = await redisClient.get(`circuit:${service}:failures`);
+    return parseInt(count || '0', 10);
+  } catch (err: any) {
+    console.error(`[CircuitBreaker] getFailureCount error for ${service}:`, err.message);
+    return 0;
+  }
+}
+
+async function recordFailure(service: string): Promise<void> {
+  if (!(globalThis as any).REDIS_AVAILABLE || !redisClient) return;
+  try {
+    await redisClient.multi().incr(`circuit:${service}:failures`).expire(`circuit:${service}:failures`, 300).exec();
+  } catch (err: any) {
+    console.error(`[CircuitBreaker] recordFailure error for ${service}:`, err.message);
+  }
+}
+
+async function clearFailures(service: string): Promise<void> {
+  if (!(globalThis as any).REDIS_AVAILABLE || !redisClient) return;
+  try {
+    await redisClient.del(`circuit:${service}:failures`);
+  } catch (err: any) {
+    console.error(`[CircuitBreaker] clearFailures error for ${service}:`, err.message);
+  }
+}
+
 export function createBreaker<T extends (...args: any[]) => Promise<any>>(
   action: T,
   options: CircuitBreaker.Options = {},
@@ -37,9 +66,11 @@ export function createBreaker<T extends (...args: any[]) => Promise<any>>(
     if ((globalThis as any).REDIS_AVAILABLE && redisClient) {
       try {
         const remoteState = await redisClient.get(`circuit_breaker:${name}:state`);
-        if (remoteState === 'open' && !breaker.opened) {
+        const failures = await getFailureCount(name);
+        const threshold = 5;
+        if ((remoteState === 'open' || failures >= threshold) && !breaker.opened) {
           breaker.open();
-        } else if (remoteState === 'closed' && breaker.opened) {
+        } else if (remoteState === 'closed' && failures < threshold && breaker.opened) {
           breaker.close();
         }
       } catch (err: any) {
@@ -86,6 +117,15 @@ export function createBreaker<T extends (...args: any[]) => Promise<any>>(
     breaker.options.resetTimeout = baseResetTimeout;
     lastState = 'closed';
     syncStateToRedis('closed');
+    clearFailures(name).catch(err => console.error(`[CircuitBreaker] Failed to clear failures:`, err.message));
+  });
+
+  breaker.on('failure', () => {
+    recordFailure(name).catch(err => console.error(`[CircuitBreaker] Failed to record failure:`, err.message));
+  });
+
+  breaker.on('success', () => {
+    clearFailures(name).catch(err => console.error(`[CircuitBreaker] Failed to clear failures:`, err.message));
   });
 
   breaker.on('fallback', (result, err) => {

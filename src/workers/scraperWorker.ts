@@ -69,6 +69,20 @@ export const scraperWorker = new Worker(
       console.log(`[ScraperWorker] Updated existing opportunity: ${title}`);
     }
 
+    if (opportunity.deadline) {
+      const deadlineDate = new Date(opportunity.deadline);
+      if (!isNaN(deadlineDate.getTime())) {
+        try {
+          const { scheduleDeadlineNotification } = await import("../queues/deadlineQueue.js");
+          const existing = await db.collection("opportunities").findOne({ dedupeHash: opportunity.dedupeHash });
+          const oppId = existing?._id ? existing._id.toString() : opportunity.dedupeHash;
+          await scheduleDeadlineNotification(oppId, deadlineDate);
+        } catch (scheduleErr: any) {
+          console.error(`[ScraperWorker] Failed to schedule deadline notification:`, scheduleErr.message);
+        }
+      }
+    }
+
     return { status: "success", dedupeHash: opportunity.dedupeHash };
   },
   {

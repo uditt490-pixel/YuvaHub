@@ -464,6 +464,18 @@ export const submitOpportunity = async (req: Request, res: Response) => {
 
     await dbCommand.collection('opportunities').insertOne(doc);
 
+    if (doc.deadline) {
+      const deadlineDate = new Date(doc.deadline);
+      if (!isNaN(deadlineDate.getTime()) && (doc as any)._id) {
+        try {
+          const { scheduleDeadlineNotification } = await import('../../queues/deadlineQueue.js');
+          await scheduleDeadlineNotification((doc as any)._id.toString(), deadlineDate);
+        } catch (scheduleErr: any) {
+          console.error(`[Submit Opportunity] Failed to schedule deadline notification:`, scheduleErr.message);
+        }
+      }
+    }
+
     sendSuccess(res, null, 201);
   } catch (err: any) {
     console.error("[Submit Opportunity API Error]", err);

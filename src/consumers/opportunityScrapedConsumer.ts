@@ -42,6 +42,19 @@ export async function createOpportunityScrapedConsumer(db: any) {
         await db.collection('opportunities').insertOne(doc);
       }
       console.log(`[DB Consumer] Inserted opportunity: ${payload.title}`);
+
+      if (doc.deadline) {
+        const deadlineDate = new Date(doc.deadline);
+        if (!isNaN(deadlineDate.getTime())) {
+          try {
+            const { scheduleDeadlineNotification } = await import('../queues/deadlineQueue.js');
+            const oppId = (doc as any)._id ? (doc as any)._id.toString() : doc.dedupe_hash;
+            await scheduleDeadlineNotification(oppId, deadlineDate);
+          } catch (scheduleErr: any) {
+            console.error(`[DB Consumer] Failed to schedule deadline notification:`, scheduleErr.message);
+          }
+        }
+      }
     } catch (err: any) {
       if (err.code === 11000) {
         // Idempotency: Ignore duplicate key errors, simply ack the message

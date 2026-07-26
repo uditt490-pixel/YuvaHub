@@ -23,8 +23,21 @@ export async function createNotificationConsumer(db: any) {
 
       await matchOpportunityAndNotify(db, opportunityDoc);
       console.log(`[Notification Consumer] Successfully processed matchmaking for: ${payload.title}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error(`[Notification Consumer] Error during matchmaking processing:`, error);
+      try {
+        const { getCommandDB } = await import('../lib/mongodb.js');
+        const activeDb = db || await getCommandDB();
+        await activeDb.collection('dead_letter_jobs').insertOne({
+          queue: 'notification-consumer',
+          data: event,
+          failedAt: new Date(),
+          error: error.message,
+          stack: error.stack
+        });
+      } catch (dbErr: any) {
+        console.error(`[Notification Consumer] Failed to log failure to dead_letter_jobs:`, dbErr.message);
+      }
       throw error; // Let RabbitMQ retry or move to DLQ
     }
   };

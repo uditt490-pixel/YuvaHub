@@ -4,6 +4,7 @@ import { scraperWorker } from "./workers/scraperWorker";
 import { applicationWorker } from "./workers/applicationWorker";
 import { resumeWorker } from "./workers/resumeWorker";
 import { initAgentWorker, stopAgentWorker } from "./workers/applicationAgentWorker";
+import { deadlineWorker } from "./workers/deadlineWorker.js";
 
 console.log("[Worker] Starting background workers...");
 
@@ -19,6 +20,7 @@ const shutdown = async () => {
     scraperWorker.close(),
     applicationWorker.close(),
     resumeWorker.close(),
+    deadlineWorker.close(),
     stopAgentWorker()
   ]);
   

@@ -30,6 +30,7 @@ import { scraperQueue } from "./src/queues/scraperQueue.js";
 import { agentQueue } from "./src/queues/agentQueue.js";
 import { resumeParserQueue } from "./src/queues/resumeQueue.js";
 import { applicationQueue } from "./src/queues/applicationQueue.js";
+import { deadlineQueue, registerRepeatableDeadlineJobs } from "./src/queues/deadlineQueue.js";
 
 dotenv.config();
 
@@ -67,7 +68,8 @@ createBullBoard({
     new BullMQAdapter(scraperQueue),
     new BullMQAdapter(agentQueue),
     new BullMQAdapter(resumeParserQueue),
-    new BullMQAdapter(applicationQueue)
+    new BullMQAdapter(applicationQueue),
+    new BullMQAdapter(deadlineQueue)
   ],
   serverAdapter: serverAdapter
 });
@@ -229,8 +231,9 @@ async function startServer() {
 
     // 5. Start Background Services
     if (process.env.NODE_ENV !== "test") {
-      setInterval(() => runDeadlineChecks(dbCommand), 24 * 60 * 60 * 1000);
-      setInterval(() => runWeeklyDigest(dbCommand), 7 * 24 * 60 * 60 * 1000);
+      registerRepeatableDeadlineJobs().catch((err) => {
+        console.error("[Core] Failed to register repeatable deadline jobs:", err);
+      });
     }
   } catch (error) {
     console.error("[Core] Failed to start server:", error);

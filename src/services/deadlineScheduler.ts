@@ -1,9 +1,9 @@
 import { ObjectId } from "mongodb";
-import { enqueueEmail } from "../queues/emailQueue";
-import { enqueuePushNotification } from "../queues/pushQueue";
-import { Notification } from "../models/notificationSchema";
+import { enqueueEmail } from "../queues/emailQueue.js";
+import { enqueuePushNotification } from "../queues/pushQueue.js";
+import { Notification } from "../models/notificationSchema.js";
 import { getSocketIO } from "../api/socketInstance.js";
-import { generateDeadlineReminderHtml, generateWeeklyDigestHtml } from "../workers/emailTemplates";
+import { generateDeadlineReminderHtml, generateWeeklyDigestHtml } from "../workers/emailTemplates.js";
 import { redisClient } from "../api/redis.js";
 
 async function acquireLock(key: string, ttlMs: number): Promise<boolean> {

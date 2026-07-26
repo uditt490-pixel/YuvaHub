@@ -2,7 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { dbCommand } from '../api/db.js';
+import { sanitizeName, sanitizeUrl } from '../lib/utils.js';
 import jwt from 'jsonwebtoken';
+
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  throw new Error('FATAL: JWT_SECRET environment variable is required');
+}
 
 let isFirebaseInitialized = false;
 
@@ -69,14 +75,13 @@ export const authenticateUser = (db: any) => {
       });
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader.substring(7);
 
     try {
       let decodedToken: any = null;
       let isCustomToken = false;
 
       // 1. Try Custom JWT first
-      const jwtSecret = process.env.JWT_SECRET || "default_secret_for_development_only";
       try {
         decodedToken = jwt.verify(token, jwtSecret);
         isCustomToken = true;
@@ -96,11 +101,18 @@ export const authenticateUser = (db: any) => {
 
           console.warn('[Auth] Using mock authentication.');
 
-          if (token === mockValidToken) {
+          if (token.startsWith('MOCK_JSON_')) {
+            try {
+              decodedToken = JSON.parse(token.substring(10));
+            } catch {
+              throw new Error('Invalid mock JSON token');
+            }
+          } else if (token === mockValidToken) {
             decodedToken = {
               uid: 'mock_user_123',
               email: 'mock@example.com',
               name: 'Mock User',
+              email_verified: true,
             };
           } else {
             throw new Error('Invalid mock token');
@@ -110,11 +122,16 @@ export const authenticateUser = (db: any) => {
         }
       }
 
+      // 3. Email verification check
+      if (!isCustomToken && (isFirebaseInitialized || mockAuthEnabled) && !decodedToken.email_verified) {
+        return res.status(403).json({ error: 'Email verification required. Please verify your email.' });
+      }
+
       req.user = decodedToken;
 
       const activeDb = db || dbCommand;
 
-      if (activeDb && !(isDevelopment && mockAuthEnabled)) {
+      if (activeDb) {
         try {
           const usersCollection = activeDb.collection('users');
 
@@ -124,8 +141,8 @@ export const authenticateUser = (db: any) => {
               $setOnInsert: {
                 firebaseUid: decodedToken.uid,
                 email: decodedToken.email,
-                name: decodedToken.name || '',
-                picture: decodedToken.picture || '',
+                name: sanitizeName(decodedToken.name || ''),
+                picture: sanitizeUrl(decodedToken.picture || ''),
                 created_at: new Date(),
               },
             },
@@ -147,7 +164,7 @@ export const authenticateUser = (db: any) => {
             dbError,
           );
         }
-      } else if (isDevelopment && mockAuthEnabled) {
+      } else {
         req.user.role = 'student';
       }
 

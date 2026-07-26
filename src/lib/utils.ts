@@ -30,3 +30,18 @@ export function safeObjectId(id: unknown): ObjectId | null {
     return null;
   }
 }
+
+export function sanitizeName(name: string): string {
+  if (typeof name !== "string") return "";
+  return name.replace(/<[^>]*>/g, "").substring(0, 100).trim();
+}
+
+export function sanitizeUrl(url: string): string {
+  if (typeof url !== "string") return "";
+  try {
+    const parsed = new URL(url);
+    return ["http:", "https:"].includes(parsed.protocol) ? url : "";
+  } catch {
+    return "";
+  }
+}

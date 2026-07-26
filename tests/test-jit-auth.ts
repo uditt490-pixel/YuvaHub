@@ -6,6 +6,7 @@ process.env.NODE_ENV = 'development';
 process.env.ENABLE_MOCK_AUTH = 'true';
 process.env.FIREBASE_SERVICE_ACCOUNT_BASE64 = '';
 process.env.FIREBASE_PROJECT_ID = '';
+process.env.JWT_SECRET = 'test_secret';
 
 const { authenticateUser, deleteFirebaseUser, authMiddleware } = await import('../src/middleware/auth.js');
 const dbModule = await import('../src/api/db.js');
@@ -110,7 +111,6 @@ describe('JIT Authentication Middleware Tests', () => {
     const req = mockReq("MOCK_VALID_TOKEN");
     const nextFn = () => {};
     await authMiddleware(req, mockRes(), nextFn);
-
     // Verify role is correctly propagated from the seeded database document
     expect(req.user.role).toBe("admin");
 
@@ -151,5 +151,62 @@ describe('JIT Authentication Middleware Tests', () => {
 
     // Assert only one item was created
     expect(mockCollection.data.length).toBe(1);
+  });
+
+  it('should strip HTML tags and truncate display name to 100 characters', async () => {
+    const { sanitizeName } = await import('../src/lib/utils.js');
+    const dangerousName = "<script>alert('xss')</script>VeryLongName".repeat(10);
+    const sanitized = sanitizeName(dangerousName);
+    
+    // HTML tags must be stripped
+    expect(sanitized).not.toContain('<script>');
+    expect(sanitized).not.toContain('</script>');
+    expect(sanitized).toContain("alert('xss')");
+    
+    // Length must be truncated to <= 100
+    expect(sanitized.length).toBeLessThanOrEqual(100);
+  });
+
+  it('should accept http/https picture URLs and reject other protocols', async () => {
+    const { sanitizeUrl } = await import('../src/lib/utils.js');
+    expect(sanitizeUrl('https://example.com/pic.jpg')).toBe('https://example.com/pic.jpg');
+    expect(sanitizeUrl('http://example.com/pic.jpg')).toBe('http://example.com/pic.jpg');
+    expect(sanitizeUrl('ftp://example.com/pic.jpg')).toBe('');
+    expect(sanitizeUrl('javascript:alert(1)')).toBe('');
+    expect(sanitizeUrl('invalid-url')).toBe('');
+  });
+
+  it('should return 403 Forbidden when email_verified is false', async () => {
+    const unverifiedClaims = {
+      uid: 'unverified_123',
+      email: 'unverified@example.com',
+      name: 'Unverified User',
+      email_verified: false
+    };
+    const unverifiedToken = 'MOCK_JSON_' + JSON.stringify(unverifiedClaims);
+    
+    const req = mockReq(unverifiedToken);
+    
+    let responseStatus = 0;
+    let responseJson: any = null;
+    const res = {
+      status: (code: number) => {
+        responseStatus = code;
+        return {
+          json: (data: any) => {
+            responseJson = data;
+          }
+        };
+      }
+    };
+    
+    const nextSpy = vi.fn();
+    
+    const localAuthMiddleware = authenticateUser(null);
+    await localAuthMiddleware(req, res as any, nextSpy);
+    
+    expect(responseStatus).toBe(403);
+    expect(responseJson.error).toBe('Email verification required. Please verify your email.');
+    expect(nextSpy).not.toHaveBeenCalled();
   });
 });

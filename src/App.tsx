@@ -36,6 +36,7 @@ import TechEcosystemStudio from './components/Tabs/TechEcosystemStudio';
 import HackathonJudgeStudio from './components/Tabs/HackathonJudgeStudio';
 import MentorshipAdvisoryStudio from './components/Tabs/MentorshipAdvisoryStudio';
 import ResearchGrantPortal from './components/Tabs/ResearchGrantPortal';
+import ProjectIncubationStudio from './components/Tabs/ProjectIncubationStudio';
 import Legal from './components/Tabs/Legal';
 import Support from './components/Tabs/Support';
 import HelpCenter from './components/Tabs/HelpCenter';
@@ -261,6 +262,7 @@ function App() {
       case 'hackathon_judge': return <HackathonJudgeStudio />;
       case 'mentorship_advisory': return <MentorshipAdvisoryStudio />;
       case 'research_grants': return <ResearchGrantPortal />;
+      case 'project_incubation': return <ProjectIncubationStudio />;
       case 'submit': return <SubmitOpportunity />;
       case 'mentorship': return <Mentorship />;
       case 'bounty_board': return <BountyBoard />;

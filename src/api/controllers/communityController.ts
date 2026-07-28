@@ -16,70 +16,53 @@ export const getPosts = async (req: Request, res: Response) => {
     const sortOption: any =
       sort === "trending" ? { upvotes: -1, createdAt: -1 } : { createdAt: -1 };
 
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+    const cursor = req.query.cursor as string | undefined;
+
     if (dbQuery) {
+      let query: any = {};
+      if (cursor) {
+        const cursorOid = safeObjectId(cursor);
+        if (cursorOid) {
+          query._id = { $lt: cursorOid };
+        } else {
+          query.id = { $lt: cursor };
+        }
+      }
+
       const posts = await dbQuery
         .collection("posts")
-        .find({})
+        .find(query)
         .sort(sortOption)
-        .limit(50)
+        .limit(limit + 1)
         .toArray();
-      if (posts.length > 0) {
-        return res.json(posts);
-      }
+
+      const hasNextPage = posts.length > limit;
+      if (hasNextPage) posts.pop();
+
+      const nextCursor = hasNextPage && posts.length > 0
+        ? (posts[posts.length - 1]._id?.toString() || null)
+        : null;
+
+      return res.json({
+        posts,
+        nextCursor,
+        hasNextPage,
+        limit,
+        total: posts.length,
+      });
     }
 
-    const mockPosts = [
-      {
-        _id: "post_1",
-        id: "post_1",
-        title: "Secured GSoC 2026 Mentorship under Linux Foundation! 🎉",
-        content:
-          "Super thrilled to share that my proposal for kernel telemetry tools was accepted! Big thanks to the YuvaHub community for reviewing my draft.",
-        author: "Aarav Sharma",
-        authorUid: "user_aarav_123",
-        type: "Win",
-        tags: ["GSoC", "OpenSource", "Linux"],
-        upvotes: 24,
-        upvoted_by: [],
-        repliesCount: 3,
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        _id: "post_2",
-        id: "post_2",
-        title: "Tips for Crack Microsoft Engage & SWE Internship OA?",
-        content:
-          "Hey folks! Any recent experience with Microsoft's coding assessment? Looking for recommended topics and problem sets to practice.",
-        author: "Priya Patel",
-        authorUid: "user_priya_456",
-        type: "Question",
-        tags: ["Microsoft", "DSA", "Internship"],
-        upvotes: 15,
-        upvoted_by: [],
-        repliesCount: 5,
-        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        _id: "post_3",
-        id: "post_3",
-        title: "Curated Roadmap: System Design & Microservices for Students",
-        content:
-          "Created a free GitHub repo summarizing clean architecture, caching, and rate limiting patterns for campus placements.",
-        author: "Rohan Verma",
-        authorUid: "user_rohan_789",
-        type: "Resource",
-        tags: ["SystemDesign", "Backend", "Roadmap"],
-        upvotes: 38,
-        upvoted_by: [],
-        repliesCount: 8,
-        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-      },
-    ];
+    const mockPosts: any[] = [];
+    const nextCursor = null;
 
-    if (sort === "trending") {
-      mockPosts.sort((a, b) => b.upvotes - a.upvotes);
-    }
-    res.json(mockPosts);
+    return res.json({
+      posts: mockPosts,
+      nextCursor,
+      hasNextPage: false,
+      limit,
+      total: 0,
+    });
   } catch (err) {
     console.error("Fetch Posts Error:", err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -257,16 +240,6 @@ export const editComment = async (req: Request, res: Response) => {
     if (!dbCommand || !dbQuery)
       return res.status(503).json({ error: "Database not available" });
 
-    const oid = typeof commentId === "string" ? safeObjectId(commentId) : null;
-    const queryId = oid || commentId;
-
-    const result = await dbCommand
-      .collection("comments")
-      .findOneAndUpdate(
-        { _id: queryId, postId },
-        { $set: { content, updatedAt: new Date() } },
-        { returnDocument: "after" },
-      );
     const oid = safeObjectId(commentIdStr);
     const queryId = oid || commentIdStr;
 
@@ -289,59 +262,59 @@ export const editComment = async (req: Request, res: Response) => {
 
 export const getComments = async (req: Request, res: Response) => {
   try {
-    // Issue #285: normalize `string | string[]` param BEFORE calling
-    // `.replace()` on it — the old code would crash with
-    // `postId.replace is not a function` if Express delivered an array.
     const postIdStr = normalizeParam(req.params.postId);
     if (!postIdStr) {
       return res.status(400).json({ error: "Missing or invalid postId" });
     }
-    if (dbQuery) {
-      const normalizedPostId = Array.isArray(postId) ? postId[0] : postId;
 
-      if (!normalizedPostId) {
-        return res.status(400).json({
-          success: false,
-          error: "Post ID is required.",
-        });
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+    const cursor = req.query.cursor as string | undefined;
+
+    if (dbQuery) {
+      const escapedPostId = postIdStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      let query: any = {
+        $or: [{ postId: postIdStr }, { path: new RegExp('^,' + escapedPostId + ',') }],
+      };
+      if (cursor) {
+        const cursorOid = safeObjectId(cursor);
+        if (cursorOid) {
+          query = {
+            ...query,
+            _id: { $lt: cursorOid },
+          };
+        }
       }
 
-      const escapedPostId = normalizedPostId.replace(
-        /[.*+?^${}()|[\]\\]/g,
-        "\\$&",
-      );
-      const comments = await dbQuery
-        .collection("comments")
-        .find({
-          $or: [{ postId }, { path: new RegExp("^," + escapedPostId + ",") }],
-        })
-      const escapedPostId = postIdStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const comments = await dbQuery.collection("comments")
-        .find({ $or: [{ postId: postIdStr }, { path: new RegExp('^,' + escapedPostId + ',') }] })
+        .find(query)
         .sort({ createdAt: -1 })
+        .limit(limit + 1)
         .toArray();
 
-      if (comments.length > 0) {
-        return res.json(comments);
-      }
+      const hasNextPage = comments.length > limit;
+      if (hasNextPage) comments.pop();
+
+      const nextCursor = hasNextPage && comments.length > 0
+        ? (comments[comments.length - 1]._id?.toString() || null)
+        : null;
+
+      return res.json({
+        comments,
+        nextCursor,
+        hasNextPage,
+        limit,
+        total: comments.length,
+      });
     }
 
-    res.json([
-      {
-        _id: "c_101",
-        postId,
-        author: "Neha Sharma",
-        content: "Great resource! Thanks for sharing the roadmap repo.",
-        createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      },
-      {
-        _id: "c_102",
-        postId,
-        author: "Vikas Kumar",
-        content: "Super helpful! Added to my study bookmarks.",
-        createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-      },
-    ]);
+    res.json({
+      comments: [],
+      nextCursor: null,
+      hasNextPage: false,
+      limit,
+      total: 0,
+    });
   } catch (err) {
     console.error("Fetch Comments Error:", err);
     res.status(500).json({ error: "Internal Server Error" });

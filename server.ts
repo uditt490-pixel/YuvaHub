@@ -29,16 +29,64 @@ Sentry.init({
 const app = express();
 const server = http.createServer(app);
 
-// Socket.IO Configuration
+// CORS helper: parse comma-separated FRONTEND_URL into allowed origins
+const getAllowedOrigins = (): string[] => {
+  const raw = process.env.FRONTEND_URL;
+  if (!raw) return [];
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+};
+
+const allowedOrigins = getAllowedOrigins();
+const isProduction = process.env.NODE_ENV === "production";
+
+if (isProduction && allowedOrigins.length === 0) {
+  console.error(
+    "[CORS] FRONTEND_URL is not configured. All requests will be blocked by CORS in production."
+  );
+}
+
+// Socket.IO CORS
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "*",
+    origin: isProduction
+      ? allowedOrigins
+      : allowedOrigins.length > 0
+        ? allowedOrigins
+        : true,
     methods: ["GET", "POST"],
   },
 });
 setSocketIO(io);
 
-app.use(cors());
+// Express CORS
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (server-to-server, mobile apps, curl)
+      if (!origin) return callback(null, true);
+
+      if (isProduction) {
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error(`Origin "${origin}" not allowed by CORS`));
+      }
+
+      // Development: allow if origin is in the allowed list, or allow all
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin "${origin}" not allowed by CORS`));
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    optionsSuccessStatus: 204,
+  })
+);
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ limit: "5mb", extended: true }));
 

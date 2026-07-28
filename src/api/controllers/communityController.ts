@@ -257,16 +257,6 @@ export const editComment = async (req: Request, res: Response) => {
     if (!dbCommand || !dbQuery)
       return res.status(503).json({ error: "Database not available" });
 
-    const oid = typeof commentId === "string" ? safeObjectId(commentId) : null;
-    const queryId = oid || commentId;
-
-    const result = await dbCommand
-      .collection("comments")
-      .findOneAndUpdate(
-        { _id: queryId, postId },
-        { $set: { content, updatedAt: new Date() } },
-        { returnDocument: "after" },
-      );
     const oid = safeObjectId(commentIdStr);
     const queryId = oid || commentIdStr;
 
@@ -297,24 +287,6 @@ export const getComments = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Missing or invalid postId" });
     }
     if (dbQuery) {
-      const normalizedPostId = Array.isArray(postId) ? postId[0] : postId;
-
-      if (!normalizedPostId) {
-        return res.status(400).json({
-          success: false,
-          error: "Post ID is required.",
-        });
-      }
-
-      const escapedPostId = normalizedPostId.replace(
-        /[.*+?^${}()|[\]\\]/g,
-        "\\$&",
-      );
-      const comments = await dbQuery
-        .collection("comments")
-        .find({
-          $or: [{ postId }, { path: new RegExp("^," + escapedPostId + ",") }],
-        })
       const escapedPostId = postIdStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const comments = await dbQuery.collection("comments")
         .find({ $or: [{ postId: postIdStr }, { path: new RegExp('^,' + escapedPostId + ',') }] })
@@ -329,14 +301,14 @@ export const getComments = async (req: Request, res: Response) => {
     res.json([
       {
         _id: "c_101",
-        postId,
+        postId: postIdStr,
         author: "Neha Sharma",
         content: "Great resource! Thanks for sharing the roadmap repo.",
         createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
       },
       {
         _id: "c_102",
-        postId,
+        postId: postIdStr,
         author: "Vikas Kumar",
         content: "Super helpful! Added to my study bookmarks.",
         createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),

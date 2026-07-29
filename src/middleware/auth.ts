@@ -106,6 +106,7 @@ export const authenticateUser = (dbCommand: any) => {
             { firebaseUid: decodedToken.uid },
             {
               $setOnInsert: {
+                uid: decodedToken.uid,
                 firebaseUid: decodedToken.uid,
                 email: decodedToken.email,
                 name: decodedToken.name || '',

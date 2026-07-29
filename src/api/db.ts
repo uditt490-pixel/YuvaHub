@@ -170,6 +170,41 @@ export class MemoryCollection {
     }
     return { modifiedCount: 0 };
   }
+  async findOneAndUpdate(filter: any, update: any, options: any = {}) {
+    const item = await this.findOne(filter);
+    if (item) {
+      if (update.$set) Object.assign(item, update.$set);
+      if (update.$setOnInsert) Object.assign(item, update.$setOnInsert);
+      if (update.$push) {
+        for (const key in update.$push) {
+          if (!Array.isArray(item[key])) item[key] = [];
+          item[key].push(update.$push[key]);
+        }
+      }
+      if (update.$addToSet) {
+        for (const key in update.$addToSet) {
+          if (!Array.isArray(item[key])) item[key] = [];
+          if (!item[key].includes(update.$addToSet[key])) item[key].push(update.$addToSet[key]);
+        }
+      }
+      if (update.$pull) {
+        for (const key in update.$pull) {
+          if (Array.isArray(item[key])) {
+            item[key] = item[key].filter((x: any) => x !== update.$pull[key]);
+          }
+        }
+      }
+      return { value: item, ok: 1 };
+    }
+    if (options.upsert) {
+      const doc = { ...filter };
+      if (update.$set) Object.assign(doc, update.$set);
+      if (update.$setOnInsert) Object.assign(doc, update.$setOnInsert);
+      this.data.push(doc);
+      return { value: doc, ok: 1 };
+    }
+    return { value: null, ok: 0 };
+  }
   async insertOne(doc: any) { this.data.push(doc); return { insertedId: "mock_id" }; }
   async deleteOne(query: any) {
     const initialLen = this.data.length;

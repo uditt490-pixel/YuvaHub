@@ -344,10 +344,10 @@ function ReportingTimeline({ setActiveTab }: ReportingTimelineProps) {
         {/* Animated vertical line — sits behind all cards */}
         <div
           aria-hidden="true"
-          className="absolute left-6 top-6 bottom-6 w-0.5 bg-gradient-to-b from-blue-200 via-blue-400 to-blue-200 dark:from-blue-900 dark:via-blue-600 dark:to-blue-900 rounded-full"
+          className="absolute left-6 top-6 bottom-6 w-0.5 bg-[#e8ded1] rounded-full"
         />
 
-        <ol className="relative space-y-5 list-none pl-0 m-0" role="list">
+        <ol className="relative space-y-4 list-none pl-0 m-0" role="list">
           {TIMELINE_STEPS.map((step, idx) => {
             const Icon = step.icon;
             const isActive = activeStep === step.step;
@@ -358,8 +358,8 @@ function ReportingTimeline({ setActiveTab }: ReportingTimelineProps) {
                 key={step.step}
                 ref={(el) => { stepRefs.current[idx] = el; }}
                 data-step-index={idx}
-                className={`flex items-start gap-4 transition-all duration-500 ease-out ${
-                  isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-[0.97]'
+                className={`flex items-start gap-4 transition-all duration-300 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                 }`}
               >
                 {/* Timeline node */}
@@ -369,21 +369,14 @@ function ReportingTimeline({ setActiveTab }: ReportingTimelineProps) {
                     aria-label={`Step ${step.step}: ${step.title}`}
                     onClick={() => handleStepClick(step.step)}
                     onKeyDown={(e) => handleKeyDown(e, step.step)}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-xs transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-blue-600 text-white shadow-blue-500/40 scale-110 shadow-lg'
-                        : 'bg-white dark:bg-gray-800 border-2 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:shadow-blue-500/30 hover:scale-110'
+                        ? 'bg-[#603620] text-[#f3e4bd]'
+                        : 'bg-white border border-[#e8ded1] text-[#b56b37] hover:border-[#b56b37]'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} aria-hidden="true" />
+                    <Icon className="w-4 h-4" aria-hidden="true" />
                   </button>
-                  {/* Pulse ring on active */}
-                  {isActive && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-0 rounded-full bg-blue-400/30 animate-ping"
-                    />
-                  )}
                 </div>
 
                 {/* Card */}
@@ -393,46 +386,44 @@ function ReportingTimeline({ setActiveTab }: ReportingTimelineProps) {
                   aria-expanded={isActive}
                   onClick={() => handleStepClick(step.step)}
                   onKeyDown={(e) => handleKeyDown(e, step.step)}
-                  className={`flex-1 rounded-2xl border cursor-pointer transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 overflow-hidden ${
+                  className={`flex-1 rounded-2xl border cursor-pointer transition-all overflow-hidden ${
                     isActive
-                      ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-700 shadow-lg shadow-blue-500/10 -translate-y-0.5'
-                      : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 hover:-translate-y-0.5 hover:bg-gray-50/50 dark:hover:bg-gray-700/30'
+                      ? 'bg-[#fcf9f2] border-[#b56b37] shadow-xs'
+                      : 'bg-white border-[#e8ded1] shadow-xs hover:border-[#b56b37]'
                   }`}
                 >
                   {/* Header row */}
-                  <div className="flex items-center justify-between gap-3 px-5 py-4">
+                  <div className="flex items-center justify-between gap-3 px-5 py-3.5">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`text-[10px] font-black uppercase tracking-widest shrink-0 ${isActive ? 'text-blue-500' : 'text-gray-400 dark:text-gray-500'}`}>
+                      <span className={`text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${isActive ? 'text-[#b56b37]' : 'text-[#8c7569]'}`}>
                         Step {step.step}
                       </span>
-                      <h3 className={`text-sm font-bold leading-snug truncate transition-colors duration-200 ${isActive ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
+                      <h3 className={`text-xs md:text-sm font-serif font-bold leading-snug truncate transition-colors ${isActive ? 'text-[#b56b37]' : 'text-[#231f20]'}`}>
                         {step.title}
                       </h3>
                     </div>
                     <ChevronDown
-                      className={`w-4 h-4 shrink-0 transition-all duration-300 ${isActive ? 'rotate-180 text-blue-500' : 'text-gray-400'}`}
+                      className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isActive ? 'rotate-180 text-[#b56b37]' : 'text-[#8c7569]'}`}
                       aria-hidden="true"
                     />
                   </div>
 
                   {/* Summary (always visible) */}
-                  <p className="px-5 pb-3 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  <p className="px-5 pb-3 text-xs text-[#603620] leading-relaxed">
                     {step.desc}
                   </p>
 
-                  {/* Detail (smooth expand via grid-rows trick) */}
+                  {/* Detail */}
                   <div
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                    className={`grid transition-[grid-template-rows] duration-300 ${
                       isActive ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                     }`}
                   >
                     <div className="overflow-hidden">
-                      <div className={`px-5 pb-5 pt-0 border-t transition-all duration-300 ${
-                        isActive
-                          ? 'opacity-100 border-blue-100 dark:border-blue-900/30'
-                          : 'opacity-0 border-gray-100 dark:border-gray-700'
+                      <div className={`px-5 pb-4 pt-0 border-t border-[#e8ded1] transition-opacity ${
+                        isActive ? 'opacity-100' : 'opacity-0'
                       }`}>
-                        <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed mt-3">
+                        <p className="text-xs text-[#231f20] leading-relaxed mt-2.5">
                           {step.detail}
                         </p>
                       </div>
@@ -457,15 +448,15 @@ interface SectionHeaderProps {
 
 function SectionHeader({ id, icon: Icon, title, subtitle }: SectionHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8">
-      <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-        <Icon className="w-6 h-6" aria-hidden="true" />
+    <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+      <div className="w-11 h-11 rounded-2xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
+        <Icon className="w-5 h-5" aria-hidden="true" />
       </div>
       <div>
-        <h2 id={id} className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+        <h2 id={id} className="text-xl md:text-2xl font-serif font-bold text-[#231f20] tracking-tight">
           {title}
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">{subtitle}</p>
+        <p className="text-xs text-[#603620] mt-0.5 leading-relaxed">{subtitle}</p>
       </div>
     </div>
   );
@@ -484,51 +475,50 @@ export default function Guidelines() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto pb-20 space-y-20">
+    <div className="max-w-6xl mx-auto pb-20 space-y-12 font-sans">
 
-      {/* ── Breadcrumb ───────────────────────────────────────────────────── */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 pt-2">
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[#603620] pt-2">
         <button
           type="button"
           onClick={() => setActiveTab('dashboard')}
-          className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors bg-transparent border-none p-0 cursor-pointer font-medium"
+          className="hover:text-[#b56b37] transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
         >
           Home
         </button>
         <span aria-hidden="true">/</span>
-        <span className="text-gray-900 dark:text-white font-semibold">Community Guidelines</span>
+        <span className="text-[#231f20] font-serif font-bold">Community Guidelines</span>
       </nav>
 
-      {/* ── 1. Hero ──────────────────────────────────────────────────────── */}
+      {/* 1. Hero */}
       <section
         aria-labelledby="gl-hero-heading"
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1E3A8A] to-[#4F46E5] p-10 md:p-16 text-white shadow-xl"
+        className="relative overflow-hidden rounded-2xl bg-white border border-[#e8ded1] p-8 md:p-12 text-[#231f20] shadow-xs"
       >
-        {/* Decorative blobs */}
-        <div aria-hidden="true" className="absolute -top-16 -right-16 w-80 h-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-        <div aria-hidden="true" className="absolute -bottom-12 -left-12 w-60 h-60 rounded-full bg-white/5 blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 max-w-3xl">
-          <h1 id="gl-hero-heading" className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <span className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#b56b37] bg-[#f6efe2] border border-[#e8ded1] rounded-full">
+            YuvaHub Standards & Safety
+          </span>
+          <h1 id="gl-hero-heading" className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-[#231f20]">
             Community Guidelines
           </h1>
 
-          <p className="mt-4 text-base md:text-lg text-blue-100 font-medium leading-relaxed max-w-xl">
-            Help us build a respectful, safe and inclusive community for everyone.
+          <p className="text-xs md:text-sm text-[#603620] font-medium leading-relaxed max-w-xl">
+            Help us build a respectful, safe and inclusive community for students, mentors, and developers across India.
           </p>
 
           {/* CTAs */}
-          <div className="mt-8 flex flex-wrap gap-4">
+          <div className="pt-2 flex flex-wrap gap-3">
             <a
               href="#best-practices"
               onClick={(e) => {
                 e.preventDefault();
                 document.getElementById('best-practices')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#1E3A8A] text-sm font-bold rounded-xl hover:bg-blue-50 transition-all duration-200 hover:scale-105 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-xs"
             >
               <BookOpen className="w-4 h-4" aria-hidden="true" />
-              Learn Best Practices
+              Best Practices
             </a>
             <button
               type="button"
@@ -536,7 +526,7 @@ export default function Guidelines() {
                 setActiveTab('help');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/20 text-white text-sm font-bold rounded-xl hover:bg-white/20 transition-all duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] border border-[#e8ded1] text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
             >
               <HelpCircle className="w-4 h-4" aria-hidden="true" />
               Help Center
@@ -544,24 +534,16 @@ export default function Guidelines() {
             <button
               type="button"
               onClick={() => setActiveTab('support')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/20 text-white text-sm font-bold rounded-xl hover:bg-white/20 transition-all duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] border border-[#e8ded1] text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
             >
               <Flag className="w-4 h-4" aria-hidden="true" />
-              Report a Violation
+              Report Violation
             </button>
-          </div>
-
-          <div className="mt-8 flex flex-wrap gap-4 text-xs text-blue-200">
-            <span>Last Updated: July 2026</span>
-            <span aria-hidden="true">·</span>
-            <span>Version 3.0</span>
-            <span aria-hidden="true">·</span>
-            <span>Ref: GUIDELINES-2026-C</span>
           </div>
         </div>
       </section>
 
-      {/* ── 2. Platform Mission ──────────────────────────────────────────── */}
+      {/* 2. Platform Mission */}
       <section aria-labelledby="gl-mission-heading">
         <SectionHeader
           id="gl-mission-heading"
@@ -569,20 +551,20 @@ export default function Guidelines() {
           title="Platform Mission"
           subtitle="Why community standards exist and why they matter for every member."
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {MISSION_CARDS.map((card) => {
             const Icon = card.icon;
             return (
               <div
                 key={card.title}
-                className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 group"
+                className="bg-white border border-[#e8ded1] rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-[#b56b37] transition-all"
               >
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                  <Icon className="w-5 h-5" aria-hidden="true" />
+                <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">{card.title}</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{card.body}</p>
+                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1">{card.title}</h3>
+                  <p className="text-[11px] text-[#603620] leading-relaxed">{card.body}</p>
                 </div>
               </div>
             );
@@ -590,7 +572,7 @@ export default function Guidelines() {
         </div>
       </section>
 
-      {/* ── 3. Code of Conduct ───────────────────────────────────────────── */}
+      {/* 3. Code of Conduct */}
       <section aria-labelledby="gl-conduct-heading">
         <SectionHeader
           id="gl-conduct-heading"
@@ -598,20 +580,20 @@ export default function Guidelines() {
           title="Code of Conduct"
           subtitle="The core principles every YuvaHub member is expected to uphold."
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {CODE_OF_CONDUCT.map((item) => {
             const Icon = item.icon;
             return (
               <div
                 key={item.title}
-                className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 group"
+                className="bg-white border border-[#e8ded1] rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-[#b56b37] transition-all"
               >
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                  <Icon className="w-5 h-5" aria-hidden="true" />
+                <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">{item.title}</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{item.body}</p>
+                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1">{item.title}</h3>
+                  <p className="text-[11px] text-[#603620] leading-relaxed">{item.body}</p>
                 </div>
               </div>
             );
@@ -619,7 +601,7 @@ export default function Guidelines() {
         </div>
       </section>
 
-      {/* ── 4. Acceptable Use Policy ─────────────────────────────────────── */}
+      {/* 4. Acceptable Use Policy */}
       <section aria-labelledby="gl-aup-heading">
         <SectionHeader
           id="gl-aup-heading"
@@ -629,17 +611,17 @@ export default function Guidelines() {
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Allowed */}
-          <div className="bg-white dark:bg-gray-800 border border-green-100 dark:border-green-900/40 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-950/40 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" aria-hidden="true" />
+          <div className="bg-white border border-emerald-200 rounded-2xl p-6 shadow-xs">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-emerald-100">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-emerald-700" aria-hidden="true" />
               </div>
-              <h3 className="text-sm font-bold text-green-800 dark:text-green-300">Permitted</h3>
+              <h3 className="text-xs font-extrabold uppercase text-emerald-800 tracking-wider">Permitted Actions</h3>
             </div>
-            <ul className="space-y-3" role="list">
+            <ul className="space-y-2.5" role="list">
               {ALLOWED_USES.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" aria-hidden="true" />
+                <li key={item} className="flex items-start gap-2 text-xs text-[#231f20] leading-relaxed">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
                   {item}
                 </li>
               ))}
@@ -647,17 +629,17 @@ export default function Guidelines() {
           </div>
 
           {/* Prohibited */}
-          <div className="bg-white dark:bg-gray-800 border border-red-100 dark:border-red-900/40 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/40 flex items-center justify-center">
-                <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" aria-hidden="true" />
+          <div className="bg-white border border-red-200 rounded-2xl p-6 shadow-xs">
+            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-red-100">
+              <div className="w-7 h-7 rounded-lg bg-red-50 text-red-700 flex items-center justify-center">
+                <XCircle className="w-4 h-4 text-red-700" aria-hidden="true" />
               </div>
-              <h3 className="text-sm font-bold text-red-800 dark:text-red-300">Prohibited</h3>
+              <h3 className="text-xs font-extrabold uppercase text-red-700 tracking-wider">Prohibited Actions</h3>
             </div>
-            <ul className="space-y-3" role="list">
+            <ul className="space-y-2.5" role="list">
               {PROHIBITED_USES.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                  <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" aria-hidden="true" />
+                <li key={item} className="flex items-start gap-2 text-xs text-[#231f20] leading-relaxed">
+                  <XCircle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
                   {item}
                 </li>
               ))}
@@ -666,7 +648,7 @@ export default function Guidelines() {
         </div>
       </section>
 
-      {/* ── 5. Content Moderation ────────────────────────────────────────── */}
+      {/* 5. Content Moderation */}
       <section aria-labelledby="gl-moderation-heading">
         <SectionHeader
           id="gl-moderation-heading"
@@ -674,24 +656,22 @@ export default function Guidelines() {
           title="Content Moderation"
           subtitle="How content is reviewed and actioned — from creation to resolution."
         />
-        <ol className="relative space-y-4 pl-0 list-none" role="list">
-          {/* Vertical connecting line */}
-          <div aria-hidden="true" className="absolute left-5 top-5 bottom-5 w-0.5 bg-gradient-to-b from-blue-200 via-blue-400 to-blue-200 dark:from-blue-900 dark:via-blue-700 dark:to-blue-900 rounded-full" />
+        <ol className="relative space-y-3 pl-0 list-none" role="list">
           {MODERATION_STEPS.map((step, i) => (
-            <li key={step.label} className="flex items-start gap-5">
-              <div aria-hidden="true" className="shrink-0 w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black shadow-md shadow-blue-500/20 z-10">
+            <li key={step.label} className="flex items-start gap-4">
+              <div aria-hidden="true" className="shrink-0 w-8 h-8 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center text-xs font-extrabold shadow-xs">
                 {i + 1}
               </div>
-              <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-5 flex-1 shadow-sm hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300">
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-0.5">{step.label}</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{step.desc}</p>
+              <div className="bg-white border border-[#e8ded1] rounded-xl p-4 flex-1 shadow-xs hover:border-[#b56b37] transition-all">
+                <h3 className="text-xs font-serif font-bold text-[#231f20] mb-0.5">{step.label}</h3>
+                <p className="text-[11px] text-[#603620] leading-relaxed">{step.desc}</p>
               </div>
             </li>
           ))}
         </ol>
       </section>
 
-      {/* ── 6. Community Safety Principles ──────────────────────────────── */}
+      {/* 6. Community Safety Principles */}
       <section aria-labelledby="gl-safety-heading">
         <SectionHeader
           id="gl-safety-heading"
@@ -699,20 +679,20 @@ export default function Guidelines() {
           title="Community Safety Principles"
           subtitle="The values that keep every interaction on YuvaHub safe and trustworthy."
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {SAFETY_PRINCIPLES.map((item) => {
             const Icon = item.icon;
             return (
               <div
                 key={item.title}
-                className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 group"
+                className="bg-white border border-[#e8ded1] rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-[#b56b37] transition-all"
               >
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
-                  <Icon className="w-5 h-5" aria-hidden="true" />
+                <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">{item.title}</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{item.body}</p>
+                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1">{item.title}</h3>
+                  <p className="text-[11px] text-[#603620] leading-relaxed">{item.body}</p>
                 </div>
               </div>
             );
@@ -720,10 +700,10 @@ export default function Guidelines() {
         </div>
       </section>
 
-      {/* ── 7. Reporting Process ─────────────────────────────────────────── */}
+      {/* 7. Reporting Process */}
       <ReportingTimeline setActiveTab={setActiveTab} />
 
-      {/* ── 8. Enforcement Policy ────────────────────────────────────────── */}
+      {/* 8. Enforcement Policy */}
       <section aria-labelledby="gl-enforcement-heading">
         <SectionHeader
           id="gl-enforcement-heading"
@@ -731,23 +711,23 @@ export default function Guidelines() {
           title="Enforcement Policy"
           subtitle="How we respond to guideline violations — from gentle reminders to permanent bans."
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {ENFORCEMENT_STAGES.map((stage, i) => {
             const Icon = stage.icon;
             return (
               <div
                 key={stage.label}
-                className={`border rounded-2xl p-6 flex flex-col gap-4 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 ${stage.color}`}
+                className="bg-white border border-[#e8ded1] rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-[#b56b37] transition-all"
               >
-                <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+                <span className="text-[10px] font-extrabold text-[#b56b37] uppercase tracking-wider">
                   Stage {i + 1}
                 </span>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${stage.iconBg} ${stage.iconColor}`}>
-                  <Icon className="w-5 h-5" aria-hidden="true" />
+                <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2">{stage.label}</h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{stage.desc}</p>
+                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1">{stage.label}</h3>
+                  <p className="text-[11px] text-[#603620] leading-relaxed">{stage.desc}</p>
                 </div>
               </div>
             );
@@ -755,7 +735,7 @@ export default function Guidelines() {
         </div>
       </section>
 
-      {/* ── 9. Best Practices ───────────────────────────────────────────── */}
+      {/* 9. Best Practices */}
       <section id="best-practices" aria-labelledby="gl-practices-heading">
         <SectionHeader
           id="gl-practices-heading"
@@ -767,16 +747,16 @@ export default function Guidelines() {
           {BEST_PRACTICES.map((item) => (
             <div
               key={item}
-              className="flex items-start gap-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl px-5 py-4 shadow-sm hover:shadow-md hover:border-green-200 dark:hover:border-green-800 hover:-translate-y-0.5 transition-all duration-300 group"
+              className="flex items-start gap-2.5 bg-white border border-[#e8ded1] rounded-xl px-4 py-3 shadow-xs hover:border-[#b56b37] transition-all"
             >
-              <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">{item}</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
+              <span className="text-xs text-[#231f20] font-medium leading-relaxed">{item}</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── 10. FAQ Accordion ───────────────────────────────────────────── */}
+      {/* 10. FAQ Accordion */}
       <section aria-labelledby="gl-faq-heading">
         <SectionHeader
           id="gl-faq-heading"
@@ -792,55 +772,45 @@ export default function Guidelines() {
               <div
                 key={faq.id}
                 role="listitem"
-                className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
-                  isOpen
-                    ? 'border-blue-300 dark:border-blue-700 shadow-md shadow-blue-500/10 -translate-y-0.5'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-sm'
+                className={`border rounded-2xl overflow-hidden bg-white transition-all ${
+                  isOpen ? 'border-[#b56b37] shadow-xs' : 'border-[#e8ded1] hover:border-[#b56b37]'
                 }`}
               >
-                {/* Trigger button — keyboard accessible */}
                 <button
                   type="button"
                   id={`faq-btn-${faq.id}`}
                   aria-expanded={isOpen}
                   aria-controls={`faq-panel-${faq.id}`}
                   onClick={() => toggleFaq(faq.id)}
-                  className="w-full text-left p-5 flex items-center justify-between gap-4 bg-white dark:bg-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+                  className="w-full text-left p-5 flex items-center justify-between gap-4 bg-transparent border-none cursor-pointer focus:outline-none"
                 >
-                  <span className="text-sm font-bold text-gray-900 dark:text-white leading-snug">
+                  <span className="text-xs md:text-sm font-serif font-bold text-[#231f20] leading-snug">
                     {faq.question}
                   </span>
-                  {/* Arrow rotates 180° when open */}
-                  <span
-                    className={`shrink-0 p-1.5 rounded-lg transition-all duration-300 ${
-                      isOpen
-                        ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rotate-180'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-400'
+                  <div
+                    className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-all ${
+                      isOpen ? 'bg-[#603620] text-[#f3e4bd] rotate-180' : 'bg-[#f6efe2] text-[#8c7569]'
                     }`}
-                    aria-hidden="true"
                   >
                     <ChevronDown className="w-4 h-4" />
-                  </span>
+                  </div>
                 </button>
 
-                {/* Smooth height expansion via grid-rows trick */}
                 <div
                   id={`faq-panel-${faq.id}`}
                   role="region"
                   aria-labelledby={`faq-btn-${faq.id}`}
-                  className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                  className={`grid transition-[grid-template-rows] duration-300 ${
                     isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                   }`}
                 >
                   <div className="overflow-hidden">
                     <div
-                      className={`px-5 pb-5 border-t bg-white dark:bg-gray-800 transition-all duration-300 ${
-                        isOpen
-                          ? 'opacity-100 border-blue-100 dark:border-blue-900/30 pt-4'
-                          : 'opacity-0 border-gray-100 dark:border-gray-700 pt-0'
+                      className={`px-5 pb-5 border-t border-[#e8ded1] pt-3 transition-opacity ${
+                        isOpen ? 'opacity-100' : 'opacity-0'
                       }`}
                     >
-                      <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                      <p className="text-xs text-[#603620] leading-relaxed">
                         {faq.answer}
                       </p>
                     </div>
@@ -852,20 +822,20 @@ export default function Guidelines() {
         </div>
       </section>
 
-      {/* ── CTA strip ───────────────────────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 border border-blue-100 dark:border-gray-700 rounded-2xl p-8 md:p-10 text-center shadow-sm">
-        <Shield className="w-10 h-10 text-blue-600 dark:text-blue-400 mx-auto mb-4" aria-hidden="true" />
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+      {/* CTA strip */}
+      <div className="bg-white border border-[#e8ded1] rounded-2xl p-8 md:p-10 text-center shadow-xs space-y-4">
+        <Shield className="w-8 h-8 text-[#b56b37] mx-auto" aria-hidden="true" />
+        <h2 className="text-lg font-serif font-bold text-[#231f20]">
           Questions or concerns?
         </h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6 leading-relaxed">
+        <p className="text-xs text-[#603620] max-w-md mx-auto leading-relaxed">
           If you witnessed a violation or have questions about these guidelines, our support team is ready to help.
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button
             type="button"
             onClick={() => setActiveTab('support')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
           >
             <Flag className="w-4 h-4" aria-hidden="true" />
             Report a Violation
@@ -876,7 +846,7 @@ export default function Guidelines() {
               setActiveTab('help');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] border border-[#e8ded1] text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
           >
             <ArrowRight className="w-4 h-4" aria-hidden="true" />
             Visit Help Center

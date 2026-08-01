@@ -4,7 +4,6 @@ const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost';
 
 class EventBus {
   private connection: amqp.ChannelModel | null = null;
-  private connection: any | null = null;
   private channel: amqp.Channel | null = null;
 
   async connect(): Promise<void> {
@@ -19,7 +18,7 @@ class EventBus {
       
       console.log('[EventBus] Connected to RabbitMQ');
     } catch (error) {
-      console.error('[EventBus] Connection failed:', error);
+      console.warn('[EventBus] Offline (RabbitMQ server not running locally):', (error as Error).message);
       throw error;
     }
   }

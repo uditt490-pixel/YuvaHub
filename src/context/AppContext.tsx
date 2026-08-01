@@ -1,12 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import React, { 
-  createContext, 
-  useContext, 
-  useState, 
-  useEffect, 
-  useRef, 
-  useCallback 
-} from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -52,6 +44,13 @@ interface AppContextType {
   toggleTheme: () => void;
   gettingStartedStep: string | null;
   setGettingStartedStep: (step: string | null) => void;
+
+  // Gamified Bounty System (Karma)
+  karmaBalance: number;
+  setKarmaBalance: React.Dispatch<React.SetStateAction<number>>;
+  refreshKarma: () => Promise<void>;
+  karmaBumpFlag: number;
+  triggerKarmaAnimation: () => void;
 }
 
 // ─── Context creation ─────────────────────────────────────────────────────────
@@ -74,12 +73,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-const [activeTab, setActiveTab] = useState("home");
-const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedOppId, setSelectedOppId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const oppMatch = window.location.pathname.match(/^\/opportunity\/([^/]+)/);
+    return oppMatch ? oppMatch[1] : null;
+  });
 
-const [selectedOppId, setSelectedOppId] = useState<string | null>(null);
-
-const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  
   // Authentication state
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -88,54 +89,63 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [lastSyncedTime, setLastSyncedTime] = useState(new Date().toLocaleTimeString());
   const [appSearchQuery, setAppSearchQuery] = useState('');
   const lastConnectedRef = useRef(typeof navigator !== 'undefined' && navigator.onLine ? Date.now() : 0);
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    const saved = localStorage.getItem('yuvahub-theme');
-    if (saved) return saved === 'dark' ? 'dark' : 'light';
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    return 'light';
-  });
-
-  // ─── Theme sync ──────────────────────────────────────────────────────────────
-
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [selectedOppId, setSelectedOppId] = useState<string | null>(null);
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+  const [theme, setTheme] = useState<'light'>('light');
+  
   const [gettingStartedStep, setGettingStartedStep] = useState<string | null>(null);
-  const [selectedOppId, setSelectedOppId] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const oppMatch = window.location.pathname.match(/^\/opportunity\/([^/]+)/);
-    return oppMatch ? oppMatch[1] : null;
-  });
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+
+  // Gamified Bounty System
+  const [karmaBalance, setKarmaBalance] = useState(0);
+  const [karmaBumpFlag, setKarmaBumpFlag] = useState(0);
+
+  const triggerKarmaAnimation = useCallback(() => {
+    setKarmaBumpFlag(prev => prev + 1);
+  }, []);
+
+  const refreshKarma = useCallback(async () => {
+    if (!auth.currentUser) return;
+    try {
+      const token = await auth.currentUser.getIdToken();
+      const res = await fetch('/api/v1/karma/balance', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setKarmaBalance(prev => {
+           if (prev !== data.balance) triggerKarmaAnimation();
+           return data.balance;
+        });
+      }
+    } catch(e) {
+      console.error('[Karma] Failed to fetch balance', e);
+    }
+  }, [triggerKarmaAnimation]);
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('yuvahub-theme', theme);
-  }, [theme]);
-
-  const toggleTheme = useCallback(() => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+    root.classList.remove('dark');
+    localStorage.setItem('yuvahub-theme', 'light');
   }, []);
+
+  const toggleTheme = useCallback(() => {}, []);
 
   // ─── Backend health check ─────────────────────────────────────────────────────
 
   useEffect(() => {
+    const abortController = new AbortController();
+    let mounted = true;
+
     const verifyFeedEndpoint = async () => {
       try {
-        const response = await fetch("/api/v1/opportunities");
-        const text = await response.text();
-        try { JSON.parse(text); } catch {}
+        await fetch("/api/v1/opportunities", { signal: abortController.signal });
       } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         console.error('[Verify Feed] Error:', err);
       }
     };
     verifyFeedEndpoint();
 
     const checkBackend = async () => {
+      if (!mounted) return;
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
         setBackendReady(false);
         return;
@@ -145,20 +155,15 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
       }
 
       const stats = await fetchSystemStats();
+      if (!mounted) return;
       if (stats) {
         lastConnectedRef.current = Date.now();
-        setBackendReady(prev => {
-          if (!prev) return true;
-          return prev;
-        });
+        setBackendReady(true);
         setLastSyncedTime(new Date().toLocaleTimeString());
       } else {
         const timeSinceLastConnect = Date.now() - lastConnectedRef.current;
         if (timeSinceLastConnect >= 2000) {
-          setBackendReady(prev => {
-            if (prev) return false;
-            return prev;
-          });
+          setBackendReady(false);
         }
       }
     };
@@ -172,18 +177,12 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
       if (newStatus) {
         lastConnectedRef.current = timestamp;
-        setBackendReady(prev => {
-          if (!prev) return true;
-          return prev;
-        });
+        setBackendReady(true);
         setLastSyncedTime(new Date().toLocaleTimeString());
       } else {
         const timeSinceLastConnect = Date.now() - lastConnectedRef.current;
         if (timeSinceLastConnect >= 2000) {
-          setBackendReady(prev => {
-            if (prev) return false;
-            return prev;
-          });
+          setBackendReady(false);
         }
       }
     };
@@ -211,6 +210,8 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
     }
 
     return () => {
+      mounted = false;
+      abortController.abort();
       clearInterval(interval);
       window.removeEventListener('backend-status', handleBackendStatus);
       window.removeEventListener('online', handleOnline);
@@ -272,25 +273,41 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   }, [activeTab, selectedOppId]);
 
   useEffect(() => {
+    let mounted = true;
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (!mounted) return;
       setUser(currentUser);
+
       if (currentUser) {
         try {
-          const token = await currentUser.getIdToken(true);
+          // Timeout protection so app never hangs on loading screen if backend/Firebase is slow/offline
+          const tokenPromise = currentUser.getIdToken();
+          const tokenTimeout = new Promise<string>((_, reject) => 
+            setTimeout(() => reject(new Error('getIdToken timeout')), 2500)
+          );
+          const token = await Promise.race([tokenPromise, tokenTimeout]);
+
+          const syncController = new AbortController();
+          const fetchTimeout = setTimeout(() => syncController.abort(), 3000);
+
           const response = await fetch('/api/v1/auth/sync', {
+            signal: syncController.signal,
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
             },
           });
+          clearTimeout(fetchTimeout);
 
+          if (!mounted) return;
           if (response.ok) {
             const data = await response.json();
             if (data.profile) {
               setProfile(data.profile as UserProfile);
-              // Seed the bookmarks slice from the synced profile
               setBookmarkedIds(data.profile.bookmarks ?? []);
+              refreshKarma();
             } else {
               throw new Error('No profile returned from sync endpoint');
             }
@@ -298,43 +315,39 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
             throw new Error('Backend sync failed with status ' + response.status);
           }
         } catch (error) {
-          console.warn('MongoDB auth sync failed, falling back to Firestore:', error);
-          try {
-            const docRef = doc(db, 'users', currentUser.uid);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-              const data = docSnap.data() as UserProfile;
-              setProfile(data);
-              setBookmarkedIds(data.bookmarks ?? []);
-            } else {
-              const fallback: UserProfile = {
-                uid: currentUser.uid,
-                name: currentUser.displayName || '',
-                email: currentUser.email || '',
-                avatarUrl: currentUser.photoURL || '',
-              };
-              setProfile(fallback);
-              setBookmarkedIds([]);
-            }
-          } catch (fsError) {
-            console.error('Firestore fallback sync failed:', fsError);
-            setProfile({
-              uid: currentUser.uid,
-              name: currentUser.displayName || '',
-              email: currentUser.email || '',
-              avatarUrl: currentUser.photoURL || '',
-            });
-            setBookmarkedIds([]);
-          }
+          if (!mounted) return;
+          console.warn('Auth sync falling back to local user profile:', error);
+          setProfile({
+            uid: currentUser.uid,
+            name: currentUser.displayName || currentUser.email?.split('@')[0] || 'User',
+            email: currentUser.email || '',
+            avatarUrl: currentUser.photoURL || '',
+          });
+          setBookmarkedIds([]);
         }
       } else {
         setProfile(null);
         setBookmarkedIds([]);
       }
-      setLoading(false);
+      
+      if (mounted) {
+        setLoading(false);
+      }
     });
-    return () => unsubscribe();
-  }, []);
+
+    // Hard fallback timeout: ensure loading spinner disappears after at most 4s regardless of Firebase auth state
+    const hardLoadingTimeout = setTimeout(() => {
+      if (mounted) {
+        setLoading(false);
+      }
+    }, 4000);
+
+    return () => {
+      mounted = false;
+      clearTimeout(hardLoadingTimeout);
+      unsubscribe();
+    };
+  }, [refreshKarma]);
 
   // ─── Bookmark actions ─────────────────────────────────────────────────────────
 
@@ -440,9 +453,6 @@ const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
       profile,
       setProfile,
       loading,
-      bookmarkedIds,
-toggleBookmark,
-isBookmarked,
       backendReady,
       lastSyncedTime,
       appSearchQuery,
@@ -457,7 +467,12 @@ isBookmarked,
       theme,
       toggleTheme,
       gettingStartedStep,
-      setGettingStartedStep
+      setGettingStartedStep,
+      karmaBalance,
+      setKarmaBalance,
+      refreshKarma,
+      karmaBumpFlag,
+      triggerKarmaAnimation
     }}>
       {children}
     </AppContext.Provider>

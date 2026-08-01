@@ -232,34 +232,30 @@ export default function HelpCenterPage() {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-[calc(100vh-64px)]">
+    <div className="bg-[#fcf9f2] min-h-[calc(100vh-64px)] font-sans pb-16">
       <div className={`max-w-6xl mx-auto px-4 py-8 transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
 
         {/* Hero Section */}
-        <header className="mb-10 text-center py-12 px-6 bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-gray-800/40 dark:to-gray-900/10 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm relative overflow-hidden transition-all duration-300">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/5 dark:bg-blue-500/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-400/5 dark:bg-indigo-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
-          <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/10" />
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white flex items-center justify-center gap-3 relative z-10">
+        <header className="mb-10 text-center py-10 px-6 bg-white rounded-2xl border border-[#e8ded1] shadow-xs relative overflow-hidden">
+          <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-[#231f20] flex items-center justify-center gap-3 relative z-10">
             <div className="relative">
-              <HelpCircle className="w-10 h-10 text-blue-600 dark:text-blue-500" aria-hidden="true" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-ping" />
+              <HelpCircle className="w-9 h-9 text-[#b56b37]" aria-hidden="true" />
             </div>
             Help Center &amp; FAQ
           </h1>
-          <p className="text-base text-gray-500 dark:text-gray-400 mt-3 max-w-2xl mx-auto relative z-10 leading-relaxed">
+          <p className="text-xs md:text-sm text-[#603620] mt-2.5 max-w-2xl mx-auto relative z-10 leading-relaxed font-medium">
             Find answers to common questions, troubleshoot issues, and learn how to use YuvaHub efficiently.
           </p>
-          <div className="mt-8 max-w-2xl mx-auto relative z-10 transition-all duration-300 focus-within:scale-[1.01]">
+          <div className="mt-6 max-w-2xl mx-auto relative z-10">
             <label htmlFor="help-search" className="sr-only">Search help topics</label>
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none transition-colors duration-200 group-focus-within:text-blue-500" aria-hidden="true" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7569] pointer-events-none" aria-hidden="true" />
               <input id="help-search" type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search questions, answers, categories…" autoComplete="off"
-                className="w-full pl-12 pr-32 py-3.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600" />
+                className="w-full pl-11 pr-28 py-3 text-xs bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37] text-[#231f20] placeholder:text-[#8c7569]" />
               {searchQuery && (
                 <button type="button" onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 hover:scale-105 active:scale-95">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg text-[#603620] bg-[#f6efe2] border border-[#e8ded1] cursor-pointer">
                   <X className="w-3.5 h-3.5" aria-hidden="true" />Clear
                 </button>
               )}
@@ -269,15 +265,15 @@ export default function HelpCenterPage() {
 
         {/* Category filters */}
         <div className="flex flex-wrap justify-center gap-2 mb-10" role="group" aria-label="FAQ categories">
-          {FAQ_CATEGORIES.map((cat, index) => {
+          {FAQ_CATEGORIES.map((cat) => {
             const isActive = activeCategory === cat.id;
             return (
               <button key={cat.id} type="button" onClick={() => { setActiveCategory(cat.id); setActiveFaqId(null); }}
-                className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ease-out hover:scale-105 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 ${
-                  isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 border border-transparent'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700 hover:border-blue-300 hover:text-blue-600'
+                className={`px-4 py-2 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer ${
+                  isActive ? 'bg-[#b56b37] text-white shadow-xs'
+                    : 'bg-white text-[#603620] border border-[#e8ded1] hover:bg-[#f6efe2]'
                 }`}
-                aria-pressed={isActive} style={{ animationDelay: `${index * 30}ms` }}>
+                aria-pressed={isActive}>
                 {cat.label}
               </button>
             );
@@ -291,10 +287,10 @@ export default function HelpCenterPage() {
           <section className="lg:col-span-2 space-y-5" aria-labelledby="faq-heading">
             <div className="flex items-end justify-between gap-3 flex-wrap">
               <div>
-                <h2 id="faq-heading" className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h2 id="faq-heading" className="text-xl font-serif font-bold text-[#231f20]">
                   Frequently Asked Questions
                 </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-[#603620] mt-0.5">
                   {filteredFaqs.length} topic{filteredFaqs.length === 1 ? '' : 's'}
                   {searchQuery || activeCategory !== 'all' ? ' matching your filters' : ''}
                 </p>
@@ -302,12 +298,12 @@ export default function HelpCenterPage() {
             </div>
 
             {filteredFaqs.length === 0 ? (
-              <div className="text-center py-16 px-4 border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl bg-white dark:bg-gray-800/50">
-                <AlertTriangle className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" aria-hidden="true" />
-                <p className="font-semibold text-gray-800 dark:text-gray-300">No matching questions found.</p>
-                <p className="text-xs text-gray-500 mt-1 mb-6">Try a different keyword or clear your filters.</p>
+              <div className="text-center py-16 px-4 border border-dashed border-[#e8ded1] rounded-2xl bg-white">
+                <AlertTriangle className="w-10 h-10 text-[#8c7569] mx-auto mb-3" aria-hidden="true" />
+                <p className="font-serif font-bold text-sm text-[#231f20]">No matching questions found.</p>
+                <p className="text-xs text-[#603620] mt-1 mb-5">Try a different keyword or clear your filters.</p>
                 <button type="button" onClick={() => { clearSearch(); setActiveCategory('all'); }}
-                  className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                  className="text-xs font-extrabold uppercase tracking-wider text-[#b56b37] hover:underline px-4 py-2 bg-[#f6efe2] rounded-xl border border-[#e8ded1] cursor-pointer">
                   Clear Search &amp; Filters
                 </button>
               </div>
@@ -330,42 +326,40 @@ export default function HelpCenterPage() {
           {/* Getting Started Sidebar — 1/3 width, vertical timeline */}
           <aside className="space-y-6" aria-labelledby="getting-started-heading">
             <div>
-              <h2 id="getting-started-heading" className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 id="getting-started-heading" className="text-xl font-serif font-bold text-[#231f20]">
                 Getting Started
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-[#603620] mt-0.5">
                 A quick path from signup to your first application.
               </p>
             </div>
 
             {/* Vertical timeline layout */}
-            <div className="relative pl-6 border-l-2 border-blue-100 dark:border-gray-700 space-y-4">
-              {GETTING_STARTED_STEPS.map((step, index) => {
+            <div className="relative pl-6 border-l-2 border-[#e8ded1] space-y-4">
+              {GETTING_STARTED_STEPS.map((step) => {
                 const Icon = step.icon;
                 return (
                   <div key={step.id} className="relative group">
                     {/* Timeline dot */}
-                    <div className="absolute -left-[31px] top-4 w-4 h-4 rounded-full bg-white border-2 border-blue-500 dark:bg-gray-900 dark:border-blue-400 transition-all duration-300 group-hover:scale-125 group-hover:bg-blue-500 group-hover:border-blue-600" />
+                    <div className="absolute -left-[31px] top-4 w-4 h-4 rounded-full bg-white border-2 border-[#b56b37] transition-all duration-300 group-hover:bg-[#b56b37]" />
                     <div
                       onClick={() => handleStepClick(step.id)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleStepClick(step.id); } }}
-                      className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-4 rounded-2xl flex gap-3 items-start shadow-sm cursor-pointer hover:shadow-md hover:border-blue-400/50 dark:hover:border-blue-600/50 hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.99] transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 select-none"
-                      style={{ animationDelay: `${index * 80}ms` }}
+                      className="bg-white border border-[#e8ded1] p-4 rounded-2xl flex gap-3 items-start shadow-xs cursor-pointer hover:border-[#b56b37] transition-all duration-300 select-none"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110">
+                      <div className="w-8 h-8 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
                         <Icon className="w-4 h-4" aria-hidden="true" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white transition-colors duration-200 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                        <h3 className="text-xs font-serif font-bold text-[#231f20] group-hover:text-[#b56b37]">
                           {step.title}
                         </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed line-clamp-2">
+                        <p className="text-[11px] text-[#603620] mt-0.5 leading-relaxed">
                           {step.description}
                         </p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300 shrink-0 mt-2.5" />
+                      <ArrowRight className="w-4 h-4 text-[#8c7569] group-hover:text-[#b56b37] shrink-0 mt-2" />
                     </div>
                   </div>
                 );
@@ -374,14 +368,14 @@ export default function HelpCenterPage() {
           </aside>
         </div>
 
-        {/* Troubleshooting — TRUE ACCORDION: only one card open at a time */}
+        {/* Troubleshooting */}
         <section aria-labelledby="troubleshooting-heading" className="space-y-6 mb-16">
           <div>
-            <h2 id="troubleshooting-heading" className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Shield className="w-6 h-6 text-blue-600 dark:text-blue-500" aria-hidden="true" />
+            <h2 id="troubleshooting-heading" className="text-xl font-serif font-bold text-[#231f20] flex items-center gap-2">
+              <Shield className="w-5 h-5 text-[#b56b37]" aria-hidden="true" />
               Troubleshooting Guides
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-[#603620] mt-0.5">
               Common issues with problem, cause, and solution.
             </p>
           </div>
@@ -392,66 +386,63 @@ export default function HelpCenterPage() {
             Collapsed cards keep their compact height. No blank white boxes.
           */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 items-start">
-            {TROUBLESHOOTING_GUIDES.map((guide, index) => {
+            {TROUBLESHOOTING_GUIDES.map((guide) => {
               const Icon = guide.icon;
-              // FIX: each card checks activeTroubleshootId === guide.id independently
               const isExpanded = activeTroubleshootId === guide.id;
               return (
                 <article
                   key={guide.id}
-                  className={`bg-white dark:bg-gray-800 border rounded-2xl overflow-hidden transition-all duration-300 ease-out group ${
+                  className={`bg-white border rounded-2xl overflow-hidden transition-all duration-300 group ${
                     isExpanded
-                      ? 'border-blue-400 dark:border-blue-500 shadow-lg shadow-blue-500/10 -translate-y-[2px]'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:-translate-y-1 hover:shadow-md hover:shadow-blue-500/5'
+                      ? 'border-[#b56b37] shadow-xs'
+                      : 'border-[#e8ded1] hover:border-[#b56b37]'
                   }`}
-                  style={{ animationDelay: `${index * 80}ms` }}
                 >
                   <button
                     type="button"
                     onClick={() => handleToggleTroubleshoot(guide.id)}
                     aria-expanded={isExpanded}
                     aria-controls={`ts-panel-${guide.id}`}
-                    className="w-full p-5 flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 transition-colors duration-200 hover:bg-gray-50/50 dark:hover:bg-gray-900/20"
+                    className="w-full p-5 flex items-center gap-3 text-left focus:outline-none transition-colors hover:bg-[#fcf9f2] cursor-pointer"
                   >
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 ${
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                       isExpanded
-                        ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 scale-110'
-                        : 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 group-hover:scale-110'
+                        ? 'bg-[#603620] text-[#f3e4bd]'
+                        : 'bg-[#f6efe2] text-[#b56b37]'
                     }`}>
                       <Icon className="w-4 h-4" aria-hidden="true" />
                     </div>
-                    <h3 className={`text-sm font-bold flex-1 transition-colors duration-200 ${
-                      isExpanded ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                    <h3 className={`text-xs font-serif font-bold flex-1 transition-colors ${
+                      isExpanded ? 'text-[#b56b37]' : 'text-[#231f20] group-hover:text-[#b56b37]'
                     }`}>{guide.title}</h3>
-                    <ChevronDown className={`w-4 h-4 transition-all duration-300 ease-out shrink-0 ${
-                      isExpanded ? 'rotate-180 text-blue-500' : 'text-gray-400'
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-300 shrink-0 ${
+                      isExpanded ? 'rotate-180 text-[#b56b37]' : 'text-[#8c7569]'
                     }`} />
                   </button>
 
-                  {/* Expandable content — grid-rows animation, only for THIS card */}
                   <div
                     id={`ts-panel-${guide.id}`}
                     role="region"
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+                    className={`grid transition-[grid-template-rows] duration-300 ${
                       isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                     }`}
                   >
                     <div className="overflow-hidden min-h-0">
-                      <div className={`px-5 pb-5 pt-0 border-t transition-all duration-300 ${
-                        isExpanded ? 'opacity-100 border-blue-100 dark:border-blue-900/30' : 'opacity-0 border-gray-100 dark:border-gray-700'
+                      <div className={`px-5 pb-5 pt-0 border-t transition-all ${
+                        isExpanded ? 'opacity-100 border-[#e8ded1]' : 'opacity-0 border-transparent'
                       }`}>
                         <dl className="space-y-3 text-xs leading-relaxed mt-4">
                           <div>
-                            <dt className="font-bold uppercase tracking-wider text-[10px] text-gray-500 dark:text-gray-400 mb-1">Problem</dt>
-                            <dd className="text-gray-700 dark:text-gray-300 m-0">{guide.problem}</dd>
+                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-[#603620] mb-1">Problem</dt>
+                            <dd className="text-[#231f20] m-0">{guide.problem}</dd>
                           </div>
                           <div>
-                            <dt className="font-bold uppercase tracking-wider text-[10px] text-gray-500 dark:text-gray-400 mb-1">Cause</dt>
-                            <dd className="text-gray-700 dark:text-gray-300 m-0">{guide.cause}</dd>
+                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-[#603620] mb-1">Cause</dt>
+                            <dd className="text-[#231f20] m-0">{guide.cause}</dd>
                           </div>
                           <div>
-                            <dt className="font-bold uppercase tracking-wider text-[10px] text-gray-500 dark:text-gray-400 mb-1">Solution</dt>
-                            <dd className="text-gray-700 dark:text-gray-300 m-0 font-medium text-blue-600 dark:text-blue-400">{guide.solution}</dd>
+                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-[#603620] mb-1">Solution</dt>
+                            <dd className="text-[#b56b37] m-0 font-bold">{guide.solution}</dd>
                           </div>
                         </dl>
                       </div>
@@ -466,29 +457,28 @@ export default function HelpCenterPage() {
         {/* Support Section */}
         <section aria-labelledby="support-heading" className="space-y-6">
           <div>
-            <h2 id="support-heading" className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-500" aria-hidden="true" />
+            <h2 id="support-heading" className="text-xl font-serif font-bold text-[#231f20] flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-[#b56b37]" aria-hidden="true" />
               Need More Help?
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-[#603620] mt-0.5">
               Get personalized support or connect with our community.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {SUPPORT_CARDS.map((card, index) => {
+            {SUPPORT_CARDS.map((card) => {
               const Icon = card.icon;
               return (
                 <button key={card.id} type="button"
                   onClick={() => setActiveTab(card.action)}
-                  className="group relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 text-left hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 hover:-translate-y-2 hover:border-blue-400 dark:hover:border-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  style={{ animationDelay: `${index * 80}ms` }}
+                  className="group relative overflow-hidden bg-white border border-[#e8ded1] rounded-2xl p-6 text-left shadow-xs transition-all duration-300 hover:border-[#b56b37] cursor-pointer"
                 >
-                  <div className={`w-12 h-12 rounded-xl border flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ${card.color}`}>
+                  <div className="w-10 h-10 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{card.title}</h3>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{card.description}</p>
-                  <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1.5 group-hover:text-[#b56b37] transition-colors">{card.title}</h3>
+                  <p className="text-[11px] text-[#603620] leading-relaxed">{card.description}</p>
+                  <div className="mt-4 flex items-center gap-1 text-[11px] font-extrabold uppercase text-[#b56b37]">
                     <span>Open</span>
                     <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -498,14 +488,6 @@ export default function HelpCenterPage() {
           </div>
         </section>
       </div>
-
-      {/* Scroll to Top */}
-      {showScrollTop && (
-        <button onClick={scrollToTop} aria-label="Scroll to top"
-          className="fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 active:scale-95 flex items-center justify-center">
-          <ChevronUp className="w-5 h-5" />
-        </button>
-      )}
     </div>
   );
 }

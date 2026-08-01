@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Lock, UserX, Info, ShieldAlert, Loader2, HelpCircle } from 'lucide-react';
+import { Bell, Lock, UserX, Info, ShieldAlert, Loader2, HelpCircle, BookOpen } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { NotificationPreferences } from '../../types';
 
@@ -147,14 +147,14 @@ export default function SettingsTab() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8 font-sans pb-12">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Settings</h2>
-          <p className="text-gray-500 dark:text-gray-400">Manage your account preferences and notifications.</p>
+          <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] mb-1">Settings</h2>
+          <p className="text-xs text-[#603620] font-medium">Manage your account preferences and notification delivery channels.</p>
         </div>
         {syncing && (
-          <div className="flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400">
+          <div className="flex items-center gap-1.5 text-xs text-[#b56b37] font-bold">
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
             <span>Syncing...</span>
           </div>
@@ -162,7 +162,7 @@ export default function SettingsTab() {
       </div>
 
       {syncError && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg flex items-center gap-2">
+        <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold rounded-xl flex items-center gap-2">
           <ShieldAlert className="w-4 h-4" />
           <span>{syncError}</span>
         </div>
@@ -171,10 +171,10 @@ export default function SettingsTab() {
       <div className="space-y-6">
 
         {/* Global Delivery Channels */}
-        <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-            <Bell className="w-5 h-5 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Delivery Channels</h3>
+        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8ded1]">
+            <Bell className="w-5 h-5 text-[#b56b37]" />
+            <h3 className="text-base font-serif font-bold text-[#231f20]">Delivery Channels</h3>
           </div>
           <div className="space-y-4">
             <ToggleOption 
@@ -191,10 +191,10 @@ export default function SettingsTab() {
         </div>
 
         {/* Specific Alert Categories */}
-        <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-            <Bell className="w-5 h-5 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notification Alert Preferences</h3>
+        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8ded1]">
+            <Bell className="w-5 h-5 text-[#b56b37]" />
+            <h3 className="text-base font-serif font-bold text-[#231f20]">Notification Alert Preferences</h3>
           </div>
           <div className="space-y-4">
             <ToggleOption 
@@ -226,19 +226,19 @@ export default function SettingsTab() {
         </div>
 
         {/* Privacy */}
-        <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-            <Lock className="w-5 h-5 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Privacy</h3>
+        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8ded1]">
+            <Lock className="w-5 h-5 text-[#b56b37]" />
+            <h3 className="text-base font-serif font-bold text-[#231f20]">Privacy Controls</h3>
           </div>
           <div className="space-y-4">
             <ToggleOption label="Show profile in mentor directory" checked={privDirectory} onChange={setPrivDirectory} />
             <ToggleOption label="Show wins in community feed" checked={privWins} onChange={setPrivWins} />
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
-              <span className="text-xs text-gray-500 dark:text-gray-400">View our full policy and guidelines</span>
+            <div className="pt-4 border-t border-[#e8ded1] flex justify-between items-center">
+              <span className="text-xs text-[#8c7569]">View our full privacy policy and guidelines</span>
               <button
                 onClick={() => setActiveTab('privacy')}
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+                className="text-xs font-extrabold uppercase text-[#b56b37] hover:text-[#603620] flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
               >
                 <span>Read Privacy Policy</span>
                 <span className="text-sm">→</span>
@@ -247,19 +247,19 @@ export default function SettingsTab() {
           </div>
         </div>
 
-        {/* About YuvaHub — links to the About page */}
-        <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
-            <Info className="w-5 h-5 text-blue-500" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">About YuvaHub</h3>
+        {/* About YuvaHub */}
+        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#e8ded1]">
+            <Info className="w-5 h-5 text-[#b56b37]" />
+            <h3 className="text-base font-serif font-bold text-[#231f20]">About YuvaHub</h3>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Learn about our mission, platform architecture, and the team behind YuvaHub.
+            <p className="text-xs text-[#603620]">
+              Learn about our mission, platform architecture, and team.
             </p>
             <button
               onClick={() => setActiveTab('about')}
-              className="ml-6 shrink-0 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+              className="ml-6 shrink-0 text-xs font-extrabold uppercase text-[#b56b37] hover:text-[#603620] flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
             >
               <span>View About Page</span>
               <span className="text-sm">→</span>
@@ -268,34 +268,42 @@ export default function SettingsTab() {
         </div>
 
         {/* Help & Support */}
-        <div className="clean-card p-6 dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-            <HelpCircle className="w-5 h-5 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Help & Support</h3>
+        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-[#e8ded1]">
+            <HelpCircle className="w-5 h-5 text-[#b56b37]" />
+            <h3 className="text-base font-serif font-bold text-[#231f20]">Help & Support</h3>
           </div>
           <div className="space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Browse FAQs, getting started steps, and troubleshooting guides—or contact the team.
+            <p className="text-xs text-[#603620]">
+              Browse FAQs, getting started steps, and troubleshooting guides—or contact our team.
             </p>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab('faq')}
+                className="bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider px-4 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5 shadow-xs transition-colors"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                FAQ &amp; Help Center
+              </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('help')}
-                className="clean-btn text-xs px-4 py-2 cursor-pointer"
+                className="bg-white border border-[#e8ded1] hover:bg-[#f6efe2] text-[#603620] text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition-colors"
               >
-                Open Help Center
+                Help Center
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('support')}
-                className="clean-btn-outline text-xs px-4 py-2 cursor-pointer"
+                className="bg-white border border-[#e8ded1] hover:bg-[#f6efe2] text-[#603620] text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition-colors"
               >
                 Support & Feedback
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('guidelines')}
-                className="clean-btn-outline text-xs px-4 py-2 cursor-pointer"
+                className="bg-white border border-[#e8ded1] hover:bg-[#f6efe2] text-[#603620] text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer transition-colors"
               >
                 Community Guidelines
               </button>
@@ -304,38 +312,31 @@ export default function SettingsTab() {
         </div>
 
         {/* Account control */}
-        <div className="clean-card p-6 border-red-100 dark:bg-gray-800 dark:border-gray-700">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-            <UserX className="w-5 h-5 text-red-500" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Account Control</h3>
+        <div className="bg-white border border-red-200 rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center gap-3 mb-5 pb-3 border-b border-red-100">
+            <UserX className="w-5 h-5 text-red-600" />
+            <h3 className="text-base font-serif font-bold text-[#231f20]">Account Control</h3>
           </div>
           <div className="space-y-4">
-            <button className="clean-btn-outline w-full sm:w-auto px-6 py-2">Change Password</button>
-            <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center flex-wrap gap-4">
+            <button className="bg-white border border-[#e8ded1] hover:bg-[#f6efe2] text-[#603620] px-5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer">Change Password</button>
+            <div className="pt-4 border-t border-[#e8ded1] flex justify-between items-center flex-wrap gap-4">
               <div>
-                <button className="px-6 py-2 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-100 transition-colors">
+                <button className="px-5 py-2.5 bg-red-50 text-red-700 border border-red-200 font-extrabold uppercase text-xs rounded-xl hover:bg-red-100 transition-colors cursor-pointer">
                   Delete Account
                 </button>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">This action is permanent and cannot be undone.</p>
+                <p className="text-[10px] text-[#8c7569] mt-1.5">This action is permanent and cannot be undone.</p>
               </div>
               <div className="flex flex-wrap gap-4">
                 <button
                   onClick={() => setActiveTab('security')}
-                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+                  className="text-xs font-extrabold uppercase text-[#b56b37] hover:text-[#603620] flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
                 >
                   <span>Security Center</span>
                   <span className="text-sm">→</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab('help')}
-                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
-                >
-                  <span>Help Center</span>
-                  <span className="text-sm">→</span>
-                </button>
-                <button
                   onClick={() => setActiveTab('support')}
-                  className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+                  className="text-xs font-extrabold uppercase text-[#b56b37] hover:text-[#603620] flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
                 >
                   <span>Support & Feedback</span>
                   <span className="text-sm">→</span>
@@ -353,12 +354,12 @@ export default function SettingsTab() {
 function ToggleOption({ label, checked, onChange }: { label: string; checked: boolean; onChange: (c: boolean) => void }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-gray-700 dark:text-gray-300 font-medium">{label}</span>
+      <span className="text-xs font-bold text-[#231f20]">{label}</span>
       <button
         onClick={() => onChange(!checked)}
         aria-pressed={checked}
         aria-label={label}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${checked ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-600'}`}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${checked ? 'bg-[#b56b37]' : 'bg-[#e8ded1]'}`}
       >
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </button>

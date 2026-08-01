@@ -102,15 +102,21 @@ Generate only the final application draft.
 
 
 
-  } catch(error) {
+  } catch(error: any) {
 
     console.error(
       "Application generator failed:",
       error
     );
 
+    const isRateLimit = error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('Quota exceeded') || error?.message?.includes('RESOURCE_EXHAUSTED');
+    const isServiceUnavailable = error?.status >= 500 || error?.message?.includes('503') || error?.message?.includes('500');
 
-    return generateFallbackDraft(context);
+    if (isRateLimit || isServiceUnavailable) {
+      return generateFallbackDraft(context, true);
+    }
+
+    return generateFallbackDraft(context, false);
 
   }
 
@@ -122,11 +128,12 @@ Generate only the final application draft.
  * Offline fallback
  */
 function generateFallbackDraft(
-  context: ApplicationContext
+  context: ApplicationContext,
+  isAiTraffic: boolean = false
 ): string {
 
 
-  return `
+  let draft = `
 Dear Hiring Team,
 
 I am excited to apply for the opportunity of ${context.opportunityTitle}
@@ -144,4 +151,11 @@ Regards,
 ${context.profile?.name || "Your Name"}
 `;
 
+  if (isAiTraffic) {
+    draft += `\n*(Note: This is a static template provided because our AI service is currently experiencing high traffic. Please customize it before sending.)*\n`;
+  } else if (!process.env.GEMINI_API_KEY) {
+    draft += `\n*(Note: This is a static template provided because AI features are currently unavailable. Please customize it before sending.)*\n`;
+  }
+
+  return draft;
 }

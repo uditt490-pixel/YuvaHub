@@ -3,15 +3,22 @@ import { enqueuePushNotification } from "../queues/pushQueue";
 import { Notification } from "../models/notificationSchema";
 
 // Since Socket.io is initialized in server.ts, we will import a helper to fetch the instance
-import { getSocketIO } from "../../server";
+import { getSocketIO } from "../api/socketInstance.js";
 
-export async function matchOpportunityAndNotify(db: any, opportunity: any): Promise<void> {
+export async function matchOpportunityAndNotify(
+  db: any,
+  opportunity: any,
+): Promise<void> {
   if (!db) {
     console.error("[Matcher] Database client not provided.");
     return;
   }
 
-  const category = (opportunity.category || opportunity.opportunity_type || "general").toLowerCase();
+  const category = (
+    opportunity.category ||
+    opportunity.opportunity_type ||
+    "general"
+  ).toLowerCase();
   const title = opportunity.title || "New Opportunity";
   const tags = (opportunity.tags || []).map((t: string) => t.toLowerCase());
   const opportunityId = opportunity.id || opportunity._id?.toString();
@@ -21,7 +28,9 @@ export async function matchOpportunityAndNotify(db: any, opportunity: any): Prom
     return;
   }
 
-  console.log(`[Matcher] Running matchmaking for opportunity "${title}" (Category: ${category})`);
+  console.log(
+    `[Matcher] Running matchmaking for opportunity "${title}" (Category: ${category})`,
+  );
 
   try {
     // 1. Fetch all users from the DB
@@ -36,7 +45,7 @@ export async function matchOpportunityAndNotify(db: any, opportunity: any): Prom
         skillAlertsEnabled: true,
         scholarshipAlertsEnabled: true,
         hackathonAlertsEnabled: true,
-        opportunityAlertsEnabled: true
+        opportunityAlertsEnabled: true,
       };
 
       let shouldNotify = false;
@@ -63,12 +72,14 @@ export async function matchOpportunityAndNotify(db: any, opportunity: any): Prom
       // Check skill-based matching if enabled and not already triggered
       if (prefs.skillAlertsEnabled && user.skills && user.skills.length > 0) {
         const userSkills = user.skills.map((s: string) => s.toLowerCase());
-        
+
         // Exact match on tags or substring match on title/description
-        const skillMatch = userSkills.some((skill: string) => 
-          tags.includes(skill) || 
-          title.toLowerCase().includes(skill) ||
-          (opportunity.description && opportunity.description.toLowerCase().includes(skill))
+        const skillMatch = userSkills.some(
+          (skill: string) =>
+            tags.includes(skill) ||
+            title.toLowerCase().includes(skill) ||
+            (opportunity.description &&
+              opportunity.description.toLowerCase().includes(skill)),
         );
 
         if (skillMatch) {
@@ -82,33 +93,41 @@ export async function matchOpportunityAndNotify(db: any, opportunity: any): Prom
         const notifCollection = db.collection("notifications");
         const existingNotif = await notifCollection.findOne({
           userId: user.uid,
-          targetId: opportunityId
+          targetId: opportunityId,
         });
 
         if (existingNotif) {
-          console.log(`[Matcher] Duplicate prevention: User ${user.uid} already notified for opportunity ${opportunityId}`);
+          console.log(
+            `[Matcher] Duplicate prevention: User ${user.uid} already notified for opportunity ${opportunityId}`,
+          );
           continue;
         }
 
         // Create the notification document
         const message = `A new ${category} "${title}" matches your preferences. Check it out!`;
-        const notificationDoc: Notification = {
+        const notificationDoc = {
           userId: user.uid,
-          type: category === "scholarship" ? "scholarship_alert" 
-                : category === "hackathon" ? "hackathon_alert" 
+          type:
+            category === "scholarship"
+              ? "scholarship_alert"
+              : category === "hackathon"
+                ? "hackathon_alert"
                 : "skill_match",
           title: matchedReason,
           message,
           targetId: opportunityId,
           read: false,
-          createdAt: new Date()
+          createdAt: new Date(),
+          expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
         };
 
         // Insert into database
         const insertRes = await notifCollection.insertOne(notificationDoc);
-        const notificationId = insertRes.insertedId.toString();
+        const notificationId = (insertRes?.insertedId || "mock_id").toString();
 
-        console.log(`[Matcher] Created notification for user ${user.uid} (ID: ${notificationId})`);
+        console.log(
+          `[Matcher] Created notification for user ${user.uid} (ID: ${notificationId})`,
+        );
 
         // Real-Time Socket.io push (foreground handling)
         const io = getSocketIO();
@@ -116,9 +135,11 @@ export async function matchOpportunityAndNotify(db: any, opportunity: any): Prom
           io.emit(`NOTIFICATION_RECEIVED_${user.uid}`, {
             id: notificationId,
             ...notificationDoc,
-            time: "Just now"
+            time: "Just now",
           });
-          console.log(`[Matcher] Dispatched real-time Socket alert to user ${user.uid}`);
+          console.log(
+            `[Matcher] Dispatched real-time Socket alert to user ${user.uid}`,
+          );
         }
 
         // Enqueue background email job if email is enabled globally and for user
@@ -126,7 +147,7 @@ export async function matchOpportunityAndNotify(db: any, opportunity: any): Prom
           await enqueueEmail({
             to: user.email,
             subject: `[YuvaHub] ${matchedReason}: ${title}`,
-            body: message
+            body: message,
           });
         }
 
@@ -134,7 +155,7 @@ export async function matchOpportunityAndNotify(db: any, opportunity: any): Prom
         if (prefs.pushEnabled && user.fcmToken) {
           await enqueuePushNotification({
             userId: user.uid,
-            message: `[YuvaHub] ${matchedReason}: ${title}`
+            message: `[YuvaHub] ${matchedReason}: ${title}`,
           });
         }
       }

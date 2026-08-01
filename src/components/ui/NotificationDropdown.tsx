@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Bell, Info, Loader2, MapPin, Zap } from 'lucide-react';
-import { io } from 'socket.io-client';
+import { useSocket } from '../../context/SocketContext';
 import {
   fetchNotifications,
   markAllNotificationsRead,
@@ -18,6 +18,7 @@ interface Notification {
 }
 
 export default function NotificationDropdown({ profile }: { profile: any }) {
+  const { socket } = useSocket();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -57,9 +58,7 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
   useEffect(() => {
     void loadNotifications();
 
-    if (profile && profile.uid) {
-      const socket = io();
-
+    if (profile && profile.uid && socket) {
       socket.on(`NOTIFICATION_RECEIVED_${profile.uid}`, (newNotification: any) => {
         try {
           if (!newNotification?.id) return;
@@ -76,10 +75,10 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
       });
 
       return () => {
-        socket.disconnect();
+        socket.off(`NOTIFICATION_RECEIVED_${profile.uid}`);
       };
     }
-  }, [profile, loadNotifications]);
+  }, [profile, loadNotifications, socket]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -235,8 +234,8 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
                 }
               }}
               disabled={isMarkingThis || markingAll}
-              className={`group flex w-full gap-3 border-b border-gray-50 p-4 text-left transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70 ${
-                !notification.read ? 'bg-blue-50/30' : ''
+              className={`group flex w-full gap-3 border-b border-[#e8ded1] p-4 text-left transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${
+                !notification.read ? 'bg-[#f6efe2]/60 hover:bg-[#f6efe2]' : 'bg-white hover:bg-[#fcf9f2]'
               }`}
               aria-label={
                 notification.read
@@ -246,14 +245,14 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
             >
               <div className="mt-0.5 shrink-0">
                 <div
-                  className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
                     !notification.read
-                      ? 'bg-blue-100 text-blue-600'
-                      : 'bg-gray-100 text-gray-400'
+                      ? 'bg-[#603620] text-[#f3e4bd]'
+                      : 'bg-[#f6efe2] text-[#8c7569]'
                   }`}
                 >
                   {isMarkingThis ? (
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <Loader2 className="h-4 w-4 animate-spin text-[#b56b37]" aria-hidden="true" />
                   ) : (
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   )}
@@ -262,19 +261,19 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
 
               <div className="min-w-0 flex-1">
                 <h4
-                  className={`mb-0.5 line-clamp-1 text-sm ${
+                  className={`mb-0.5 line-clamp-1 text-xs ${
                     !notification.read
-                      ? 'font-bold text-gray-900'
-                      : 'font-semibold text-gray-700'
+                      ? 'font-extrabold text-[#231f20]'
+                      : 'font-semibold text-[#603620]'
                   }`}
                 >
                   {notification.title ?? 'Notification'}
                 </h4>
-                <p className="mb-1 line-clamp-2 text-xs text-gray-600">
+                <p className="mb-1 line-clamp-2 text-xs text-[#8c7569]">
                   {notification.message ?? 'You have a new update.'}
                 </p>
                 {notification.time ? (
-                  <span className="text-[10px] font-medium text-gray-400">
+                  <span className="text-[10px] font-bold text-[#8c7569]">
                     {notification.time}
                   </span>
                 ) : null}
@@ -282,7 +281,7 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
 
               {!notification.read ? (
                 <span
-                  className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500"
+                  className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#b56b37]"
                   aria-label="Unread"
                 />
               ) : null}
@@ -298,15 +297,15 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="relative rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+        className="relative rounded-xl p-2 text-[#603620] transition-all hover:bg-[#f6efe2] hover:text-[#231f20] border border-transparent hover:border-[#e8ded1] cursor-pointer"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
       >
-        <Bell className="h-5 w-5" aria-hidden="true" />
+        <Bell className="h-4 h-4 sm:h-5 sm:w-5" aria-hidden="true" />
         {unreadCount > 0 ? (
           <span
-            className="absolute right-0.5 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500"
+            className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-[#fcf9f2] bg-[#b56b37] animate-pulse"
             aria-hidden="true"
           />
         ) : null}
@@ -316,26 +315,26 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl shadow-gray-200/50 duration-200"
+          className="animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[#e8ded1] bg-white shadow-xl duration-200"
         >
-          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 p-4">
-            <h3 className="font-bold text-gray-900">Notifications</h3>
+          <div className="flex items-center justify-between border-b border-[#e8ded1] bg-[#fcf9f2] p-4">
+            <h3 className="font-serif font-bold text-sm text-[#231f20]">Notifications</h3>
             <div className="flex items-center gap-2">
               {refreshing ? (
                 <Loader2
-                  className="h-4 w-4 animate-spin text-gray-400"
+                  className="h-3.5 w-3.5 animate-spin text-[#b56b37]"
                   aria-label="Refreshing notifications"
                 />
               ) : null}
               {unreadCount > 0 ? (
-                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                <span className="rounded-full bg-[#f6efe2] border border-[#e8ded1] px-2.5 py-0.5 text-[10px] font-extrabold text-[#b56b37] uppercase tracking-wider">
                   {unreadCount} New
                 </span>
               ) : null}
             </div>
           </div>
 
-          <div className="max-h-80 overflow-y-auto">{renderContent()}</div>
+          <div className="max-h-80 overflow-y-auto no-scrollbar">{renderContent()}</div>
 
           <button
             type="button"
@@ -346,10 +345,10 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
               initialLoading ||
               Boolean(markingNotificationId)
             }
-            className="flex w-full items-center justify-center gap-2 border-t border-gray-100 bg-white p-3 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 border-t border-[#e8ded1] bg-white p-3 text-xs font-extrabold text-[#b56b37] uppercase tracking-wider transition-colors hover:bg-[#f6efe2] cursor-pointer disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
           >
             {markingAll ? (
-              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-[#b56b37]" aria-hidden="true" />
             ) : null}
             {markingAll ? 'Marking all as read...' : 'Mark all as read'}
           </button>

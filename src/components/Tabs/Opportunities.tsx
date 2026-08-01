@@ -34,7 +34,9 @@ export default function Opportunities() {
     minSalary: 0,
     deadlineType: 'All', // 'All' | 'Soon' | 'Active' | 'Custom'
     startDate: '',
-    endDate: ''
+    endDate: '',
+    isFree: false,
+    verifiedOnly: false
   });
 
   const [sortBy, setSortBy] = useState('Most relevant');
@@ -52,6 +54,8 @@ export default function Opportunities() {
       if (activeLocs.length > 0) filterPayload.locationTypes = activeLocs;
       if (filters.stipend !== 'All') filterPayload.stipend = filters.stipend;
       if (filters.minSalary > 0) filterPayload.minSalary = filters.minSalary;
+      if (filters.isFree) filterPayload.isFree = true;
+      if (filters.verifiedOnly) filterPayload.verifiedOnly = true;
       if (filters.deadlineType !== 'All') {
         filterPayload.deadlineType = filters.deadlineType;
         if (filters.deadlineType === 'Custom') {
@@ -87,7 +91,9 @@ export default function Opportunities() {
       minSalary: 0,
       deadlineType: 'All',
       startDate: '',
-      endDate: ''
+      endDate: '',
+      isFree: false,
+      verifiedOnly: false
     });
     setSortBy('Most relevant');
   };
@@ -163,6 +169,36 @@ export default function Opportunities() {
               <span className="text-[13px] text-[#0F172A] group-hover:text-[#2563EB] transition-colors">{k}</span>
             </label>
           ))}
+        </div>
+      </div>
+
+      {/* Trust & Application Fee */}
+      <div>
+        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.1em] mb-4">Trust & Fee Filters</h3>
+        <div className="space-y-2.5">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={filters.isFree}
+              onChange={(e) => setFilters(f => ({ ...f, isFree: e.target.checked }))}
+              className="w-4 h-4 rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB]"
+            />
+            <span className="text-[13px] text-[#0F172A] group-hover:text-[#2563EB] transition-colors font-semibold">
+              Free to Apply Only
+            </span>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={filters.verifiedOnly}
+              onChange={(e) => setFilters(f => ({ ...f, verifiedOnly: e.target.checked }))}
+              className="w-4 h-4 rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB]"
+            />
+            <span className="text-[13px] text-[#0F172A] group-hover:text-[#2563EB] transition-colors font-semibold">
+              Verified Audit Only
+            </span>
+          </label>
         </div>
       </div>
 

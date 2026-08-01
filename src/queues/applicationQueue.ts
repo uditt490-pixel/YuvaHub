@@ -8,7 +8,7 @@
  */
 
 import { Queue } from "bullmq";
-import { connection } from "./connection";
+import { connection, isRedisReady } from "./connection";
 
 export interface ApplicationJobData {
   userId: string;
@@ -30,23 +30,16 @@ export interface ApplicationJobData {
 export const applicationQueue = new Queue<ApplicationJobData>(
   "application-processing",
   {
-    connection: {
-  host: process.env.REDIS_HOST || "localhost",
-  port: Number(process.env.REDIS_PORT) || 6379
-},
-
+    connection: connection as any,
     defaultJobOptions: {
       attempts: 3,
-
       backoff: {
         type: "exponential",
         delay: 5000,
       },
-
       removeOnComplete: {
         count: 100,
       },
-
       removeOnFail: {
         count: 50,
       },
@@ -54,13 +47,16 @@ export const applicationQueue = new Queue<ApplicationJobData>(
   }
 );
 
-
 /**
  * Add application task to queue
  */
 export async function addApplicationJob(
   data: ApplicationJobData
 ) {
+  if (!isRedisReady()) {
+    console.log(`[ApplicationQueue Fallback] Redis offline. Executing synchronous fallback for action: ${data.action}`);
+    return { id: `local_app_${Date.now()}`, data };
+  }
   return applicationQueue.add(
     data.action,
     data

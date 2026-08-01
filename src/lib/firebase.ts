@@ -25,17 +25,61 @@ export const auth = initializeAuth(app, {
 });
 
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+import {
+  doc,
+  getDocFromServer,
+  FirestoreError,
+} from 'firebase/firestore';
 
-import { doc, getDocFromServer } from 'firebase/firestore';
 
 async function testConnection() {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
-    if(error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration: Firestore appears to be offline.");
+    if (error instanceof FirestoreError) {
+      switch (error.code) {
+        case 'permission-denied':
+          console.error(
+            'Firestore is reachable, but access was denied. Check your Firestore Security Rules.'
+          );
+          break;
+
+        case 'unauthenticated':
+          console.error(
+            'Firestore is reachable, but authentication is required.'
+          );
+          break;
+
+        case 'unavailable':
+          console.error(
+            'Firestore appears to be unavailable. Check your network connection or Firebase configuration.'
+          );
+          break;
+
+        case 'not-found':
+          console.warn(
+            'Firestore is reachable. The test document does not exist.'
+          );
+          break;
+
+        default:
+          console.warn(
+            `Firestore connection test failed with error code "${error.code}".`,
+            error
+          );
+      }
+    } else if (
+      error instanceof Error &&
+      error.message.toLowerCase().includes('offline')
+    ) {
+      console.error(
+        'Please check your Firebase configuration: Firestore appears to be offline.'
+      );
     } else {
-      console.warn("Firestore connection test failed (this might be expected if the test document doesn't exist, but it confirms reachability if no 'offline' error occurs):", error);
+      console.error(
+        'Unexpected Firestore connection error:',
+        error
+      );
     }
   }
 }

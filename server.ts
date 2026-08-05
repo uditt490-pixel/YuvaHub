@@ -37,10 +37,44 @@ Sentry.init({
 const app = express();
 const server = http.createServer(app);
 
+// Trust proxy so express-rate-limit and logging key on the real client IP
+// when running behind a reverse proxy / load balancer. Disable with
+// TRUST_PROXY=false; otherwise accepts a hop count or an Express proxy pattern.
+// (Issue #374)
+const trustProxy = process.env.TRUST_PROXY ?? "1";
+if (trustProxy !== "false") {
+  const hops = Number(trustProxy);
+  app.set("trust proxy", Number.isFinite(hops) && hops > 0 ? hops : trustProxy);
+}
+
+// CORS: only allow explicitly configured origins instead of opening the API to
+// every origin. In production, requests from unlisted origins are rejected.
+// Same-origin and non-browser (curl / server-to-server) requests remain allowed.
+// (Issue #374)
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || process.env.APP_URL || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+function isOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true;
+  if (allowedOrigins.length > 0) return allowedOrigins.includes(origin);
+  return process.env.NODE_ENV !== "production";
+}
+
+const corsOrigin: cors.CorsOptions["origin"] = (origin, callback) => {
+  if (isOriginAllowed(origin)) {
+    return callback(null, true);
+  }
+  return callback(new Error("Not allowed by CORS"));
+};
+
+app.use(cors({ origin: corsOrigin, credentials: true }));
+
 // Socket.IO Configuration
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "*",
+    origin: corsOrigin,
     methods: ["GET", "POST"],
   },
 });
@@ -285,21 +319,26 @@ process.on("unhandledRejection", (reason) => {
 
 async function bootstrap() {
   try {
-    // 1. Initialize databases and caches
-    await initializeDatabase();
-    
+    // 1. Initialize databases and caches. When REQUIRE_DB=true, a MongoDB
+    //    connection failure aborts startup instead of silently running in
+    //    Mock mode. (Issue #374)
+    await initializeDatabase(process.env.REQUIRE_DB === "true");
+
     // 2. Start the HTTP server
     server.listen(PORT, () => {
       console.log(`[Core] Express Server is listening on port ${PORT}`);
     });
-
-    // 2. Setup Socket.IO Event Handlers
-    setupSocketEvents();
-
-    // 3. Initialize MongoDB Database Connections asynchronously
-    initializeDatabase().catch((err: Error) => {
-      console.warn("[Core] Database initialization fallback mode:", err.message);
+    server.on("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE") {
+        console.error(`[Core] Port ${PORT} is already in use (EADDRINUSE). Exiting.`);
+      } else {
+        console.error("[Core] Failed to start HTTP server:", err);
+      }
+      process.exit(1);
     });
+
+    // 3. Setup Socket.IO Event Handlers
+    setupSocketEvents();
 
     // 4. Wire Event Bus Consumers (RabbitMQ) asynchronously
     eventBus

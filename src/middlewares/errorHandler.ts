@@ -19,7 +19,16 @@ export const errorHandler = (
   }
 
   const statusCode = err instanceof AppError ? err.statusCode : (err.status || err.statusCode || 500);
-  const message = err.message || "Internal Server Error";
+  // Never surface raw internal error messages to clients in production —
+  // log the real detail server-side but respond with a generic message.
+  // AppError messages are intentional, client-facing descriptions. (Issue #374)
+  const isProduction = process.env.NODE_ENV === "production";
+  const message =
+    err instanceof AppError
+      ? err.message
+      : isProduction
+        ? "Internal Server Error"
+        : err.message || "Internal Server Error";
   const code = err instanceof AppError ? err.code : undefined;
   const details = err instanceof AppError ? err.details : (err.details || undefined);
 

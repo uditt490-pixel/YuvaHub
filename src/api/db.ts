@@ -377,7 +377,14 @@ onReconnect(async () => {
 
 // ── Main initializer ────────────────────────────────────────────────
 
-export async function initializeDatabase(): Promise<void> {
+/**
+ * Initialize MongoDB connections (or fall back to MockDB).
+ *
+ * When `requireReal` is true, a failure to reach MongoDB aborts startup by
+ * throwing, instead of silently continuing in Mock mode. Used by deployments
+ * that set REQUIRE_DB=true (e.g. production) — see Issue #374.
+ */
+export async function initializeDatabase(requireReal: boolean = false): Promise<void> {
   if (commandUri && queryUri) {
     const commandClient = new MongoClient(commandUri);
     const queryClient = new MongoClient(queryUri);
@@ -419,6 +426,10 @@ export async function initializeDatabase(): Promise<void> {
           .catch((err: any) => console.error(`[Database] Failed to create index on ${collection}.${field}:`, err));
       });
     } catch (err) {
+      if (requireReal) {
+        console.error("[Database] Connection failed and REQUIRE_DB is enabled. Aborting startup.");
+        throw err;
+      }
       console.error("[Database] Connection failed, falling back to Mock Data:", err);
       dbCommand = new MockDB();
       dbQuery = dbCommand;
@@ -429,6 +440,9 @@ export async function initializeDatabase(): Promise<void> {
       startReconnectLoop();
     }
   } else {
+    if (requireReal) {
+      throw new Error("MONGODB_URI is not configured but REQUIRE_DB is enabled. Refusing to start in Mock mode.");
+    }
     console.log("[Database] No MONGODB_URI provided. Running in Offline Mock mode.");
     dbCommand = new MockDB();
     dbQuery = dbCommand;

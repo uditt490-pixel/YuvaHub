@@ -3,7 +3,7 @@ import { LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Activity, Boo
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic,
-  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert
+  Brain, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Cpu, ShieldAlert
 } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
@@ -45,11 +45,6 @@ import BountyBoard from './components/Tabs/BountyBoard';
 import BackToTopButton from './components/ui/BackToTopButton';import OnboardingFlow from './components/OnboardingFlow';
 import SplashAuth from './components/SplashAuth';
 import Security from './components/Tabs/Security';
-import AuthSecurityCenter from './components/Tabs/AuthSecurityCenter';
-import CareerMatchStudio from './components/Tabs/CareerMatchStudio';
-import HackathonStudio from './components/Tabs/HackathonStudio';
-import DeveloperApiPortal from './components/Tabs/DeveloperApiPortal';
-import GrantFellowshipStudio from './components/Tabs/GrantFellowshipStudio';
 import CampusAlumniHub from './components/Tabs/CampusAlumniHub';
 import ResumeAtsStudio from './components/Tabs/ResumeAtsStudio';
 import InterviewPrepStudio from './components/Tabs/InterviewPrepStudio';
@@ -256,7 +251,6 @@ function App() {
       title: "AI & Career Studios",
       items: [
         { id: 'ai_assistant', label: 'AI Assistant', icon: Brain },
-        { id: 'career_match', label: 'Career Match Studio', icon: TrendingUp },
         { id: 'resume_ats', label: 'Resume ATS Optimizer', icon: FileText },
         { id: 'interview_prep', label: 'AI Interview Studio', icon: Video },
         { id: 'project_showcase', label: 'Project Vault', icon: FolderGit2 },
@@ -277,16 +271,13 @@ function App() {
       title: "Grants & Portals",
       items: [
         { id: 'submit', label: 'Submit Opportunity', icon: PlusCircle },
-        { id: 'grant_studio', label: 'Grants & Fellowships', icon: Award },
         { id: 'tech_ecosystem', label: 'Tech Ecosystem Studio', icon: Cpu },
-        { id: 'developer_api', label: 'Developer API Portal', icon: Terminal },
       ]
     },
     {
       title: "Account & System",
       items: [
         { id: 'profile', label: 'My Profile', icon: User },
-        { id: 'auth_security', label: 'Auth & Security', icon: ShieldCheck },
         { id: 'settings', label: 'Settings', icon: Settings },
         ...(isAdminUser ? [{ id: 'admin', label: 'Admin Panel', icon: ShieldAlert }] : []),
       ]
@@ -314,10 +305,6 @@ function App() {
         </Suspense>
       );
       case 'ai_assistant': return <AIAssistant />;
-      case 'career_match': return <CareerMatchStudio />;
-      case 'hackathon_studio': return <HackathonStudio />;
-      case 'developer_api': return <DeveloperApiPortal />;
-      case 'grant_studio': return <GrantFellowshipStudio />;
       case 'campus_alumni': return <CampusAlumniHub />;
       case 'resume_ats': return <ResumeAtsStudio />;
       case 'interview_prep': return <InterviewPrepStudio />;
@@ -335,7 +322,6 @@ function App() {
       case 'community': return <Community />;
       case 'profile': return <Profile />;
       case 'settings': return <SettingsTab />;
-      case 'auth_security': return <AuthSecurityCenter />;
       case 'admin': return <AdminDashboard />;
       case 'security': return <Security />;
       case 'privacy': return <Privacy />;

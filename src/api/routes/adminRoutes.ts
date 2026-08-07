@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { adminHealth, adminMetrics, adminScrapers, scraperStats, scraperLogs, triggerScraper, adminIncidents, adminDeleteUser, adminTelemetryStream, triggerNodeScraper, adminDlqStats, adminInspectDlq, adminReplayDlq, adminPurgeDlq } from "../controllers/adminController.js";
-import { authMiddleware, adminOnly } from "../../middleware/auth.js";
+import { authMiddleware, adminOnly } from "../middlewares/auth.js";
 
 const router = Router();
 

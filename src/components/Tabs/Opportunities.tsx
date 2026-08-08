@@ -64,7 +64,12 @@ export default function Opportunities() {
         }
       }
 
-      const results = await searchOpportunities(q || "", filterPayload, undefined);
+      const results = await searchOpportunities(
+  q || "",
+  filterPayload,
+  undefined,
+  sortBy
+);
       setSearchData(results);
     } catch (err) {
       console.error("[Opportunities] Failed to load:", err);
@@ -81,7 +86,7 @@ export default function Opportunities() {
     }, 350);
 
     return () => clearTimeout(handler);
-  }, [qVal, filters]);
+  }, [qVal, filters, sortBy]);
 
   const clearFilters = () => {
     setFilters({
@@ -104,28 +109,7 @@ export default function Opportunities() {
     await toggleBookmark(id);
   };
 
-  const filteredResults = React.useMemo(() => {
-    if (!searchData || !searchData.results) return [];
-    let results = searchData.results;
-
-    // Client-side sorting
-    results = [...results].sort((a: any, b: any) => {
-      if (sortBy === 'Newest') {
-        return new Date(b.createdAt || b.created_at || 0).getTime() - new Date(a.createdAt || a.created_at || 0).getTime();
-      }
-      if (sortBy === 'Recently updated') {
-        return new Date(b.updatedAt || b.updated_at || 0).getTime() - new Date(a.updatedAt || a.updated_at || 0).getTime();
-      }
-      if (sortBy === 'Deadline') {
-        if (!a.deadline) return 1;
-        if (!b.deadline) return -1;
-        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-      }
-      return 0; // Most relevant
-    });
-
-    return results;
-  }, [searchData, sortBy]);
+const filteredResults = searchData?.results ?? [];
 
   const getThumbStyle = (type: string) => {
     const t = (type || '').toLowerCase();

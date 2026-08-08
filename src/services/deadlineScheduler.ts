@@ -20,6 +20,10 @@ export async function runDeadlineChecks(db: any): Promise<void> {
     const oppsCollection = db.collection("opportunities");
     const notifCollection = db.collection("notifications");
 
+    // Fetch all users who have bookmarks and have deadline reminders enabled
+    const userCursor = usersCollection.find({
+      bookmarks: { $exists: true, $not: { $size: 0 } }
+    });
     // Fetch all users who have bookmarks
     const users = await usersCollection
       .find({
@@ -28,7 +32,9 @@ export async function runDeadlineChecks(db: any): Promise<void> {
       .toArray();
 
     const now = new Date();
+    const { ObjectId } = await import("mongodb");
 
+    for await (const user of userCursor) {
     // Filter users who have deadline reminders enabled
     const activeUsers = users.filter((user) => {
       const prefs = user.notificationPreferences || {
@@ -122,6 +128,30 @@ export async function runDeadlineChecks(db: any): Promise<void> {
       };
 
       const bookmarks = user.bookmarks || [];
+      if (bookmarks.length === 0) continue;
+
+      const objectIds = [];
+      const stringIds = [];
+
+      for (const oppId of bookmarks) {
+        try {
+          objectIds.push(new ObjectId(oppId));
+        } catch {
+          stringIds.push(oppId);
+        }
+      }
+
+      const opportunities = await oppsCollection.find({
+        $or: [
+          { _id: { $in: objectIds } },
+          { id: { $in: stringIds } }
+        ]
+      }).toArray();
+      
+      for (const oppId of bookmarks) {
+        const opportunity = opportunities.find((o: any) => 
+          (o._id && o._id.toString() === oppId.toString()) || o.id === oppId
+        );
 
       for (const oppId of bookmarks) {
         const oppIdStr = String(oppId);
@@ -250,6 +280,9 @@ export async function runWeeklyDigest(db: any): Promise<void> {
     const usersCollection = db.collection("users");
     const oppsCollection = db.collection("opportunities");
 
+    const userCursor = usersCollection.find({
+      bookmarks: { $exists: true, $not: { $size: 0 } }
+    });
     const users = await usersCollection
       .find({
         bookmarks: { $exists: true, $not: { $size: 0 } },
@@ -258,6 +291,10 @@ export async function runWeeklyDigest(db: any): Promise<void> {
 
     const now = new Date();
     const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const { ObjectId } = await import("mongodb");
+
+    for await (const user of userCursor) {
+      if (!user.email) continue;
 
     const activeUsers = users.filter((user) => {
       if (!user.email) return false;
@@ -265,6 +302,12 @@ export async function runWeeklyDigest(db: any): Promise<void> {
       return prefs.emailEnabled !== false;
     });
 
+      const bookmarks = user.bookmarks || [];
+      if (bookmarks.length === 0) continue;
+
+      const expiringOpps: Array<{ title: string; org: string; deadline: string }> = [];
+      const objectIds = [];
+      const stringIds = [];
     if (activeUsers.length === 0) return;
 
     // Collect all unique oppIds
@@ -272,6 +315,24 @@ export async function runWeeklyDigest(db: any): Promise<void> {
     for (const user of activeUsers) {
       const bookmarks = user.bookmarks || [];
       for (const oppId of bookmarks) {
+        try {
+          objectIds.push(new ObjectId(oppId));
+        } catch {
+          stringIds.push(oppId);
+        }
+      }
+
+      const opportunities = await oppsCollection.find({
+        $or: [
+          { _id: { $in: objectIds } },
+          { id: { $in: stringIds } }
+        ]
+      }).toArray();
+
+      for (const oppId of bookmarks) {
+        const opp = opportunities.find((o: any) => 
+          (o._id && o._id.toString() === oppId.toString()) || o.id === oppId
+        );
         if (oppId) uniqueOppIds.add(String(oppId));
       }
     }

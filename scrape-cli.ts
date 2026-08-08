@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import crypto from 'crypto';
 import { eventBus } from './src/events/eventBus';
 import { EventType, OpportunityScrapedEvent } from './src/events/schemas';
+import { scrapeDevpostReal, scrapeMLHReal, scrapeRealURL } from './src/scrapers/realScrapers';
 
 dotenv.config();
 
@@ -41,80 +42,23 @@ async function runVerification() {
   try {
     console.log("[Phase 2] Launching Node.js Native Pipeline...");
 
-    const mockOpportunities = [
-      {
-          title: "NASA Space Apps Challenge 2026",
-          organization: "NASA",
-          apply_link: "https://spaceapps.devpost.com/",
-          tags: ["Space", "AI", "Data", "Hackathon"],
-          deadline: "2026-10-05T00:00:00Z",
-          location: "Global / Online",
-          opportunity_type: "hackathon",
-          description: "Solve Earth and space challenges.",
-          source_name: "Devpost"
-      },
-      {
-          title: "MIT Reality Hack",
-          organization: "MIT",
-          apply_link: "https://mitrealityhack.devpost.com/",
-          tags: ["AR/VR", "Hardware", "Hackathon"],
-          deadline: "2026-01-26T00:00:00Z",
-          location: "Cambridge, MA",
-          opportunity_type: "hackathon",
-          description: "The world's premier XR hackathon.",
-          source_name: "Devpost"
-      },
-      {
-          title: "ETHIndia 2026",
-          organization: "ETHGlobal",
-          apply_link: "https://ethindia.co",
-          tags: ["Web3", "Blockchain", "Ethereum", "Hackathon"],
-          deadline: "2026-12-01T00:00:00Z",
-          location: "Bengaluru, India",
-          opportunity_type: "hackathon",
-          description: "Asia's largest Ethereum hackathon.",
-          source_name: "Devfolio"
-      },
-      {
-          title: "GenAI Hackathon #5",
-          organization: "Google Cloud",
-          apply_link: "https://genai.devfolio.co",
-          tags: ["AI", "GenAI", "GCP", "Hackathon"],
-          deadline: "2026-08-15T00:00:00Z",
-          location: "Online",
-          opportunity_type: "hackathon",
-          description: "Build next-gen AI apps using Google Cloud GenAI.",
-          source_name: "Devfolio"
-      },
-      {
-          title: "AI Startup Founder Meetup",
-          organization: "Luma Events",
-          apply_link: "https://lu.ma/ai-startup-meetup",
-          tags: ["AI", "Startup", "Networking", "Meetup"],
-          deadline: "2026-08-20T18:00:00Z",
-          location: "San Francisco, CA",
-          opportunity_type: "event",
-          description: "Join top AI founders and investors for an evening of networking and panel discussions. Speakers include prominent VCs and successful founders.",
-          source_name: "Luma"
-      },
-      {
-          title: "Google Summer of Code (GSoC) 2026",
-          organization: "Google Open Source",
-          apply_link: "https://summerofcode.withgoogle.com/",
-          tags: ["Open Source", "Software Engineering", "Fellowship"],
-          deadline: "2026-04-02T18:00:00Z",
-          location: "Remote",
-          opportunity_type: "fellowship",
-          description: "A global, online program focused on bringing new contributors into open source software development.",
-          source_name: "GSoC"
-      }
-    ];
+    // Execute real scrapers from supported sources (Devpost, MLH, etc.)
+    const devpostOpps = await scrapeDevpostReal();
+    const mlhOpps = await scrapeMLHReal();
+    let realOpportunities = [...devpostOpps, ...mlhOpps];
 
-    pythonScrapedCount = mockOpportunities.length;
-    console.log(`[Phase 2] Extraction Succeeded. Found ${pythonScrapedCount} opportunities from Node Registry.`);
+    // Fallback: If network block or RSS empty, scrape real targeted live URLs
+    if (realOpportunities.length === 0) {
+      console.log("[Phase 2] Live RSS returned 0 items; fetching direct live URL metadata...");
+      const urlScraped = await scrapeRealURL("https://devpost.com/hackathons", "Devpost", "hackathon");
+      if (urlScraped) realOpportunities.push(urlScraped);
+    }
+
+    pythonScrapedCount = realOpportunities.length;
+    console.log(`[Phase 2] Extraction Succeeded. Found ${pythonScrapedCount} real opportunities from sources.`);
 
     // Emit events instead of direct ingestion
-    for (const item of mockOpportunities) {
+    for (const item of realOpportunities) {
       const fp = crypto.createHash("md5").update(`${item.source_name}:${item.title}:${item.organization}`).digest("hex");
       
       const event: OpportunityScrapedEvent = {

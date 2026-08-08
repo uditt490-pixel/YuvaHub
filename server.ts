@@ -1,11 +1,51 @@
+
+import { addApplicationJob } from "./src/queues/applicationQueue";
+import { generateApplicationDraft } from "./src/services/applicationGenerator";
+import express from "express";
+import http from "http";
+import { predictEligibility } from "./src/services/eligibilityService.js";
+import { eventBus } from "./src/events/eventBus";
+import { createOpportunityScrapedConsumer } from "./src/consumers/opportunityScrapedConsumer";
+import { createNotificationConsumer } from "./src/consumers/notificationConsumer";
+import { runDeadlineChecks } from "./src/services/deadlineScheduler";
+import { Server } from "socket.io";
+import { createServer as createViteServer } from "vite";
+import path from "path";
 import express, { Request, Response, NextFunction } from "express";
+
 import cors from "cors";
 import dotenv from "dotenv";
+
+import { GoogleGenAI, Type } from "@google/genai";
+import { z } from "zod";
+import jwt from "jsonwebtoken";
+import { ScholarshipSchema, AIEvaluationResponseSchema } from "./src/models/scholarshipSchema.js";
+import { isToxic, createToxicityMiddleware } from "./src/services/toxicity.js";
+import { authenticateUser, deleteFirebaseUser } from "./src/middleware/auth.js";
+import rateLimit from "express-rate-limit";
+import { RedisStore } from "rate-limit-redis";
+import Redis from "ioredis";
+import { v2 as cloudinary } from "cloudinary";
+import { meiliClient, initializeSearchSync } from "./src/services/searchSync.js";
+import { ExpressAdapter } from '@bull-board/express';
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { scraperQueue } from './src/queues/scraperQueue.js';
+import { generateOpportunityEmbedding } from "./src/services/embedding.js";
+import {
+  createApplication,
+  confirmApplication,
+  updateApplicationStatus,
+  retryApplication,
+  getApplicationHistory,
+} from "./src/services/applicationService.js";
+
 import http from "http";
 import path from "path";
 import * as Sentry from "@sentry/node";
 import { Server as SocketIOServer } from "socket.io";
 import swaggerUi from "swagger-ui-express";
+
 
 import { initializeDatabase, dbCommand, dbQuery, closeDatabaseConnections } from "./src/api/db.js";
 import { setSocketIO } from "./src/api/socketInstance.js";
@@ -33,6 +73,406 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   tracesSampleRate: 1.0,
 });
+// --- Application Tracker API ---
+
+
+app.get("/api/v1/applications", async (req, res) => {
+  try {
+    const user = await getAuthenticatedUser(req);
+
+    const applications = await getApplicationHistory(user.uid);
+
+    res.json({
+      status: "success",
+      applications,
+    });
+  } catch (err: any) {
+    console.error("GET /api/v1/applications error:", err);
+
+    res.status(
+      err.message?.startsWith("Unauthorized") ? 401 : 500
+    ).json({
+      error: err.message || "Internal Server Error",
+    });
+  }
+});
+
+app.post("/api/v1/applications", async (req, res) => {
+  try {
+    const user = await getAuthenticatedUser(req);
+
+    const application = await createApplication({
+      ...req.body,
+      userId: user.uid,
+    });
+
+    res.status(201).json({
+      status: "success",
+      ...application,
+    });
+  } catch (err: any) {
+    console.error("POST /api/v1/applications error:", err);
+
+    res.status(
+      err.message?.startsWith("Unauthorized") ? 401 : 500
+    ).json({
+      error: err.message || "Internal Server Error",
+    });
+  }
+});
+app.post("/api/v1/eligibility/predict", async (req, res) => {
+  try {
+    const user = await getAuthenticatedUser(req);
+
+    const { opportunityId, profile, opportunity } = req.body;
+
+    if (!opportunityId) {
+      return res.status(400).json({
+        error: "opportunityId is required",
+      });
+    }
+
+    if (!profile || !opportunity) {
+      return res.status(400).json({
+        error: "profile and opportunity are required",
+      });
+    }
+
+    const prediction = await predictEligibility(
+      user.uid,
+      opportunityId,
+      profile,
+      opportunity
+    );
+
+    return res.json({
+      success: true,
+      prediction,
+    });
+  } catch (error: any) {
+    console.error("Eligibility prediction error:", error);
+
+    if (error.message?.startsWith("Unauthorized")) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
+
+    return res.status(500).json({
+      error: error.message || "Failed to generate eligibility prediction",
+    });
+  }
+});
+
+app.post("/api/v1/applications/:id/confirm", async (req, res) => {
+  try {
+    await getAuthenticatedUser(req);
+
+    const application = await confirmApplication(
+      req.params.id
+    );
+
+    res.json({
+      status: "success",
+      application,
+    });
+  } catch (err: any) {
+    console.error(
+      "POST /api/v1/applications/:id/confirm error:",
+      err
+    );
+
+    res.status(500).json({
+      error: err.message || "Internal Server Error",
+    });
+  }
+});
+
+app.patch("/api/v1/applications/:id/status", async (req, res) => {
+  try {
+    await getAuthenticatedUser(req);
+
+    const { status, message } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        error: "Missing application status",
+      });
+    }
+
+    await updateApplicationStatus(
+      req.params.id,
+      status,
+      message
+    );
+
+    res.json({
+      status: "success",
+    });
+  } catch (err: any) {
+    console.error(
+      "PATCH /api/v1/applications/:id/status error:",
+      err
+    );
+
+    res.status(500).json({
+      error: err.message || "Internal Server Error",
+    });
+  }
+});
+
+app.post("/api/v1/applications/:id/retry", async (req, res) => {
+  try {
+    await getAuthenticatedUser(req);
+
+    await retryApplication(req.params.id);
+
+    res.json({
+      status: "success",
+    });
+  } catch (err: any) {
+    console.error(
+      "POST /api/v1/applications/:id/retry error:",
+      err
+    );
+
+    res.status(500).json({
+      error: err.message || "Internal Server Error",
+    });
+  }
+});
+// --- Application Tracker API ---
+
+// Get authenticated user's applications
+app.get("/api/v1/applications", async (req, res) => {
+  try {
+    const user = await getAuthenticatedUser(req);
+
+    const status = req.query.status as string | undefined;
+    const opportunityId = req.query.opportunityId as string | undefined;
+
+    const applications = await getApplicationHistory(user.uid, {
+      status: status as any,
+      opportunityId,
+    });
+
+    res.json({
+      status: "success",
+      applications,
+    });
+  } catch (err: any) {
+    console.error("GET /api/v1/applications error:", err);
+
+    res
+      .status(err.message?.startsWith("Unauthorized") ? 401 : 500)
+      .json({
+        error: err.message || "Internal Server Error",
+      });
+  }
+});
+
+
+// Create an application tracker entry
+app.post("/api/v1/applications", async (req, res) => {
+  try {
+    const user = await getAuthenticatedUser(req);
+
+    if (!dbQuery) {
+      return res.status(503).json({
+        error: "Database not available",
+      });
+    }
+
+    const {
+      opportunityId,
+      status,
+      notes,
+    } = req.body;
+
+    if (!opportunityId) {
+      return res.status(400).json({
+        error: "Missing opportunityId",
+      });
+    }
+
+    // Validate the opportunity exists
+    const { ObjectId } = await import("mongodb");
+
+    let opportunityQuery: any;
+
+    try {
+      opportunityQuery = {
+        _id: new ObjectId(opportunityId),
+      };
+    } catch {
+      opportunityQuery = {
+        id: opportunityId,
+      };
+    }
+
+    const opportunity = await dbQuery
+      .collection("opportunities")
+      .findOne(opportunityQuery);
+
+    if (!opportunity) {
+      return res.status(404).json({
+        error: "Opportunity not found",
+      });
+    }
+
+    const application = await createApplication({
+      userId: user.uid,
+      opportunityId,
+      opportunity: {
+        title: opportunity.title || "Untitled Opportunity",
+        organization:
+          opportunity.company ||
+          opportunity.organization,
+        platform:
+          opportunity.sourceName ||
+          opportunity.source_name,
+        applyUrl:
+          opportunity.apply_link ||
+          opportunity.url,
+      },
+      platform:
+        opportunity.sourceName ||
+        opportunity.source_name ||
+        "unknown",
+      status: status || "interested",
+      notes: notes || "",
+      deadline:
+        opportunity.deadlineDate ||
+        opportunity.deadline,
+      userConfirmed: false,
+    });
+
+    res.status(201).json({
+      status: "success",
+      application,
+    });
+  } catch (err: any) {
+    console.error("POST /api/v1/applications error:", err);
+
+    res
+      .status(err.message?.startsWith("Unauthorized") ? 401 : 500)
+      .json({
+        error: err.message || "Internal Server Error",
+      });
+  }
+});
+
+
+// Update application tracker details
+app.patch("/api/v1/applications/:id", async (req, res) => {
+  try {
+    const user = await getAuthenticatedUser(req);
+
+    const { id } = req.params;
+
+    const {
+      status,
+      notes,
+      deadline,
+    } = req.body;
+
+    if (
+      status === undefined &&
+      notes === undefined &&
+      deadline === undefined
+    ) {
+      return res.status(400).json({
+        error: "No fields to update",
+      });
+    }
+
+    await updateApplicationTracker(
+      id,
+      user.uid,
+      {
+        status,
+        notes,
+        deadline,
+      }
+    );
+
+    res.json({
+      status: "success",
+      message: "Application updated successfully",
+    });
+  } catch (err: any) {
+    console.error(
+      "PATCH /api/v1/applications/:id error:",
+      err
+    );
+
+    const statusCode =
+      err.message === "Application not found"
+        ? 404
+        : err.message?.startsWith("Unauthorized")
+          ? 401
+          : 500;
+
+    res.status(statusCode).json({
+      error:
+        err.message || "Internal Server Error",
+    });
+  }
+});
+
+
+// Delete application tracker entry
+app.delete("/api/v1/applications/:id", async (req, res) => {
+  try {
+    const user = await getAuthenticatedUser(req);
+
+    if (!dbQuery) {
+      return res.status(503).json({
+        error: "Database not available",
+      });
+    }
+
+    const { id } = req.params;
+
+    const result = await dbQuery
+      .collection("applications")
+      .deleteOne({
+        _id: id as any,
+        userId: user.uid,
+      });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        error: "Application not found",
+      });
+    }
+
+    res.json({
+      status: "success",
+      message: "Application removed successfully",
+    });
+  } catch (err: any) {
+    console.error(
+      "DELETE /api/v1/applications/:id error:",
+      err
+    );
+
+    res
+      .status(err.message?.startsWith("Unauthorized") ? 401 : 500)
+      .json({
+        error: err.message || "Internal Server Error",
+      });
+  }
+});
+const chatRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: true,
+  validate: false,
+  store: createFailOpenStore('rate-limit:ai-chat:'),
+  keyGenerator: (req) => {
+    return req.body?.userId || req.ip || "unknown";
 
 const app = express();
 const server = http.createServer(app);
@@ -42,6 +482,7 @@ const io = new SocketIOServer(server, {
   cors: {
     origin: process.env.FRONTEND_URL || "*",
     methods: ["GET", "POST"],
+
   },
 });
 setSocketIO(io);
@@ -134,38 +575,6 @@ app.get("/sitemap.xml", async (req: Request, res: Response) => {
   </url>`;
     });
 
-    // 3. Sort by our dynamic scores
-    scoredItems.sort((a: any, b: any) => b.metrics.totalScore - a.metrics.totalScore);
-
-    const paginatedItems = scoredItems.slice(0, limit);
-
-    return {
-      items: paginatedItems,
-      next_page: searchRes.estimatedTotalHits && (skip + searchLimit < searchRes.estimatedTotalHits) ? page + 1 : null
-    };
-  } catch (scoreErr) {
-    console.error("Scoring failure:", scoreErr);
-    return { items: [], next_page: null };
-  }
-}
-
-const __filename = typeof import.meta !== "undefined" && import.meta.url
-  ? fileURLToPath(import.meta.url)
-  : "";
-const __dirname = __filename ? path.dirname(__filename) : "";
-
-// MongoDB setup
-const uri = process.env.MONGODB_URI || "";
-const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
-import { CURATED_FALLBACKS } from "./src/services/staticFallbacks.js";
-import fs from "fs";
-import { initializeDNLDatabase } from "./src/services/dnl/metrics.js";
-import { DNLDispatcher } from "./src/services/dnl/scheduler.js";
-import { DevpostAdapter } from "./src/services/dnl/adapters/DevpostAdapter.js";
-import { InternshalaAdapter } from "./src/services/dnl/adapters/InternshalaAdapter.js";
-
-let dbCommand: any = null;
-let dbQuery: any = null;
     // Fetch opportunities if DB is ready
     if (dbQuery) {
       try {
@@ -197,101 +606,6 @@ let dbQuery: any = null;
         console.error("[Sitemap] Error fetching opportunities:", dbErr);
       }
     }
-    return { modifiedCount: 0 };
-  }
-  async insertOne(doc: any) { this.data.push(doc); return { insertedId: "mock_id" }; }
-  async deleteOne(query: any) {
-    const initialLen = this.data.length;
-    const item = await this.findOne(query);
-    if (item) {
-      this.data = this.data.filter(r => r !== item);
-    }
-    return { deletedCount: this.data.length < initialLen ? 1 : 0 };
-  }
-  async countDocuments() { return this.data.length; }
-  async createIndex(keys: any, options: any) { return "mock_index"; }
-  aggregate() { return { toArray: async () => [] }; }
-  initializeUnorderedBulkOp() {
-    const ops: any[] = [];
-    return {
-      insert: (doc: any) => {
-        ops.push(doc);
-      },
-      execute: async () => {
-        this.data.push(...ops);
-        return { ok: 1, nInserted: ops.length };
-      }
-    };
-  }
-}
-
-class MockDB {
-  isMock = true;
-  collections: Record<string, MemoryCollection> = {
-    opportunities: new MemoryCollection(CURATED_FALLBACKS.map(f => ({...f, created_at: new Date()}))),
-    interactions: new MemoryCollection(),
-    scraper_metrics: new MemoryCollection()
-  };
-  collection(name: string) { return this.collections[name] || (this.collections[name] = new MemoryCollection()); }
-}
-
-function setupDNL(database: any) {
-  initializeDNLDatabase(database).then(() => {
-    const dispatcher = new DNLDispatcher(database);
-    dispatcher.registerAdapter(new DevpostAdapter());
-    dispatcher.registerAdapter(new InternshalaAdapter());
-    dispatcher.start(3600000); // 1 hour
-    console.log("[DNL] Scheduler initialized and started.");
-  }).catch(err => {
-    console.error("[DNL] Setup failed:", err);
-  });
-}
-
-if (commandUri && queryUri) {
-  const commandClient = new MongoClient(commandUri);
-  const queryClient = new MongoClient(queryUri);
-if (uri) {
-  const commandClient = new MongoClient(uri);
-  const queryClient = new MongoClient(uri);
-  
-  Promise.all([commandClient.connect(), queryClient.connect()]).then(() => {
-    dbCommand = commandClient.db(process.env.MONGODB_COMMAND_DB || dbName);
-    dbQuery = queryClient.db(process.env.MONGODB_QUERY_DB || dbName);
-    console.log(`[Database] Connected to Command and Query MongoDB pools`);
-    setupDNL(dbCommand);
-    initializeSearchSync(dbQuery);
-    
-    dbCommand.collection("opportunities").createIndex({ created_at: -1, source_quality_score: -1 })
-      .then(() => console.log(`[Database] Created compound index on opportunities`))
-      .catch((err: any) => console.error(`[Database] Failed to create index:`, err));
-
-    dbCommand.collection("opportunities").createIndex(
-      { dedupe_hash: 1 },
-      { unique: true, partialFilterExpression: { dedupe_hash: { $exists: true } } }
-    )
-      .then(() => console.log(`[Database] Created unique index on opportunities.dedupe_hash`))
-      .catch((err: any) => console.error(`[Database] Failed to create unique index on opportunities.dedupe_hash:`, err));
-
-    dbQuery.collection("users").createIndex({ uid: 1 }, { unique: true })
-      .then(() => console.log(`[Database] Created unique index on users.uid`))
-      .catch((err: any) => console.error(`[Database] Failed to create index on users.uid:`, err));
-    dbCommand.collection("users").createIndex({ firebaseUid: 1 }, { unique: true, sparse: true })
-      .then(() => console.log(`[Database] Created unique sparse index on users.firebaseUid`))
-      .catch((err: any) => console.error(`[Database] Failed to create unique index:`, err));
-  }).catch(err => {
-    console.error("[Database] Connection failed, falling back to Mock Data:", err);
-    dbCommand = new MockDB();
-    dbQuery = new MockDB();
-    setupDNL(dbCommand);
-    initializeSearchSync(dbQuery);
-  });
-} else {
-  console.log("[Database] No MONGODB_URI provided. Running in Offline Mock mode.");
-  dbCommand = new MockDB();
-  dbQuery = new MockDB();
-  setupDNL(dbCommand);
-  initializeSearchSync(dbQuery);
-}
 
     const sitemapXml = [
       `<?xml version="1.0" encoding="UTF-8"?>`,
@@ -1203,6 +1517,7 @@ Sincerely,
 [Your Name]
 
 *(Note: This is a static template provided because our AI service is currently experiencing high traffic. Please customize it before sending.)*`;
+[Your Name]`;
     }
     
     if (lower.includes("scout protocol") || lower.includes("scout")) {
@@ -1245,6 +1560,7 @@ Sincerely,
       return JSON.stringify({
         text: "I am a standard career mentor fallback. Focus on building fully polished portfolio applications, writing high-quality README documents, and establishing deep mastery in TypeScript/Vite full-stack structures!\n\n*(Note: This response was provided by a local fallback system because our AI service is currently experiencing high traffic.)*"
       });
+      return "I am standard career mentor fallback. Focus on building fully polished portfolio applications, writing high-quality README documents, and establishing deep mastery in TypeScript/Vite full-stack structures!";
     }
 
     if (expectJson) {
@@ -1275,6 +1591,10 @@ Sincerely,
       if (!ai) {
         console.error('[AI Service Error] getGenAI() returned null.');
         return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+      const ai = getGenAI();
+      if (!ai) {
+        const fb = getAIFallback(prompt, !!expectJson);
+        return res.json({ text: fb });
       }
       
       let responseText = "";
@@ -1309,6 +1629,18 @@ Sincerely,
       if (!responseText) {
         console.error(`[AI Service Error] Empty response text.`);
         return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+            console.log(`[AI Routing] Alternate model restriction. Invoking static fallback strategy.`);
+            responseText = getAIFallback(prompt, !!expectJson);
+          }
+        } else {
+          // Non-rate-limit error (e.g. key issue, bad prompt), use fallback
+          responseText = getAIFallback(prompt, !!expectJson);
+        }
+      }
+
+      // If response text is empty, fill with fallback
+      if (!responseText) {
+        responseText = getAIFallback(prompt, !!expectJson);
       }
 
       setCachedResponse(prompt, responseText);
@@ -1316,6 +1648,10 @@ Sincerely,
     } catch (err) {
       console.error(`[AI Service Error] General error:`, err);
       res.status(503).json({ error: "AI service unavailable", isAiError: true });
+      // General safety fallback, don't fail the request
+      const { prompt, expectJson } = req.body;
+      const fallback = getAIFallback(prompt || "", !!expectJson);
+      res.json({ text: fallback });
     }
   });
 
@@ -1346,6 +1682,9 @@ Sincerely,
       if (!ai) {
          console.error('[AI Service Error] getGenAI() returned null.');
          return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+      const ai = getGenAI();
+      if (!ai) {
+         return res.json(defaultFallback);
       }
 
       const prompt = `Review this student resume for structure, impact, and ATS readiness. 
@@ -1583,6 +1922,38 @@ Return ONLY a JSON object strictly adhering to this schema:
 
   app.post("/api/ai/career-roadmap", chatRateLimiter, handleCareerRoadmap);
   app.post("/api/v1/ai/career-roadmap", chatRateLimiter, handleCareerRoadmap);
+            console.log(`[AI Routing] Review fallback activated.`);
+          }
+        }
+      }
+
+      let parsed = defaultFallback;
+      if (responseText) {
+        try {
+          parsed = JSON.parse(responseText);
+        } catch (e) {
+          // If JSON parse fails, attempt robust extraction of JSON
+          try {
+            const firstBrace = responseText.indexOf('{');
+            const lastBrace = responseText.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+              parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
+            }
+          } catch (e2) {}
+        }
+      }
+
+      setCachedResponse(cacheKey, parsed);
+      res.json(parsed);
+    } catch (err) {
+      res.json({
+        score: 82,
+        strengths: ["Clean structure and section flow", "Clear contact details and header"],
+        weaknesses: ["Requires more quantifiable impact metrics", "Descriptions of projects are relatively short"],
+        suggestions: ["Incorporate metrics such as performance gains, scale size, or user retention count", "Use active, strong action verbs to begin bullet points"]
+      });
+    }
+  });
 
   app.post("/api/ai/analyze-resume", resumeRateLimiter, async (req, res) => {
     try {
@@ -1619,6 +1990,10 @@ Return ONLY a JSON object strictly adhering to this schema:
       if (!ai) {
         console.warn("Gemini AI client not available, returning 503.");
         return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+      const ai = getGenAI();
+      if (!ai) {
+        console.warn("Gemini AI client not available, returning fallback.");
+        return res.json(defaultFallback);
       }
 
       let contents: any[] = [];
@@ -1649,6 +2024,60 @@ Return ONLY a JSON object strictly adhering to this schema:
           "weaknesses": string[],
           "suggestions": string[]
         }
+       Evaluate the compatibility score (0-100), identify key missing keywords,
+list strengths, list weaknesses, provide layout/structural optimization
+suggestions, and create a personalized skill-gap learning roadmap.
+
+Also identify:
+- Skills already present in the resume
+- Missing technical skills
+- Missing soft skills
+- Priority of each missing skill
+- Why each skill is needed for the target role
+- Recommended learning resources
+- A practical project for important missing skills
+- Estimated learning time
+- Overall skill match percentage
+
+Return ONLY a JSON object matching this schema:
+
+{
+  "score": number,
+  "skillMatchPercentage": number,
+  "missingKeywords": string[],
+  "existingSkills": string[],
+  "strengths": string[],
+  "weaknesses": string[],
+  "suggestions": string[],
+  "missingSkills": [
+    {
+      "skill": string,
+      "category": "technical" | "soft",
+      "priority": "high" | "medium" | "low",
+      "reason": string,
+      "completed": false
+    }
+  ],
+  "roadmap": [
+    {
+      "skill": string,
+      "priority": "high" | "medium" | "low",
+      "estimatedWeeks": number,
+      "resources": string[],
+      "project": string,
+      "completed": false
+    }
+  ]
+}
+
+Rules:
+- skillMatchPercentage must be between 0 and 100.
+- score and skillMatchPercentage should represent the resume's compatibility with the target role.
+- Do not mark a skill as missing if it is clearly present in the resume.
+- Prioritize skills explicitly required by the job description.
+- Include both technical and soft skills when applicable.
+- Keep the roadmap practical for a student.
+- Do not invent certifications or courses.
         `
       });
 
@@ -1697,6 +2126,22 @@ Return ONLY a JSON object strictly adhering to this schema:
       if (!parsed) {
         console.error(`[AI Service Error] Failed to parse JSON response:`, responseText);
         return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+        }
+      }
+
+      let parsed = defaultFallback;
+      if (responseText) {
+        try {
+          parsed = JSON.parse(responseText);
+        } catch (e) {
+          try {
+            const firstBrace = responseText.indexOf('{');
+            const lastBrace = responseText.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+              parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
+            }
+          } catch (e2) {}
+        }
       }
 
       setCachedResponse(cacheKey, parsed);
@@ -1704,12 +2149,14 @@ Return ONLY a JSON object strictly adhering to this schema:
     } catch (err) {
       console.error("/api/ai/analyze-resume error:", err);
       res.status(503).json({ error: "AI service unavailable", isAiError: true });
+      res.status(500).json({ error: "Internal Server Error" });
     }
   });
 
   const searchHandler = async (req: express.Request, res: express.Response) => {
     try {
       const q = (req.query.q as string) || "";
+      const sortBy = (req.query.sortBy as string) || "Most relevant";
       const typesStr = req.query.types as string;
       const locationTypesStr = req.query.locationTypes as string;
       const stipend = req.query.stipend as string;
@@ -1868,6 +2315,37 @@ Return ONLY a JSON object strictly adhering to this schema:
             score: { $meta: "searchScore" }
           }
         });
+            score: { $meta: "searchScore" },
+            updated_at: 1
+          }
+        });
+        if (sortBy === "Newest") {
+  pipeline.push({
+    $sort: {
+      created_at: -1,
+    },
+  });
+} else if (sortBy === "Recently updated") {
+  pipeline.push({
+    $sort: {
+      updated_at: -1,
+    },
+  });
+} else if (sortBy === "Deadline") {
+  pipeline.push({
+    $sort: {
+      deadlineDate: 1,
+    },
+  });
+} else {
+  pipeline.push({
+    $sort: {
+      score: -1,
+    },
+  });
+}
+
+
 
         pipeline.push({ $limit: 50 });
         items = await dbQuery.collection("opportunities").aggregate(pipeline).toArray();
@@ -1878,6 +2356,26 @@ Return ONLY a JSON object strictly adhering to this schema:
         }
         items = await dbQuery.collection("opportunities").find(filter).limit(50).toArray();
       }
+  const filter: any = {};
+
+  if (andConditions.length > 0) {
+    filter.$and = andConditions;
+  }
+
+  let cursor = dbQuery.collection("opportunities").find(filter);
+
+  if (sortBy === "Newest") {
+    cursor = cursor.sort({ created_at: -1 });
+  } else if (sortBy === "Recently updated") {
+    cursor = cursor.sort({ updated_at: -1 });
+  } else if (sortBy === "Deadline") {
+    cursor = cursor.sort({ deadlineDate: 1 });
+  } else {
+    cursor = cursor.sort({ created_at: -1 });
+  }
+
+  items = await cursor.limit(50).toArray();
+}
 
       let mapped = items.map((doc: any) => {
         const docId = doc._id ? doc._id.toString() : (doc.id ? doc.id.toString() : "");
@@ -3136,6 +3634,21 @@ ${JSON.stringify(userProfile, null, 2)}
         upvotes: 0,
         upvoted_by: [] as string[],
         repliesCount: 0,
+  // 1. Create a Post
+  app.post("/api/v1/posts", async (req, res) => {
+    try {
+      const { title, content, author } = req.body;
+      if (!title || !content || !author) {
+        return res.status(400).json({ error: "Missing title, content, or author" });
+      }
+      if (!dbCommand || !dbQuery) return res.status(503).json({ error: "Database not available" });
+
+      const post = {
+        title,
+        content,
+        author,
+        upvotes: 0,
+        upvoted_by: [] as string[],
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -3146,6 +3659,8 @@ ${JSON.stringify(userProfile, null, 2)}
       }
 
       res.status(201).json({ ...post, _id: "post_" + Date.now(), id: "post_" + Date.now() });
+      const result = await dbCommand.collection("posts").insertOne(post);
+      res.status(201).json({ ...post, _id: result.insertedId });
     } catch (err) {
       console.error("Create Post Error:", err);
       res.status(500).json({ error: "Internal Server Error" });
@@ -3199,6 +3714,7 @@ ${JSON.stringify(userProfile, null, 2)}
 
   // 3. Create a Comment or Reply (Materialized Path, Toxicity classification)
   app.post(["/api/v1/posts/:postId/comments", "/api/posts/:postId/comments"], toxicityMiddleware, async (req, res) => {
+  app.post("/api/v1/posts/:postId/comments", toxicityMiddleware, async (req, res) => {
     try {
       const { postId } = req.params;
       const { content, author, parentId } = req.body;
@@ -3316,6 +3832,17 @@ ${JSON.stringify(userProfile, null, 2)}
           createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString()
         }
       ]);
+  app.get("/api/v1/posts/:postId/comments", async (req, res) => {
+    try {
+      const { postId } = req.params;
+      if (!dbCommand || !dbQuery) return res.status(503).json({ error: "Database not available" });
+
+      const comments = await dbQuery.collection("comments")
+        .find({ path: new RegExp('^,' + postId + ',') })
+        .sort({ path: 1 })
+        .toArray();
+
+      res.json(comments);
     } catch (err) {
       console.error("Fetch Comments Error:", err);
       res.status(500).json({ error: "Internal Server Error" });
@@ -3327,6 +3854,10 @@ ${JSON.stringify(userProfile, null, 2)}
     try {
       const { postId } = req.params;
       const idStr = Array.isArray(postId) ? postId[0] : postId;
+  // 6. Upvote a Post (Transactional and atomic to prevent concurrent race conditions)
+  app.post("/api/v1/posts/:postId/upvote", async (req, res) => {
+    try {
+      const { postId } = req.params;
       const { userId } = req.body;
 
       if (!userId) {
@@ -3339,6 +3870,9 @@ ${JSON.stringify(userProfile, null, 2)}
         queryId = new ObjectId(idStr);
       } catch (e) {
         queryId = idStr;
+        queryId = new ObjectId(postId);
+      } catch (e) {
+        queryId = postId;
       }
 
       const result = await dbCommand.collection("posts").updateOne(
@@ -3443,11 +3977,16 @@ async function bootstrap() {
         void runWeeklyDigest(dbCommand);
       }, 604800000); // 7 days (weekly summary digest)
       console.log('[Scheduler] Deadline check and weekly digest schedulers initiated successfully');
+      setInterval(() => {
+        void runDeadlineChecks(dbCommand);
+      }, 86400000); // 24 hours
+      console.log('[Scheduler] Deadline check scheduler initiated successfully');
     }
   } catch (err) {
     console.error("Failed to start event bus and consumers", err);
   }
 }
+
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("uncaughtException", (err) => {
@@ -3458,5 +3997,6 @@ process.on("unhandledRejection", (reason) => {
   console.error("[Core] Unhandled rejection:", reason);
   gracefulShutdown("unhandledRejection");
 });
+
 
 export { app, server, bootstrap };

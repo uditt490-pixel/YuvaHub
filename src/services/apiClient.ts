@@ -246,9 +246,105 @@ export async function fetchLatestFeed() {
     return { items: [], num_results: 0 };
   }
 }
+export async function fetchApplications(status?: string) {
+  const params = new URLSearchParams();
 
+  if (status && status !== "All") {
+    params.set("status", status);
+  }
+
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications?${params.toString()}`,
+    {
+      method: "GET",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch applications");
+  }
+
+  return response.json();
+}
+
+export async function createApplicationTracker(
+  opportunityId: string,
+  status = "interested",
+  notes = ""
+) {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        opportunityId,
+        status,
+        notes,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || "Failed to create application");
+  }
+
+  return response.json();
+}
+
+export async function updateApplicationTracker(
+  applicationId: string,
+  updates: {
+    status?: string;
+    notes?: string;
+    deadline?: string;
+  }
+) {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications/${applicationId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(updates),
+    }
+  );
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || "Failed to update application");
+  }
+
+  return response.json();
+}
+
+export async function deleteApplicationTracker(
+  applicationId: string
+) {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications/${applicationId}`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || "Failed to delete application");
+  }
+
+  return response.json();
+}
 export async function fetchSmartFeed(profile: any, cursor?: string) {
+
+  const userId = auth.currentUser?.uid;
+
+  // Personalized feeds must never share cache entries between users.
+  // Anonymous requests use a non-personalized cache key.
+  const cacheKey = userId
+    ? `smart_feed_user_${userId}`
+    : "smart_feed_anonymous";
+
   const cacheKey = generateCacheKey('smart_feed', { ...profile, cursor });
+
   try {
     const searchParams = new URLSearchParams();
     if (cursor) searchParams.append('cursor', cursor);
@@ -309,8 +405,17 @@ export async function fetchSmartFeed(profile: any, cursor?: string) {
     return data;
   } catch (error) {
     console.warn("Backend feed failed, using fallback", error);
+if (userId) {
     const cached = getFromCache(cacheKey);
+
+    if (cached) {
+        return { ...cached, isFallback: true };
+    }
+}
+    
+
     if (cached) return { ...cached, isFallback: true };
+
 
     try {
       const geminiItems = await geminiService.generateSmartFeed(profile, 1);
@@ -434,10 +539,21 @@ export async function fetchExploreFeed(cursor?: string, limit: number = 20) {
       }
     }
 
-    if (!cursor && data.items && data.items.length > 0) saveToCache(cacheKey, data);
+    if (userId && !cursor && data.items && data.items.length > 0) {
+    saveToCache(cacheKey, data);
+}
     return data;
   } catch (error) {
+    
+   if (userId) {
     const cached = getFromCache(cacheKey);
+
+    if (cached) {
+        return { ...cached, isFallback: true };
+    }
+}
+    
+
     if (cached) return { ...cached, isFallback: true };
 
     try {
@@ -469,15 +585,24 @@ export async function searchOpportunities(
     deadlineType?: string;
     startDate?: string;
     endDate?: string;
+
+  },
+  cursor?: string,
+  sortBy: string = 'Most relevant'
+) {
+  const cacheKey = `search_${query.toLowerCase().replace(/\s+/g, '_')}_${JSON.stringify(filters || {})}_${sortBy}`;
+
     isFree?: boolean;
     verifiedOnly?: boolean;
   },
   cursor?: string
 ) {
   const cacheKey = generateCacheKey('search', { query: query.toLowerCase().trim(), ...filters, cursor });
+
   try {
     const searchParams = new URLSearchParams();
     searchParams.append('q', query);
+    searchParams.append('sortBy', sortBy);
 
     if (filters) {
       if (filters.types && filters.types.length > 0) {
@@ -678,6 +803,130 @@ export async function fetchOpportunityById(id: string) {
   }
 }
 
+export async function getApplications() {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications`,
+    {
+      method: "GET",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch applications");
+  }
+
+  return response.json();
+}
+
+export async function createApplicationTrackerEntry(data: any) {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to create application");
+  }
+
+  return response.json();
+}
+
+export async function confirmTrackedApplication(
+  applicationId: string
+) {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications/${applicationId}/confirm`,
+    {
+      method: "POST",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to confirm application");
+  }
+
+  return response.json();
+}
+
+export async function updateTrackedApplicationStatus(
+  applicationId: string,
+  status: string,
+  message?: string
+) {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications/${applicationId}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status,
+        message,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update application status");
+  }
+
+  return response.json();
+}
+export async function predictEligibility(
+  opportunityId: string,
+  profile: any,
+  opportunity: any
+) {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/eligibility/predict`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        opportunityId,
+        profile,
+        opportunity,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(
+      error.error || "Failed to generate eligibility prediction"
+    );
+  }
+
+  return response.json();
+}
+
+export async function retryTrackedApplication(
+  applicationId: string
+) {
+  const response = await fetchWithRetry(
+    `${API_BASE_URL}/applications/${applicationId}/retry`,
+    {
+      method: "POST",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to retry application");
+  }
+
+  return response.json();
+}
+
+
 export async function submitOpportunity(payload: any) {
   try {
     const url = `${API_BASE_URL}/opportunities`;
@@ -801,3 +1050,4 @@ export async function fetchProfileCompletenessScore() {
     return null;
   }
 }
+

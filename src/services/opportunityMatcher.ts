@@ -35,9 +35,9 @@ export async function matchOpportunityAndNotify(
   try {
     // 1. Fetch all users from the DB
     const usersCollection = db.collection("users");
-    const users = await usersCollection.find({}).toArray();
+    const userCursor = usersCollection.find({});
 
-    for (const user of users) {
+    for await (const user of userCursor) {
       const prefs = user.notificationPreferences || {
         emailEnabled: true,
         pushEnabled: true,

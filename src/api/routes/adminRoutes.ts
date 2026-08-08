@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { adminHealth, adminMetrics, adminScrapers, scraperStats, scraperLogs, triggerScraper, adminIncidents, adminDeleteUser, adminTelemetryStream, triggerNodeScraper, adminDlqStats, adminInspectDlq, adminReplayDlq, adminPurgeDlq } from "../controllers/adminController.js";
+import { adminHealth, adminMetrics, adminScrapers, adminScraperHealth, scraperStats, scraperLogs, triggerScraper, adminIncidents, adminDeleteUser, adminTelemetryStream, triggerNodeScraper, adminDlqStats, adminInspectDlq, adminReplayDlq, adminPurgeDlq } from "../controllers/adminController.js";
 import { authMiddleware, adminOnly } from "../../middleware/auth.js";
 
 const router = Router();
@@ -7,6 +7,7 @@ const router = Router();
 router.get("/admin/health", adminHealth);
 router.get("/admin/metrics", authMiddleware, adminOnly, adminMetrics);
 router.get("/admin/scrapers", authMiddleware, adminOnly, adminScrapers);
+router.get("/admin/scraper-health", authMiddleware, adminOnly, adminScraperHealth);
 router.get("/admin/scrapers/stats", authMiddleware, adminOnly, scraperStats);
 router.get("/admin/scrapers/logs", authMiddleware, adminOnly, scraperLogs);
 router.post("/admin/scrapers/trigger", authMiddleware, adminOnly, triggerScraper);

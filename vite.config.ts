@@ -4,12 +4,14 @@ import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig(({ mode }) => {
   // Only load variables that are intentionally used by the frontend build
   // or by build-time Sentry tooling. Server-only secrets such as
   // GEMINI_API_KEY are deliberately excluded from Vite's environment.
   const env = loadEnv(mode, ".", ["VITE_", "SENTRY_"]);
+  const shouldAnalyze = process.env.ANALYZE === "true" || mode === "analyze";
 
   return {
     plugins: [
@@ -21,7 +23,14 @@ export default defineConfig(({ mode }) => {
         project: env.SENTRY_PROJECT || process.env.SENTRY_PROJECT,
         authToken: env.SENTRY_AUTH_TOKEN || process.env.SENTRY_AUTH_TOKEN,
       }),
-    ],
+      shouldAnalyze && visualizer({
+        filename: "stats.html",
+        open: false,
+        gzipSize: true,
+        brotliSize: true,
+        template: "treemap",
+      }),
+    ].filter(Boolean),
     define: {
       'process.env.VITE_EMAILJS_SERVICE_ID': JSON.stringify(env.VITE_EMAILJS_SERVICE_ID),
       'process.env.VITE_EMAILJS_TEMPLATE_ID': JSON.stringify(env.VITE_EMAILJS_TEMPLATE_ID),

@@ -106,27 +106,25 @@ export async function updateApplicationStatus(
   status: ApplicationDocument["status"],
   message?: string
 ) {
-
   const db = await getCommandDB();
 
+  const auditAction =
+    status === "submitted"
+      ? "SUBMITTED"
+      : status === "failed"
+        ? "FAILED"
+        : status === "retrying"
+          ? "RETRY_TRIGGERED"
+          : "SUBMISSION_STARTED";
 
   const auditLog = {
-    action:
-      status === "submitted"
-        ? "SUBMITTED"
-        : status === "failed"
-        ? "FAILED"
-        : "SUBMISSION_STARTED",
-
+    action: auditAction,
     timestamp: new Date(),
-
     message:
-      message ||
-      `Application status changed to ${status}`,
+      message || `Application status changed to ${status}`,
   };
 
-
-  await db
+  const result = await db
     .collection(COLLECTION)
     .updateOne(
       {
@@ -137,13 +135,61 @@ export async function updateApplicationStatus(
           status,
           updatedAt: new Date(),
         },
-
         $push: {
           auditLogs: auditLog,
         } as any,
       }
     );
 
+  if (result.matchedCount === 0) {
+    throw new Error("Application not found");
+  }
+
+  return true;
+}
+
+export async function updateApplicationTracker(
+  applicationId: string,
+  userId: string,
+  updates: {
+    status?: ApplicationDocument["status"];
+    notes?: string;
+    deadline?: Date | string;
+  }
+) {
+  const db = await getCommandDB();
+
+  const updateData: Record<string, any> = {
+    updatedAt: new Date(),
+  };
+
+  if (updates.status !== undefined) {
+    updateData.status = updates.status;
+  }
+
+  if (updates.notes !== undefined) {
+    updateData.notes = updates.notes;
+  }
+
+  if (updates.deadline !== undefined) {
+    updateData.deadline = updates.deadline;
+  }
+
+  const result = await db
+    .collection(COLLECTION)
+    .updateOne(
+      {
+        _id: applicationId as any,
+        userId,
+      },
+      {
+        $set: updateData,
+      }
+    );
+
+  if (result.matchedCount === 0) {
+    throw new Error("Application not found");
+  }
 
   return true;
 }
@@ -194,17 +240,29 @@ export async function retryApplication(
 
 
 export async function getApplicationHistory(
-  userId: string
+  userId: string,
+  filters?: {
+    status?: ApplicationDocument["status"];
+    opportunityId?: string;
+  }
 ) {
-
   const db = await getCommandDB();
 
+  const query: Record<string, any> = {
+    userId,
+  };
+
+  if (filters?.status) {
+    query.status = filters.status;
+  }
+
+  if (filters?.opportunityId) {
+    query.opportunityId = filters.opportunityId;
+  }
 
   return db
     .collection(COLLECTION)
-    .find({
-      userId,
-    })
+    .find(query)
     .sort({
       createdAt: -1,
     })

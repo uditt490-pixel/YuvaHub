@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
+
+import { FileText, Bot, Briefcase, Target,
+BookOpen,
+CheckCircle,
+Circle,GraduationCap, Sparkles, ChevronRight, CheckCircle, Search, ScrollText, Send, Download } from 'lucide-react';
 import { FileText, Bot, Briefcase, GraduationCap, Sparkles, ChevronRight, CheckCircle, Search, ScrollText, Send, Download, Compass, Clock, Bookmark, Lightbulb } from 'lucide-react';
+
 import { UserProfile } from '../../types';
 import * as geminiService from '../../services/gemini';
 import { ErrorState, AIRetryFallback } from '../ui/states';
@@ -670,7 +676,174 @@ function ResumeReview() {
                   </div>
                 </div>
               </div>
+{typeof feedback.skillMatchPercentage === "number" && (
+  <div className="rounded-xl border border-purple-200 bg-purple-50 p-5">
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="flex items-center gap-2">
+          <Target className="h-5 w-5 text-purple-600" />
+          <h4 className="font-bold text-purple-900">
+            Skill Match
+          </h4>
+        </div>
 
+        <p className="mt-1 text-xs text-purple-700">
+          How closely your current skills match this role
+        </p>
+      </div>
+
+      <span className="text-3xl font-black text-purple-700">
+        {feedback.skillMatchPercentage}%
+      </span>
+    </div>
+
+    <div className="mt-4 h-3 overflow-hidden rounded-full bg-purple-100">
+      <div
+        className="h-full rounded-full bg-purple-600 transition-all duration-700"
+        style={{
+          width: `${Math.min(
+            100,
+            Math.max(0, feedback.skillMatchPercentage)
+          )}%`,
+        }}
+      />
+    </div>
+  </div>
+)}
+{feedback.existingSkills?.length > 0 && (
+  <div>
+    <h4 className="mb-2 font-bold text-green-700">
+      Skills You Already Have
+    </h4>
+
+    <div className="flex flex-wrap gap-2">
+      {feedback.existingSkills.map(
+        (skill: string, index: number) => (
+          <span
+            key={index}
+            className="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700"
+          >
+            <CheckCircle className="h-3.5 w-3.5" />
+            {skill}
+          </span>
+        )
+      )}
+    </div>
+  </div>
+)}
+{feedback.missingSkills?.length > 0 && (
+  <div>
+    <h4 className="mb-3 font-bold text-red-600">
+      Skill Gaps
+    </h4>
+
+    <div className="space-y-3">
+      {feedback.missingSkills.map(
+        (skill: any, index: number) => (
+          <div
+            key={index}
+            className="rounded-xl border border-red-100 bg-red-50 p-4"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h5 className="font-bold text-gray-900">
+                  {skill.skill}
+                </h5>
+
+                <p className="mt-1 text-xs text-gray-600">
+                  {skill.reason}
+                </p>
+              </div>
+
+              <span
+                className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase ${
+                  skill.priority === "high"
+                    ? "bg-red-100 text-red-700"
+                    : skill.priority === "medium"
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {skill.priority}
+              </span>
+            </div>
+
+            <span className="mt-2 inline-block text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+              {skill.category}
+            </span>
+          </div>
+        )
+      )}
+    </div>
+  </div>
+)}
+{feedback.roadmap?.length > 0 && (
+  <div>
+    <div className="mb-3 flex items-center gap-2">
+      <BookOpen className="h-5 w-5 text-blue-600" />
+      <h4 className="font-bold text-blue-800">
+        Personalized Learning Roadmap
+      </h4>
+    </div>
+
+    <div className="space-y-4">
+      {feedback.roadmap.map(
+        (item: any, index: number) => (
+          <div
+            key={index}
+            className="rounded-xl border border-blue-100 bg-white p-4 shadow-sm"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5">
+                {item.completed ? (
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                ) : (
+                  <Circle className="h-5 w-5 text-gray-300" />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <h5 className="font-bold text-gray-900">
+                    {item.skill}
+                  </h5>
+
+                  <span className="whitespace-nowrap text-[10px] font-bold text-gray-500">
+                    {item.estimatedWeeks} week
+                    {item.estimatedWeeks === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                <p className="mt-2 text-xs text-gray-600">
+                  <strong>Project:</strong>{" "}
+                  {item.project}
+                </p>
+
+                {item.resources?.length > 0 && (
+                  <div className="mt-3">
+                    <p className="mb-1 text-[10px] font-bold uppercase text-gray-400">
+                      Recommended Resources
+                    </p>
+
+                    <ul className="list-disc pl-5 text-xs text-gray-600">
+                      {item.resources.map(
+                        (resource: string, resourceIndex: number) => (
+                          <li key={resourceIndex}>
+                            {resource}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  </div>
+)}
               <div className="space-y-5 text-xs">
                 {/* Missing Keywords */}
                 {feedback.missingKeywords && feedback.missingKeywords.length > 0 && (

@@ -11,8 +11,14 @@ export class ScraperProducer {
    * Enqueues an immediate one-off scraping job.
    */
   static async enqueueScrape(payload: ScrapeJobPayload) {
-    console.log(`[ScraperProducer] Enqueuing immediate scrape for ${payload.url}`);
-    await scraperQueue.add("scrape", payload);
+    console.log(`[ScraperProducer] Enqueuing immediate scrape for ${payload.url} with retry policy`);
+    await scraperQueue.add("scrape", payload, {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 5000, // 5s -> 15s -> 30s
+      },
+    });
   }
 
   /**
@@ -21,6 +27,11 @@ export class ScraperProducer {
   static async scheduleCronScrape(payload: ScrapeJobPayload, cronExpression: string) {
     console.log(`[ScraperProducer] Scheduling cron scrape for ${payload.url} with cron ${cronExpression}`);
     await scraperQueue.add("scrape", payload, {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 5000,
+      },
       repeat: {
         pattern: cronExpression,
       },

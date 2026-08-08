@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, FileText, ChevronRight, Clock, ExternalLink, Zap, CheckCircle, Award, Bookmark } from 'lucide-react';
 import { SEO } from '../SEO';
-import { fetchOpportunityById, trackInteraction, generateApplyAssistBackend, searchOpportunities } from '../../services/apiClient';
+import { fetchOpportunityById, trackInteraction,predictEligibility, generateApplyAssistBackend, searchOpportunities } from '../../services/apiClient';
 import ShareModal from '../ui/ShareModal';
 import ApplyAssistModal from '../ui/ApplyAssistModal';
 import { OpportunityCard } from '../OpportunityCard';
@@ -10,7 +10,31 @@ import { db } from '../../lib/firebase';
 import ShareCalendarActions from '../ui/ShareCalendarActions';
 import { ErrorState, LoadingState } from '../ui/states';
 import { useAppContext } from '../../context/AppContext';
+const [eligibilityLoading, setEligibilityLoading] = useState(false);
+const [eligibility, setEligibility] = useState<any>(null);
+const [eligibilityError, setEligibilityError] = useState<string | null>(null);
+const handleEligibilityCheck = async () => {
+  if (!opportunity?.id) return;
 
+  try {
+    setEligibilityLoading(true);
+    setEligibilityError(null);
+
+    const result = await predictEligibility(
+      opportunity.id,
+      profile,
+      opportunity
+    );
+
+    setEligibility(result.prediction);
+  } catch (error: any) {
+    setEligibilityError(
+      error.message || "Unable to calculate eligibility."
+    );
+  } finally {
+    setEligibilityLoading(false);
+  }
+};
 export default function OpportunityDetail() {
   const { selectedOppId, clearSelectedOpportunity: onBack, profile, setProfile, viewOpportunity } = useAppContext();
   const id = selectedOppId || '';
@@ -342,7 +366,105 @@ export default function OpportunityDetail() {
                 </div>
               )}
             </div>
+<div className="mt-6 rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+  <div className="flex items-center justify-between gap-4">
+    <div>
+      <h2 className="text-lg font-semibold">
+        AI Eligibility Predictor
+      </h2>
+      <p className="mt-1 text-sm text-zinc-500">
+        Check how well your profile matches this opportunity.
+      </p>
+    </div>
 
+    <button
+      onClick={handleEligibilityCheck}
+      disabled={eligibilityLoading}
+      className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+    >
+      {eligibilityLoading
+        ? "Analyzing..."
+        : "Check Eligibility"}
+    </button>
+  </div>
+
+  {eligibilityError && (
+    <p className="mt-4 text-sm text-red-600">
+      {eligibilityError}
+    </p>
+  )}
+
+  {eligibility && (
+    <div className="mt-6 space-y-5">
+      <div>
+        <div className="flex items-center justify-between">
+          <span className="font-medium">Success Score</span>
+          <span className="text-2xl font-bold text-teal-600">
+            {eligibility.successScore}%
+          </span>
+        </div>
+
+        <div className="mt-2 h-3 overflow-hidden rounded-full bg-zinc-200">
+          <div
+            className="h-full rounded-full bg-teal-600"
+            style={{
+              width: `${eligibility.successScore}%`,
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        {Object.entries(eligibility.breakdown || {}).map(
+          ([key, value]: [string, any]) => (
+            <div
+              key={key}
+              className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800"
+            >
+              <p className="text-sm font-medium capitalize">
+                {key}
+              </p>
+
+              <p className="mt-1 text-xl font-bold">
+                {value.score}%
+              </p>
+            </div>
+          )
+        )}
+      </div>
+
+      {eligibility.reasons?.length > 0 && (
+        <div>
+          <h3 className="font-semibold">Why this score?</h3>
+
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-600">
+            {eligibility.reasons.map(
+              (reason: string, index: number) => (
+                <li key={index}>{reason}</li>
+              )
+            )}
+          </ul>
+        </div>
+      )}
+
+      {eligibility.recommendations?.length > 0 && (
+        <div>
+          <h3 className="font-semibold">
+            How to improve your eligibility
+          </h3>
+
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-zinc-600">
+            {eligibility.recommendations.map(
+              (recommendation: string, index: number) => (
+                <li key={index}>{recommendation}</li>
+              )
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  )}
+</div>
             {/* Immediate Action Buttons */}
             {opp.apply_link || opp.applyLink ? (
               <div className="pt-4 border-t border-gray-100 space-y-3">

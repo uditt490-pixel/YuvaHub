@@ -31,19 +31,19 @@ const robustParseJSON = (text: string): any => {
   }
 };
 
-async function generatedContentProxy(prompt: string, expectJson: boolean = false) {
-  try {
-    const res = await fetch("/api/v1/ai/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, expectJson })
-    });
-    const data = await res.json();
-    return data.text || "";
-  } catch (e) {
-    console.error("AI Proxy Error:", e);
-    return "";
+async function generatedContentProxy(prompt: string, expectJson: boolean = false, useFallback: boolean = false) {
+  const res = await fetch("/api/v1/ai/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt, expectJson, useFallback })
+  });
+  
+  if (!res.ok) {
+    throw new Error(`AI service failed with status ${res.status}`);
   }
+  
+  const data = await res.json();
+  return data.text || "";
 }
 
 export async function generateSmartFeed(profile: any, page: number = 1) {
@@ -89,11 +89,14 @@ export async function checkScholarshipEligibility(scholarship: any, profile: any
   return robustParseJSON(text) || { eligible: false, reasons: ["Could not verify."] };
 }
 
-export async function chatWithMentor(messages: {role: string, content: string}[], message: string) {
-  const prompt = `You are an AI Career Mentor for a student. Context of chat:\n${JSON.stringify([...messages, {role: 'user', content: message}])}\nRespond to the latest message. Be concise, encouraging, and provide actionable advice.`;
-  const result = await generatedContentProxy(prompt);
-  if (!result || result.trim() === "" || result.toLowerCase().includes("disabled") || result.toLowerCase().includes("failed")) {
+export async function chatWithMentor(messages: {role: string, content: string}[], message: string, useFallback: boolean = false) {
+  if (useFallback) {
     return mockCareerAdvice(message);
+  }
+  const prompt = `You are an AI Career Mentor for a student. Context of chat:\n${JSON.stringify([...messages, {role: 'user', content: message}])}\nRespond to the latest message. Be concise, encouraging, and provide actionable advice.`;
+  const result = await generatedContentProxy(prompt, false, useFallback);
+  if (!result || result.trim() === "") {
+    throw new Error("Empty AI response");
   }
   return result;
 }

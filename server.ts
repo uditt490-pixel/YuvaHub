@@ -2050,10 +2050,17 @@ Sincerely,
         return res.json({ text: cached });
       }
 
-      const ai = getGenAI();
-      if (!ai) {
+      const { useFallback } = req.body;
+      
+      if (useFallback) {
         const fb = getAIFallback(prompt, !!expectJson);
         return res.json({ text: fb });
+      }
+
+      const ai = getGenAI();
+      if (!ai) {
+        console.error('[AI Service Error] getGenAI() returned null.');
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
       }
       
       let responseText = "";
@@ -2076,27 +2083,25 @@ Sincerely,
             });
             responseText = response.text || "";
           } catch (liteErr: any) {
-            console.log(`[AI Routing] Alternate model restriction. Invoking static fallback strategy.`);
-            responseText = getAIFallback(prompt, !!expectJson);
+            console.error(`[AI Routing] Alternate model restriction. Error:`, liteErr);
+            return res.status(503).json({ error: "AI service unavailable", isAiError: true });
           }
         } else {
-          // Non-rate-limit error (e.g. key issue, bad prompt), use fallback
-          responseText = getAIFallback(prompt, !!expectJson);
+          console.error(`[AI Service Error] Non-rate-limit error:`, err);
+          return res.status(503).json({ error: "AI service unavailable", isAiError: true });
         }
       }
 
-      // If response text is empty, fill with fallback
       if (!responseText) {
-        responseText = getAIFallback(prompt, !!expectJson);
+        console.error(`[AI Service Error] Empty response text.`);
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
       }
 
       setCachedResponse(prompt, responseText);
       res.json({ text: responseText });
     } catch (err) {
-      // General safety fallback, don't fail the request
-      const { prompt, expectJson } = req.body;
-      const fallback = getAIFallback(prompt || "", !!expectJson);
-      res.json({ text: fallback });
+      console.error(`[AI Service Error] General error:`, err);
+      res.status(503).json({ error: "AI service unavailable", isAiError: true });
     }
   });
 
@@ -2118,9 +2123,15 @@ Sincerely,
         suggestions: ["Incorporate metrics such as performance gains, scale size, or user retention count", "Use active, strong action verbs to begin bullet points"]
       };
 
+      const { useFallback } = req.body;
+      if (useFallback) {
+         return res.json(defaultFallback);
+      }
+
       const ai = getGenAI();
       if (!ai) {
-         return res.json(defaultFallback);
+         console.error('[AI Service Error] getGenAI() returned null.');
+         return res.status(503).json({ error: "AI service unavailable", isAiError: true });
       }
 
       const prompt = `Review this student resume for structure, impact, and ATS readiness. 
@@ -2155,36 +2166,43 @@ Return JSON strictly in this format:
             });
             responseText = response.text || "";
           } catch (liteErr) {
-            console.log(`[AI Routing] Review fallback activated.`);
+            console.error(`[AI Routing] Alternate model restriction. Error:`, liteErr);
+            return res.status(503).json({ error: "AI service unavailable", isAiError: true });
           }
+        } else {
+          console.error(`[AI Service Error] Non-rate-limit error:`, err);
+          return res.status(503).json({ error: "AI service unavailable", isAiError: true });
         }
       }
 
-      let parsed = defaultFallback;
-      if (responseText) {
+      if (!responseText) {
+        console.error(`[AI Service Error] Empty response text.`);
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+      }
+
+      let parsed = null;
+      try {
+        parsed = JSON.parse(responseText);
+      } catch (e) {
         try {
-          parsed = JSON.parse(responseText);
-        } catch (e) {
-          // If JSON parse fails, attempt robust extraction of JSON
-          try {
-            const firstBrace = responseText.indexOf('{');
-            const lastBrace = responseText.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-              parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
-            }
-          } catch (e2) {}
-        }
+          const firstBrace = responseText.indexOf('{');
+          const lastBrace = responseText.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
+          }
+        } catch (e2) {}
+      }
+
+      if (!parsed) {
+        console.error(`[AI Service Error] Failed to parse JSON response:`, responseText);
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
       }
 
       setCachedResponse(cacheKey, parsed);
       res.json(parsed);
     } catch (err) {
-      res.json({
-        score: 82,
-        strengths: ["Clean structure and section flow", "Clear contact details and header"],
-        weaknesses: ["Requires more quantifiable impact metrics", "Descriptions of projects are relatively short"],
-        suggestions: ["Incorporate metrics such as performance gains, scale size, or user retention count", "Use active, strong action verbs to begin bullet points"]
-      });
+      console.error("/api/v1/ai/resume_review error:", err);
+      res.status(503).json({ error: "AI service unavailable", isAiError: true });
     }
   });
 
@@ -2260,9 +2278,15 @@ Return JSON strictly in this format:
         ]
       };
 
+      const { useFallback } = req.body;
+      if (useFallback) {
+        return res.json(defaultFallback);
+      }
+
       const ai = getGenAI();
       if (!ai) {
-        return res.json(defaultFallback);
+        console.error('[AI Service Error] getGenAI() returned null.');
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
       }
 
       const prompt = `You are a senior engineering mentor. Build a structured, step-by-step career roadmap for a student.
@@ -2306,29 +2330,40 @@ Return ONLY a JSON object strictly adhering to this schema:
             config: { responseMimeType: "application/json" }
           });
           responseText = response.text || "";
-        } catch (liteErr) {}
+        } catch (liteErr) {
+          console.error(`[AI Routing] Alternate model restriction. Error:`, liteErr);
+          return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+        }
       }
 
-      let parsed = defaultFallback;
-      if (responseText) {
+      if (!responseText) {
+        console.error(`[AI Service Error] Empty response text.`);
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+      }
+
+      let parsed = null;
+      try {
+        parsed = JSON.parse(responseText);
+      } catch (e) {
         try {
-          parsed = JSON.parse(responseText);
-        } catch (e) {
-          try {
-            const firstBrace = responseText.indexOf('{');
-            const lastBrace = responseText.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-              parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
-            }
-          } catch (e2) {}
-        }
+          const firstBrace = responseText.indexOf('{');
+          const lastBrace = responseText.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
+          }
+        } catch (e2) {}
+      }
+
+      if (!parsed) {
+        console.error(`[AI Service Error] Failed to parse JSON response:`, responseText);
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
       }
 
       setCachedResponse(cacheKey, parsed);
       res.json(parsed);
     } catch (err) {
       console.error("/api/ai/career-roadmap error:", err);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(503).json({ error: "AI service unavailable", isAiError: true });
     }
   };
 
@@ -2361,10 +2396,15 @@ Return ONLY a JSON object strictly adhering to this schema:
         suggestions: ["Add metrics like request rates or load times to demonstrate impact", "Integrate a modern design framework keyword"]
       };
 
+      const { useFallback } = req.body;
+      if (useFallback) {
+        return res.json(defaultFallback);
+      }
+
       const ai = getGenAI();
       if (!ai) {
-        console.warn("Gemini AI client not available, returning fallback.");
-        return res.json(defaultFallback);
+        console.warn("Gemini AI client not available, returning 503.");
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
       }
 
       let contents: any[] = [];
@@ -2418,29 +2458,38 @@ Return ONLY a JSON object strictly adhering to this schema:
           responseText = response.text || "";
         } catch (liteErr) {
           console.error("Gemini Alternate model failed:", liteErr);
+          return res.status(503).json({ error: "AI service unavailable", isAiError: true });
         }
       }
 
-      let parsed = defaultFallback;
-      if (responseText) {
+      if (!responseText) {
+        console.error(`[AI Service Error] Empty response text.`);
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
+      }
+
+      let parsed = null;
+      try {
+        parsed = JSON.parse(responseText);
+      } catch (e) {
         try {
-          parsed = JSON.parse(responseText);
-        } catch (e) {
-          try {
-            const firstBrace = responseText.indexOf('{');
-            const lastBrace = responseText.lastIndexOf('}');
-            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-              parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
-            }
-          } catch (e2) {}
-        }
+          const firstBrace = responseText.indexOf('{');
+          const lastBrace = responseText.lastIndexOf('}');
+          if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            parsed = JSON.parse(responseText.substring(firstBrace, lastBrace + 1));
+          }
+        } catch (e2) {}
+      }
+
+      if (!parsed) {
+        console.error(`[AI Service Error] Failed to parse JSON response:`, responseText);
+        return res.status(503).json({ error: "AI service unavailable", isAiError: true });
       }
 
       setCachedResponse(cacheKey, parsed);
       res.json(parsed);
     } catch (err) {
       console.error("/api/ai/analyze-resume error:", err);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(503).json({ error: "AI service unavailable", isAiError: true });
     }
   });
 

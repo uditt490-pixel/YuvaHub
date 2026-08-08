@@ -428,7 +428,7 @@ function ResumeReview() {
     reader.readAsDataURL(selectedFile);
   };
 
-  const handleReview = async () => {
+  const handleReview = async (useFallback = false) => {
     if (tab === 'upload' && !fileBase64) {
       setReviewError("Please select a PDF resume file first.");
       setIsRetryable(false);
@@ -460,6 +460,14 @@ function ResumeReview() {
       payload.resumeText = resumeText;
     }
 
+    try {
+      const payload: any = { jobDescription, useFallback };
+      if (tab === 'upload') {
+        payload.resumeBase64 = fileBase64;
+        payload.fileName = fileName;
+      } else {
+        payload.resumeText = resumeText;
+      }
     const maxRetries = 3;
     let attempt = 0;
     let success = false;
@@ -599,7 +607,7 @@ function ResumeReview() {
 
           <div className="pt-4 border-t border-gray-100 flex justify-end">
             <button
-              onClick={handleReview}
+              onClick={() => handleReview(false)}
               disabled={loading || (tab === 'upload' && !fileBase64) || (tab === 'paste' && !resumeText) || !jobDescription}
               className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold shadow-md disabled:bg-gray-300 transition-colors flex items-center gap-2 cursor-pointer"
             >
@@ -611,6 +619,14 @@ function ResumeReview() {
 
         {/* Feedback Card */}
         <div className="flex flex-col">
+          {reviewError && (
+            <div className="mb-6 flex flex-col gap-2">
+              <ErrorState title="Resume analysis failed" description={reviewError} onRetry={() => handleReview(false)} retrying={loading} />
+              <div className="flex justify-center mt-2">
+                <button onClick={() => handleReview(true)} className="px-4 py-2 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors text-sm font-bold border border-purple-200">
+                  Use Fallback Report
+                </button>
+              </div>
           {(reviewError || retrying) && (
             <div className="mb-6">
               <AIRetryFallback
@@ -919,23 +935,26 @@ function CoverLetter({ profile }: { profile: any }) {
   const [company, setCompany] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
+  const [error, setError] = useState(false);
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (useFallback = false) => {
     if (!jobDesc || !company) return;
     setLoading(true);
+    setError(false);
     try {
       const prompt = `Write a highly professional, strong, and concise cover letter for ${company}. The role involves: ${jobDesc}. Candidate profile: ${JSON.stringify(profile)}. Output plain text, formatting with normal line breaks.`;
 
       const res = await fetch("/api/v1/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt, useFallback })
       });
+      if (!res.ok) throw new Error("AI service failed");
       const data = await res.json();
       setResult(data.text || "Failed to generate.");
     } catch (e) {
       console.error(e);
-      setResult("Dear Hiring Manager at " + company + ", ...\\n\\nSincerely,\\n" + (profile?.name || "Student"));
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -961,7 +980,7 @@ function CoverLetter({ profile }: { profile: any }) {
             <textarea className="clean-input w-full p-3 text-sm h-32 resize-none" value={jobDesc} onChange={e => setJobDesc(e.target.value)} placeholder="Paste responsibilities or job title..." />
           </div>
           <button
-            onClick={handleGenerate}
+            onClick={() => handleGenerate(false)}
             disabled={loading || !jobDesc || !company}
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md disabled:bg-gray-300 transition-colors flex items-center justify-center gap-2"
           >
@@ -971,7 +990,15 @@ function CoverLetter({ profile }: { profile: any }) {
         </div>
 
         <div className="clean-card bg-gray-50 p-6 flex flex-col relative overflow-hidden">
-          {result ? (
+          {error ? (
+            <div className="m-auto text-red-600 text-sm flex flex-col items-center justify-center text-center p-4">
+              <span className="font-bold mb-3 text-base">AI Service is currently unavailable.</span>
+              <div className="flex gap-3">
+                <button onClick={() => handleGenerate(false)} className="px-4 py-2 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-colors">Retry</button>
+                <button onClick={() => handleGenerate(true)} className="px-4 py-2 bg-gray-200 text-gray-800 font-bold rounded hover:bg-gray-300 transition-colors">Use Fallback Template</button>
+              </div>
+            </div>
+          ) : result ? (
             <div className="flex flex-col h-full justify-between">
               <div className="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed font-serif overflow-y-auto max-h-[350px] mb-4">
                 {result}
@@ -1002,21 +1029,25 @@ function InterviewPrep({ profile }: { profile: any }) {
   const [topic, setTopic] = useState("");
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  const startMock = async () => {
+  const startMock = async (useFallback = false) => {
     if (!topic) return;
     setLoading(true);
+    setError(false);
     try {
       const prompt = `Generate a challenging, highly technical interview question for a student applying for ${topic}. Only return the question string. Profile context: ${profile?.field || 'Tech'}.`;
       const res = await fetch("/api/v1/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt, useFallback })
       });
+      if (!res.ok) throw new Error("AI service failed");
       const data = await res.json();
       setQuestion(data.text);
     } catch (e) {
-      setQuestion("Explain how a Hash Map handles collisions under the hood, and how it scales.");
+      console.error(e);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -1034,12 +1065,20 @@ function InterviewPrep({ profile }: { profile: any }) {
       <div className="clean-card p-6">
         <div className="flex gap-4 mb-8">
           <input className="clean-input flex-1 p-3 text-sm" value={topic} onChange={e => setTopic(e.target.value)} placeholder="e.g. Software Engineering Intern, Product Manager" />
-          <button onClick={startMock} disabled={loading || !topic} className="px-6 py-3 bg-green-600 text-white rounded-lg font-bold shadow-md disabled:bg-gray-300">
+          <button onClick={() => startMock(false)} disabled={loading || !topic} className="px-6 py-3 bg-green-600 text-white rounded-lg font-bold shadow-md disabled:bg-gray-300">
             {loading ? "Generating..." : "Get Question"}
           </button>
         </div>
-
-        {question && (
+        
+        {error ? (
+          <div className="p-8 bg-red-50 rounded-xl border border-red-200 text-center">
+            <h3 className="text-lg font-bold text-red-700 mb-4">AI Service Unavailable</h3>
+            <div className="flex justify-center gap-3">
+              <button onClick={() => startMock(false)} className="px-4 py-2 bg-red-600 text-white font-bold rounded hover:bg-red-700">Retry</button>
+              <button onClick={() => startMock(true)} className="px-4 py-2 bg-white text-red-700 font-bold border border-red-300 rounded hover:bg-red-50">Use Fallback Question</button>
+            </div>
+          </div>
+        ) : question ? (
           <div className="p-8 bg-green-50 rounded-xl border border-green-100">
             <h3 className="text-sm font-bold tracking-wider text-green-800 uppercase mb-4">Interview Question</h3>
             <p className="text-xl font-medium text-gray-900">{question}</p>
@@ -1049,7 +1088,7 @@ function InterviewPrep({ profile }: { profile: any }) {
               <button className="px-4 py-2 bg-white text-green-700 font-bold border border-green-300 rounded hover:bg-green-50">Self-Evaluate</button>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
@@ -1057,7 +1096,7 @@ function InterviewPrep({ profile }: { profile: any }) {
 
 // Career Mentor Component
 function CareerMentor({ user }: { user: any }) {
-  const [messages, setMessages] = useState<{ id: string; role: 'user' | 'assistant'; content: string; timestamp: number }[]>([]);
+  const [messages, setMessages] = useState<{ id: string; role: 'user' | 'assistant' | 'error'; content: string; timestamp: number }[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -1068,28 +1107,60 @@ function CareerMentor({ user }: { user: any }) {
     "I'm a 2nd year CSE student, what should I do next?"
   ];
 
-  const handleSend = async (text: string) => {
+  const handleSend = async (text: string, useFallback = false) => {
     if (!text.trim()) return;
 
-    const userMsg = { id: Date.now().toString(), role: 'user' as const, content: text, timestamp: Date.now() };
-    setMessages(prev => [...prev, userMsg]);
+    // Only add user message if it's a new send, not a retry/fallback
+    if (!useFallback && !messages.find(m => m.content === text && m.role === 'user' && m.id.startsWith('pending-'))) {
+      const userMsg = { id: 'pending-' + Date.now().toString(), role: 'user' as const, content: text, timestamp: Date.now() };
+      setMessages(prev => [...prev, userMsg]);
+    }
+    
     setInput('');
     setIsLoading(true);
 
     try {
-      const history = messages.map(m => ({ role: m.role, content: m.content }));
-      const response = await geminiService.chatWithMentor(history, text);
+      const history = messages.filter(m => !m.id.startsWith('pending-') && m.role !== 'error').map(m => ({ role: m.role, content: m.content }));
+      const response = await geminiService.chatWithMentor(history, text, useFallback);
+      
       const botMsg = { id: 'bot-' + Date.now(), role: 'assistant' as const, content: typeof response === 'string' ? response : JSON.stringify(response), timestamp: Date.now() };
-      setMessages(prev => [...prev, botMsg]);
+      
+      setMessages(prev => {
+        // Remove pending user message, error message, and add actual user msg + bot msg
+        const filtered = prev.filter(m => !m.id.startsWith('pending-') && m.role !== 'error');
+        return [...filtered, { id: 'user-' + Date.now(), role: 'user' as const, content: text, timestamp: Date.now() }, botMsg];
+      });
     } catch (e) {
-      const botMsg = { id: 'bot-' + Date.now(), role: 'assistant' as const, content: JSON.stringify({ text: "Connection to logical pathways failed." }), timestamp: Date.now() };
-      setMessages(prev => [...prev, botMsg]);
+      // Show error message
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.role !== 'error');
+        const errorMsg = { 
+          id: 'error-' + Date.now(), 
+          role: 'error' as any, 
+          content: JSON.stringify({ originalText: text }), 
+          timestamp: Date.now() 
+        };
+        return [...filtered, errorMsg];
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const renderMessageContent = (m: any) => {
+    if (m.role === 'error') {
+      const data = JSON.parse(m.content);
+      return (
+        <div className="max-w-[80%] p-4 rounded-2xl text-sm bg-red-50 border border-red-200 text-red-700 rounded-bl-none shadow-sm">
+          <p className="font-bold mb-3">AI Service is currently unavailable.</p>
+          <div className="flex gap-2">
+            <button onClick={() => handleSend(data.originalText, false)} className="px-3 py-1.5 bg-red-600 text-white rounded font-bold hover:bg-red-700 transition-colors">Retry</button>
+            <button onClick={() => handleSend(data.originalText, true)} className="px-3 py-1.5 bg-white border border-red-300 text-red-700 rounded font-bold hover:bg-red-50 transition-colors">Use Fallback</button>
+          </div>
+        </div>
+      );
+    }
+
     if (m.role === 'user') {
       return (
         <div className="max-w-[80%] p-4 rounded-2xl text-sm whitespace-pre-wrap bg-blue-600 text-white rounded-br-none shadow-sm">
@@ -1391,8 +1462,8 @@ function CareerRoadmap({ profile }: { profile: UserProfile | null }) {
     'Product Manager'
   ];
 
-  const handleGenerate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGenerate = async (e?: React.FormEvent, useFallback = false) => {
+    if (e) e.preventDefault();
     if (!targetRole.trim()) {
       setError('Please enter or select a target career role.');
       return;
@@ -1412,7 +1483,8 @@ function CareerRoadmap({ profile }: { profile: UserProfile | null }) {
           targetRole,
           education,
           currentSkills,
-          timeframe
+          timeframe,
+          useFallback
         })
       });
 
@@ -1538,7 +1610,16 @@ function CareerRoadmap({ profile }: { profile: UserProfile | null }) {
             </div>
           </div>
 
-          {error && <ErrorState title="Generation Notice" description={error} />}
+          {error && (
+            <div className="flex flex-col gap-2">
+              <ErrorState title="Generation Notice" description={error} />
+              <div className="flex justify-center mt-1 mb-2">
+                <button type="button" onClick={() => handleGenerate(undefined, true)} className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg font-bold border border-indigo-200 hover:bg-indigo-100">
+                  Use Fallback Roadmap
+                </button>
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"

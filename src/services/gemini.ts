@@ -31,6 +31,19 @@ const robustParseJSON = (text: string): any => {
   }
 };
 
+async function generatedContentProxy(prompt: string, expectJson: boolean = false, useFallback: boolean = false) {
+  const res = await fetch("/api/v1/ai/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt, expectJson, useFallback })
+  });
+  
+  if (!res.ok) {
+    throw new Error(`AI service failed with status ${res.status}`);
+  }
+  
+  const data = await res.json();
+  return data.text || "";
 export interface AIRequestOptions {
   maxRetries?: number;
   onRetry?: (attempt: number, error: string) => void;
@@ -178,6 +191,8 @@ export async function checkScholarshipEligibility(scholarship: any, profile: any
   return robustParseJSON(text) || { eligible: false, reasons: ["Could not verify."] };
 }
 
+export async function chatWithMentor(messages: {role: string, content: string}[], message: string, useFallback: boolean = false) {
+  if (useFallback) {
 export async function extractResumeData(resumeText: string) {
   const prompt = `Extract structured data from the following resume text. Return JSON ONLY with this schema:
   {
@@ -197,6 +212,11 @@ export async function chatWithMentor(messages: {role: string, content: string}[]
   const result = await generatedContentProxy(prompt);
   if (!result || result.trim() === "" || result.toLowerCase().includes("disabled") || result.toLowerCase().includes("failed")) {
     return mockCareerAdvice(message);
+  }
+  const prompt = `You are an AI Career Mentor for a student. Context of chat:\n${JSON.stringify([...messages, {role: 'user', content: message}])}\nRespond to the latest message. Be concise, encouraging, and provide actionable advice.`;
+  const result = await generatedContentProxy(prompt, false, useFallback);
+  if (!result || result.trim() === "") {
+    throw new Error("Empty AI response");
   }
   return result;
 }

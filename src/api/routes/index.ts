@@ -19,6 +19,7 @@ import mentorshipRoutes from "./mentorshipRoutes.js";
 import bookmarkFolderRoutes from "./bookmarkFolderRoutes.js";
 import analyticsRoutes from "./analyticsRoutes.js";
 import recommendationRoutes from "./recommendationRoutes.js";
+import eventRoutes from "./eventRoutes.js";
 import { errorHandler } from "../middlewares/errorHandler.js";
 
 const rootRouter = Router();
@@ -45,7 +46,8 @@ const routes = [
   mentorshipRoutes,
   bookmarkFolderRoutes,
   analyticsRoutes,
-  recommendationRoutes
+  recommendationRoutes,
+  eventRoutes,
 ];
 
 // Mount all routes onto v1Router

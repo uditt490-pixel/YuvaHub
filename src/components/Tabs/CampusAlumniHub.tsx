@@ -129,7 +129,19 @@ export default function CampusAlumniHub() {
   ]);
 
   // Events State
-  const [events, setEvents] = useState([
+  const [events, setEvents] = useState<{
+    id: string;
+    title: string;
+    chapter: string;
+    date: string;
+    time: string;
+    location: string;
+    rsvpCount: number;
+    maxCapacity: number;
+    waitlistCount: number;
+    // null = no action taken, 'confirmed' | 'waitlisted' | 'cancelled'
+    userStatus: 'confirmed' | 'waitlisted' | 'cancelled' | null;
+  }[]>([
     {
       id: 'evt_1',
       title: 'Generative AI & Agentic Workflows Summit',
@@ -137,9 +149,10 @@ export default function CampusAlumniHub() {
       date: '2026-08-10',
       time: '5:00 PM IST',
       location: 'Online / Auditorium 1',
-      rsvps: 340,
+      rsvpCount: 340,
       maxCapacity: 500,
-      userRsvp: true
+      waitlistCount: 0,
+      userStatus: 'confirmed',
     },
     {
       id: 'evt_2',
@@ -148,10 +161,11 @@ export default function CampusAlumniHub() {
       date: '2026-08-18',
       time: '6:30 PM IST',
       location: 'Tech Block 3',
-      rsvps: 180,
+      rsvpCount: 200,
       maxCapacity: 200,
-      userRsvp: false
-    }
+      waitlistCount: 5,
+      userStatus: null,
+    },
   ]);
   const [newEventTitle, setNewEventTitle] = useState('');
 
@@ -169,20 +183,42 @@ export default function CampusAlumniHub() {
   const [targetRole, setTargetRole] = useState('');
   const [selectedAlumniId, setSelectedAlumniId] = useState('');
 
-  // Toggle RSVP
-  const handleToggleRsvp = (eventId: string) => {
+  // RSVP or join waitlist
+  const handleRsvpOrWaitlist = (eventId: string) => {
     setEvents(events.map(e => {
-      if (e.id === eventId) {
-        const nextRsvp = !e.userRsvp;
-        return {
-          ...e,
-          userRsvp: nextRsvp,
-          rsvps: nextRsvp ? e.rsvps + 1 : e.rsvps - 1
-        };
+      if (e.id !== eventId) return e;
+      const isFull = e.rsvpCount >= e.maxCapacity;
+      if (isFull) {
+        // Join waitlist
+        setNotification({ type: 'success', message: `You joined the waitlist for "${e.title}". We'll notify you if a spot opens!` });
+        return { ...e, waitlistCount: e.waitlistCount + 1, userStatus: 'waitlisted' };
+      }
+      // Confirm RSVP
+      setNotification({ type: 'success', message: `RSVP confirmed for "${e.title}"!` });
+      return { ...e, rsvpCount: e.rsvpCount + 1, userStatus: 'confirmed' };
+    }));
+  };
+
+  // Cancel RSVP or leave waitlist — triggers automatic promotion of next waitlisted user
+  const handleCancelRsvp = (eventId: string) => {
+    setEvents(events.map(e => {
+      if (e.id !== eventId) return e;
+      if (e.userStatus === 'confirmed') {
+        const newRsvpCount = Math.max(0, e.rsvpCount - 1);
+        // Promote next waitlisted person if any
+        if (e.waitlistCount > 0) {
+          setNotification({ type: 'success', message: `RSVP cancelled. The next person on the waitlist has been notified.` });
+          return { ...e, rsvpCount: newRsvpCount, waitlistCount: e.waitlistCount - 1, userStatus: 'cancelled' };
+        }
+        setNotification({ type: 'success', message: 'RSVP cancelled.' });
+        return { ...e, rsvpCount: newRsvpCount, userStatus: 'cancelled' };
+      }
+      if (e.userStatus === 'waitlisted') {
+        setNotification({ type: 'success', message: 'Removed from waitlist.' });
+        return { ...e, waitlistCount: Math.max(0, e.waitlistCount - 1), userStatus: 'cancelled' };
       }
       return e;
     }));
-    setNotification({ type: 'success', message: 'Updated event RSVP status!' });
   };
 
   // Submit Referral Request
@@ -219,9 +255,10 @@ export default function CampusAlumniHub() {
       date: '2026-08-25',
       time: '6:00 PM IST',
       location: 'Virtual / Campus Center',
-      rsvps: 1,
+      rsvpCount: 1,
       maxCapacity: 250,
-      userRsvp: true
+      waitlistCount: 0,
+      userStatus: 'confirmed' as const,
     };
 
     setEvents([...events, newEvt]);
@@ -234,7 +271,8 @@ export default function CampusAlumniHub() {
     const manifest = {
       chaptersCount: chapters.length,
       alumniCount: alumni.length,
-      userRsvps: events.filter(e => e.userRsvp),
+      userRsvps: events.filter(e => e.userStatus === 'confirmed'),
+      userWaitlists: events.filter(e => e.userStatus === 'waitlisted'),
       referralRequests: referralRequests,
       timestamp: new Date().toISOString()
     };
@@ -294,7 +332,7 @@ export default function CampusAlumniHub() {
             <div>
               <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wide">Active Network Members</div>
               <div className="text-xs font-extrabold text-emerald-400">{alumni.length} Verified Alumni</div>
-              <div className="text-[11px] text-slate-400">{events.filter(e => e.userRsvp).length} Upcoming Event RSVPs</div>
+              <div className="text-[11px] text-slate-400">{events.filter(e => e.userStatus === 'confirmed').length} Upcoming Event RSVPs</div>
             </div>
           </div>
         </div>
@@ -505,32 +543,81 @@ export default function CampusAlumniHub() {
           </form>
 
           <div className="space-y-3">
-            {events.map((e) => (
-              <div key={e.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-900/60 rounded-2xl border border-gray-200 dark:border-gray-700 text-xs">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900 dark:text-white text-sm">{e.title}</span>
-                    <span className="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-md">
-                      {e.chapter}
-                    </span>
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400 mt-1">
-                    {e.date} at {e.time} • {e.location} • ({e.rsvps} / {e.maxCapacity} RSVPs)
-                  </p>
-                </div>
+            {events.map((e) => {
+              const isFull = e.rsvpCount >= e.maxCapacity;
+              const isConfirmed = e.userStatus === 'confirmed';
+              const isWaitlisted = e.userStatus === 'waitlisted';
+              const hasActed = isConfirmed || isWaitlisted;
 
-                <button
-                  onClick={() => handleToggleRsvp(e.id)}
-                  className={`px-4 py-2 font-bold rounded-xl transition ${
-                    e.userRsvp
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
-                >
-                  {e.userRsvp ? '✓ RSVP Confirmed' : 'RSVP Spot'}
-                </button>
-              </div>
-            ))}
+              return (
+                <div key={e.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-gray-50 dark:bg-gray-900/60 rounded-2xl border border-gray-200 dark:border-gray-700 text-xs">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-gray-900 dark:text-white text-sm">{e.title}</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-md">
+                        {e.chapter}
+                      </span>
+                      {/* Capacity badge */}
+                      {isFull ? (
+                        <span className="px-2 py-0.5 text-[10px] font-bold bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 rounded-md flex items-center gap-1">
+                          <AlertCircle size={10} /> Full
+                        </span>
+                      ) : null}
+                      {/* Waitlist size badge */}
+                      {e.waitlistCount > 0 && (
+                        <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-md flex items-center gap-1">
+                          <Clock size={10} /> {e.waitlistCount} on waitlist
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">
+                      {e.date} at {e.time} • {e.location} • ({e.rsvpCount} / {e.maxCapacity} RSVPs)
+                    </p>
+
+                    {/* User status pill */}
+                    {isConfirmed && (
+                      <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full">
+                        <CheckCircle2 size={10} /> Your spot is confirmed
+                      </span>
+                    )}
+                    {isWaitlisted && (
+                      <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-full">
+                        <Clock size={10} /> You're on the waitlist
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Primary action button */}
+                    {!hasActed && (
+                      <button
+                        onClick={() => handleRsvpOrWaitlist(e.id)}
+                        className={`px-4 py-2 font-bold rounded-xl transition text-white ${
+                          isFull
+                            ? 'bg-amber-500 hover:bg-amber-600'
+                            : 'bg-indigo-600 hover:bg-indigo-700'
+                        }`}
+                        aria-label={isFull ? `Join waitlist for ${e.title}` : `RSVP for ${e.title}`}
+                      >
+                        {isFull ? '⏳ Join Waitlist' : 'RSVP Spot'}
+                      </button>
+                    )}
+
+                    {/* Cancel button when user has acted */}
+                    {hasActed && (
+                      <button
+                        onClick={() => handleCancelRsvp(e.id)}
+                        className="px-4 py-2 font-bold rounded-xl transition bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
+                        aria-label={`Cancel ${isWaitlisted ? 'waitlist entry' : 'RSVP'} for ${e.title}`}
+                      >
+                        {isConfirmed ? '✓ RSVP Confirmed' : '⏳ On Waitlist'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -617,7 +704,8 @@ export default function CampusAlumniHub() {
             <pre>{JSON.stringify({
               chaptersCount: chapters.length,
               alumniCount: alumni.length,
-              userRsvps: events.filter(e => e.userRsvp),
+              userRsvps: events.filter(e => e.userStatus === 'confirmed'),
+              userWaitlists: events.filter(e => e.userStatus === 'waitlisted'),
               referralRequests: referralRequests,
               timestamp: new Date().toISOString()
             }, null, 2)}</pre>

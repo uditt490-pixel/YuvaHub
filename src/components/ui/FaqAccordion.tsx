@@ -55,10 +55,10 @@ export function FaqAccordion({ faq, isOpen, onToggle, index = 0, searchQuery = '
 
   return (
     <li
-      className={`border rounded-2xl overflow-hidden bg-white dark:bg-gray-800 transition-all duration-300 ease-out ${
+      className={`border rounded-2xl overflow-hidden bg-white transition-all duration-300 ${
         isOpen
-          ? 'border-blue-400 dark:border-blue-500 shadow-lg shadow-blue-500/10 -translate-y-[2px] scale-[1.005]'
-          : 'border-gray-200 dark:border-gray-700 hover:border-blue-300/70 hover:shadow-md hover:-translate-y-0.5 hover:shadow-blue-500/5'
+          ? 'border-[#b56b37] shadow-xs'
+          : 'border-[#e8ded1] hover:border-[#b56b37]'
       }`}
       style={{ animationDelay: `${index * 50}ms` }}
     >
@@ -69,17 +69,17 @@ export function FaqAccordion({ faq, isOpen, onToggle, index = 0, searchQuery = '
           onClick={handleClick}
           aria-expanded={isOpen}
           aria-controls={panelId}
-          className={`w-full text-left p-5 flex justify-between items-start gap-4 cursor-pointer bg-transparent border-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 transition-all duration-200 relative overflow-hidden select-none ${
+          className={`w-full text-left p-5 flex justify-between items-start gap-4 cursor-pointer bg-transparent border-none focus:outline-none transition-all duration-200 relative overflow-hidden select-none ${
             isOpen
-              ? 'bg-blue-50/40 dark:bg-blue-950/20'
-              : 'hover:bg-gray-50/70 dark:hover:bg-gray-900/20'
+              ? 'bg-[#fcf9f2]'
+              : 'hover:bg-[#fcf9f2]'
           }`}
         >
           {/* Ripple elements */}
           {ripples.map((r) => (
             <span
               key={r.id}
-              className="absolute pointer-events-none rounded-full animate-ping bg-blue-400/20"
+              className="absolute pointer-events-none rounded-full animate-ping bg-[#b56b37]/20"
               style={{
                 left: r.x - 20,
                 top: r.y - 20,
@@ -91,58 +91,50 @@ export function FaqAccordion({ faq, isOpen, onToggle, index = 0, searchQuery = '
 
           <div className="space-y-2 min-w-0 flex-1 relative z-10">
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border transition-all duration-300 ${
+              className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider border transition-all ${
                 isOpen
-                  ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/60 dark:text-blue-300 dark:border-blue-800'
-                  : 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-900/50'
+                  ? 'bg-[#f6efe2] text-[#b56b37] border-[#e8ded1]'
+                  : 'bg-[#fcf9f2] text-[#603620] border-[#e8ded1]'
               }`}
             >
               {faq.category}
             </span>
-            <span
-              className={`block font-bold text-sm md:text-base leading-snug transition-colors duration-200 ${
-                isOpen ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'
+
+            <div
+              className={`text-sm md:text-base font-serif font-bold text-[#231f20] leading-snug transition-colors ${
+                isOpen ? 'text-[#b56b37]' : 'group-hover:text-[#b56b37]'
               }`}
               dangerouslySetInnerHTML={{ __html: highlightText(faq.question) }}
             />
           </div>
 
-          {/* Chevron with smooth rotation + scale */}
-          <span
-            className={`p-2 rounded-xl shrink-0 transition-all duration-300 ease-out relative z-10 ${
+          <div
+            className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 ${
               isOpen
-                ? 'rotate-180 bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 scale-110'
-                : 'bg-gray-50 dark:bg-gray-900 text-gray-500 group-hover:bg-gray-100'
+                ? 'bg-[#603620] text-[#f3e4bd] rotate-180'
+                : 'bg-[#f6efe2] text-[#8c7569]'
             }`}
-            aria-hidden="true"
           >
-            <ChevronDown className="w-4 h-4" />
-          </span>
+            <ChevronDown className="w-4 h-4" aria-hidden="true" />
+          </div>
         </button>
       </h3>
 
-      {/* Smooth height reveal via grid-rows transition */}
       <div
         id={panelId}
         role="region"
         aria-labelledby={buttonId}
-        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+        className={`grid transition-[grid-template-rows] duration-300 ${
           isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
       >
         <div className="overflow-hidden min-h-0">
           <div
-            className={`px-5 pb-5 border-t transition-all duration-300 ease-out ${
-              isOpen
-                ? 'opacity-100 translate-y-0 border-blue-100 dark:border-blue-900/30'
-                : 'opacity-0 -translate-y-1 border-gray-100 dark:border-gray-700'
+            className={`p-5 pt-3 text-xs md:text-sm text-[#603620] leading-relaxed border-t border-[#e8ded1] transition-opacity duration-300 ${
+              isOpen ? 'opacity-100' : 'opacity-0'
             }`}
-          >
-            <p
-              className="pt-4 text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed m-0"
-              dangerouslySetInnerHTML={{ __html: highlightText(faq.answer) }}
-            />
-          </div>
+            dangerouslySetInnerHTML={{ __html: highlightText(faq.answer) }}
+          />
         </div>
       </div>
     </li>

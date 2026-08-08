@@ -1,338 +1,137 @@
-import { addApplicationJob } from "./src/queues/applicationQueue";
-import { generateApplicationDraft } from "./src/services/applicationGenerator";
-import express from "express";
-import http from "http";
-import { eventBus } from "./src/events/eventBus";
-import { createOpportunityScrapedConsumer } from "./src/consumers/opportunityScrapedConsumer";
-import { createNotificationConsumer } from "./src/consumers/notificationConsumer";
-import { runDeadlineChecks, runWeeklyDigest } from "./src/services/deadlineScheduler";
-import { Server } from "socket.io";
-import { createServer as createViteServer } from "vite";
-import path from "path";
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
-import { fileURLToPath } from "url";
-import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
-import { GoogleGenAI, Type } from "@google/genai";
-import { z } from "zod";
-import jwt from "jsonwebtoken";
-import { ScholarshipSchema, AIEvaluationResponseSchema } from "./src/models/scholarshipSchema.js";
-import { isToxic, createToxicityMiddleware } from "./src/services/toxicity.js";
-import { authenticateUser, deleteFirebaseUser } from "./src/middleware/auth.js";
-import rateLimit, { MemoryStore } from "express-rate-limit";
-import { RedisStore } from "rate-limit-redis";
-import Redis from "ioredis";
+import http from "http";
+import path from "path";
+import * as Sentry from "@sentry/node";
+import { Server as SocketIOServer } from "socket.io";
+import swaggerUi from "swagger-ui-express";
 
-declare global {
-  var REDIS_AVAILABLE: boolean;
-}
-global.REDIS_AVAILABLE = false;
-import { v2 as cloudinary } from "cloudinary";
-import multer from "multer";
-import { meiliClient, initializeSearchSync } from "./src/services/searchSync.js";
-import { ExpressAdapter } from '@bull-board/express';
-import { createBullBoard } from '@bull-board/api';
-import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
-import { scraperQueue } from './src/queues/scraperQueue.js';
-import { generateOpportunityEmbedding } from "./src/services/embedding.js";
+import { initializeDatabase, dbCommand, dbQuery, closeDatabaseConnections } from "./src/api/db.js";
+import { setSocketIO } from "./src/api/socketInstance.js";
+import { setupSocketEvents } from "./src/socket/index.js";
+import { runDeadlineChecks, runWeeklyDigest } from "./src/services/deadlineScheduler.js";
+import { analyticsBuffer } from "./src/api/analytics.js";
+import { stopSearchSync } from "./src/services/searchSync.js";
+
+// Import Main API Router
+import apiRoutes from "./src/api/routes/index.js";
+
+import { eventBus } from "./src/events/eventBus.js";
+import { createNotificationConsumer } from "./src/consumers/notificationConsumer.js";
+import { createOpportunityScrapedConsumer } from "./src/consumers/opportunityScrapedConsumer.js";
+import swaggerSpec from "./src/config/swagger.js";
+
+import { validateStartupEnv } from "./src/config/envValidation.js";
 
 dotenv.config();
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true
+// Validate required environment variables during startup (Issue #588)
+validateStartupEnv();
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 1.0,
 });
 
-let redisClient: Redis;
-try {
-  redisClient = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379", {
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-    enableOfflineQueue: false,
-    family: 4,
-    retryStrategy: (times) => {
-      if (times > 3) return null;
-      return 200;
-    }
-  });
+const app = express();
+const server = http.createServer(app);
 
-  let redisErrorLogged = false;
-  redisClient.on('error', (err) => {
-    if (!redisErrorLogged) {
-      console.warn('[Redis] Connection failed or Redis is not running. Bypassing rate limiting (fail-open mode).');
-      redisErrorLogged = true;
-    }
-    global.REDIS_AVAILABLE = false;
-  });
-  redisClient.on('connect', () => {
-    console.log('[Redis] Connected successfully');
-    redisErrorLogged = false;
-    global.REDIS_AVAILABLE = true;
-  });
-  redisClient.on('end', () => {
-    global.REDIS_AVAILABLE = false;
-  });
-} catch (e: any) {
-  console.error('[Redis] Init error:', e.message);
-  global.REDIS_AVAILABLE = false;
-}
-
-const createFailOpenStore = (prefix: string) => {
-  const fallbackStore = new MemoryStore();
-  let store: any;
-  if (redisClient) {
-    store = new RedisStore({
-      sendCommand: (...args: string[]) => {
-        const [command, ...commandArgs] = args;
-        return redisClient.call(command, ...commandArgs) as Promise<any>;
-      },
-      prefix: prefix,
-    });
-  }
-
-  return {
-    ...fallbackStore,
-    increment: async (key: string) => {
-      if (global.REDIS_AVAILABLE && store) {
-        try {
-          return await store.increment(key);
-        } catch (err: any) {
-          console.error(`[RateLimit] Redis error. Failing open for key: ${key}`);
-          global.REDIS_AVAILABLE = false;
-        }
-      }
-      return fallbackStore.increment(key);
-    },
-    decrement: async (key: string) => {
-      if (global.REDIS_AVAILABLE && store) {
-        try { return await store.decrement(key); } catch(e) { global.REDIS_AVAILABLE = false; }
-      }
-      if (fallbackStore.decrement) {
-        return fallbackStore.decrement(key);
-      }
-    },
-    resetKey: async (key: string) => {
-      if (global.REDIS_AVAILABLE && store) {
-        try { return await store.resetKey(key); } catch(e) { global.REDIS_AVAILABLE = false; }
-      }
-      if (fallbackStore.resetKey) {
-        return fallbackStore.resetKey(key);
-      }
-    },
-  };
-};
-
-const resumeRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: true,
-  validate: false,
-  store: createFailOpenStore('rate-limit:ai-resume:'),
-  message: { error: "Too many resume review requests. Please try again later." }
-});
-
-const chatRateLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: true,
-  validate: false,
-  store: createFailOpenStore('rate-limit:ai-chat:'),
-  keyGenerator: (req) => {
-    return req.body?.userId || req.ip || "unknown";
+// Socket.IO Configuration
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "*",
+    methods: ["GET", "POST"],
   },
-  message: { error: "Too many AI generation requests. Please try again after a minute." }
+});
+setSocketIO(io);
+
+// Swagger API Documentation
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: ".swagger-ui .topbar { display: none }",
+  customSiteTitle: "YuvaHub API Docs",
+}));
+
+app.use(cors());
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ limit: "5mb", extended: true }));
+
+// Setup API Routes
+app.use("/api", apiRoutes);
+
+// SEO Routes (root-level for crawler discovery)
+app.get("/robots.txt", (req: Request, res: Response) => {
+  const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
+  const robotsTxt = [
+    "User-agent: *",
+    "Allow: /",
+    "Allow: /opportunities",
+    "Allow: /about",
+    "Allow: /privacy",
+    "Allow: /terms",
+    "Allow: /cookies",
+    "Allow: /guidelines",
+    "Allow: /security",
+    "Allow: /support",
+    "Allow: /legal",
+    "Allow: /opportunity/",
+    "Disallow: /admin/",
+    "Disallow: /dashboard/",
+    "Disallow: /bookmarks/",
+    "Disallow: /submit/",
+    "Disallow: /settings/",
+    "Disallow: /profile/",
+    "Disallow: /mentorship/",
+    "Disallow: /community/",
+    "Disallow: /ai_assistant/",
+    "Disallow: /api/",
+    "",
+    "Content-Signal: ai-train=no, search=yes, ai-input=no",
+    "",
+    `Sitemap: ${baseUrl}/sitemap.xml`,
+    "",
+  ].join("\n");
+  res.header("Content-Type", "text/plain");
+  res.send(robotsTxt);
 });
 
-let _genAI: GoogleGenAI | null = null;
-function getGenAI() {
-  if (!_genAI) {
-    if (!process.env.GEMINI_API_KEY) {
-       console.warn("GEMINI_API_KEY not set. AI features will fallback.");
-       return null;
+// XML escaping helper for safe sitemap generation
+function escapeXml(unsafe: string): string {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case "<": return "<";
+      case ">": return ">";
+      case "&": return "&";
+      case "'": return "&apos;";
+      case '"': return "&quot;";
+      default: return c;
     }
-    _genAI = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  }
-  return _genAI;
+  });
 }
 
-// Composite Feed Ranking Engine based on relevance, freshness, quality, and engagement clicks
-async function getRankedOpportunities(database: any, profile: any, page: number, limit: number) {
+app.get("/sitemap.xml", async (req: Request, res: Response) => {
   try {
-    const skip = (page - 1) * limit;
+    const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
+    const staticPaths = [
+      "",
+      "/opportunities",
+      "/about",
+      "/privacy",
+      "/terms",
+      "/cookies",
+      "/guidelines",
+      "/security",
+      "/support",
+      "/legal",
+    ];
 
-    // Retain mock DB logic as a fallback for offline development
-    if (database.isMock) {
-      const cursor = database.collection("opportunities").find({}).sort({ created_at: -1 }).limit(150);
-      const opportunities = await cursor.toArray();
-      
-      if (opportunities.length === 0) {
-        return { items: [], next_page: null };
-      }
-
-      const oIds = opportunities.map((o: any) => o._id ? o._id.toString() : o.id);
-      const interactions = database ? await database.collection("interactions").find({
-        opportunity_id: { $in: oIds }
-      }).toArray() : [];
-
-      const intMap: Record<string, { total: number, recent: number }> = {};
-      const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-
-      interactions.forEach((i: any) => {
-        const oId = i.opportunity_id;
-        if (!intMap[oId]) {
-          intMap[oId] = { total: 0, recent: 0 };
-        }
-        intMap[oId].total += 1;
-        const iTime = i.timestamp ? new Date(i.timestamp) : new Date();
-        if (iTime >= fortyEightHoursAgo) {
-          intMap[oId].recent += 1;
-        }
-      });
-
-      const now = Date.now();
-      const profileSkills = profile.skills ? profile.skills.toLowerCase().split(',') : [];
-      const profileCountry = profile.country ? profile.country.toLowerCase().trim() : "";
-      const profileField = profile.field ? profile.field.toLowerCase().trim() : "";
-
-      const scoredItems = opportunities.map((opp: any) => {
-        const idStr = opp._id ? opp._id.toString() : opp.id;
-        const stats = intMap[idStr] || { total: 0, recent: 0 };
-
-        const engagementScore = stats.total * 15;
-        const trendingScore = stats.recent * 30;
-        const sourceQualityScore = opp.source_quality_score || 70;
-
-        const createdTime = opp.created_at ? new Date(opp.created_at).getTime() : now;
-        const hoursSinceCreation = Math.max(0, (now - createdTime) / (1000 * 60 * 60));
-        const freshnessScore = (100 / (1 + (hoursSinceCreation * 0.15))) * 2.0;
-
-        let profileRelevanceScore = 0;
-        if (profileSkills.length > 0 && opp.tags) {
-          const oppTagsLower = opp.tags.map((t: string) => t.toLowerCase());
-          profileSkills.forEach((skill: string) => {
-            const trimmed = skill.trim();
-            if (trimmed && oppTagsLower.some((tag: string) => tag.includes(trimmed) || trimmed.includes(tag))) {
-              profileRelevanceScore += 50;
-            }
-          });
-        }
-
-        if (profileField && opp.description) {
-          if (opp.description.toLowerCase().includes(profileField) || opp.title.toLowerCase().includes(profileField)) {
-            profileRelevanceScore += 40;
-          }
-        }
-
-        if (profileCountry && opp.location) {
-          const locLower = opp.location.toLowerCase();
-          if (locLower.includes(profileCountry) || profileCountry.includes(locLower) || locLower.includes("online") || locLower.includes("remote")) {
-            profileRelevanceScore += 35;
-          }
-        }
-
-        const totalScore = engagementScore + trendingScore + sourceQualityScore + freshnessScore + profileRelevanceScore;
-
-        return {
-          ...opp,
-          id: idStr,
-          metrics: {
-            totalScore: Math.round(totalScore),
-            relevance: profileRelevanceScore,
-            freshness: Math.round(freshnessScore),
-            interactionRatio: stats.total
-          }
-        };
-      });
-
-      scoredItems.sort((a: any, b: any) => b.metrics.totalScore - a.metrics.totalScore);
-
-      const paginatedItems = scoredItems.slice(skip, skip + limit);
-      
-      const mapped = paginatedItems.map((opp: any) => {
-        const copy = { ...opp };
-        delete copy._id;
-        return copy;
-      });
-
-      return {
-        items: mapped,
-        next_page: skip + limit < scoredItems.length ? page + 1 : null
-      };
-    }
-
-    // Native Meilisearch Query
-    const profileSkills = profile.skills ? profile.skills.toLowerCase().replace(/,/g, ' ') : "";
-    const profileCountry = profile.country ? profile.country.toLowerCase().trim() : "";
-    const profileField = profile.field ? profile.field.toLowerCase().trim() : "";
-    const searchQuery = `${profileSkills} ${profileField} ${profileCountry}`.trim();
-
-    // 1. Search Meilisearch (requesting more to sort in memory)
-    const searchLimit = limit * 3; // fetch a bit more to sort by interaction scores
-    const searchRes = await meiliClient.index('opportunities').search(searchQuery, {
-      offset: skip,
-      limit: searchLimit
-    });
-    let items = searchRes.hits;
-
-    if (items.length === 0) {
-      return { items: [], next_page: null };
-    }
-
-    // 2. Fetch interactions to calculate dynamic scores
-    const oIds = items.map((o: any) => o.id);
-    const interactions = await database.collection("interactions").find({
-      opportunity_id: { $in: oIds }
-    }).toArray();
-
-    const intMap: Record<string, { total: number, recent: number }> = {};
-    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
-
-    interactions.forEach((i: any) => {
-      const oId = i.opportunity_id;
-      if (!intMap[oId]) {
-        intMap[oId] = { total: 0, recent: 0 };
-      }
-      intMap[oId].total += 1;
-      const iTime = i.timestamp ? new Date(i.timestamp) : new Date();
-      if (iTime >= fortyEightHoursAgo) {
-        intMap[oId].recent += 1;
-      }
-    });
-
-    const now = Date.now();
-    const scoredItems = items.map((opp: any) => {
-      const stats = intMap[opp.id] || { total: 0, recent: 0 };
-
-      const engagementScore = stats.total * 15;
-      const trendingScore = stats.recent * 30;
-      const sourceQualityScore = opp.source_quality_score || 70;
-
-      const createdTime = opp.created_at ? new Date(opp.created_at).getTime() : now;
-      const hoursSinceCreation = Math.max(0, (now - createdTime) / (1000 * 60 * 60));
-      const freshnessScore = (100 / (1 + (hoursSinceCreation * 0.15))) * 2.0;
-
-      const totalScore = engagementScore + trendingScore + sourceQualityScore + freshnessScore;
-
-      return {
-        ...opp,
-        metrics: {
-          totalScore: Math.round(totalScore),
-          relevance: 0, // Meilisearch handles the textual relevance inherently
-          freshness: Math.round(freshnessScore),
-          interactionRatio: stats.total
-        }
-      };
+    const escapedBaseUrl = escapeXml(baseUrl);
+    let urls = staticPaths.map((p) => {
+      return `  <url>
+    <loc>${escapedBaseUrl}${p}</loc>
+    <changefreq>daily</changefreq>
+    <priority>${p === "" ? "1.0" : "0.8"}</priority>
+  </url>`;
     });
 
     // 3. Sort by our dynamic scores
@@ -357,8 +156,6 @@ const __dirname = __filename ? path.dirname(__filename) : "";
 
 // MongoDB setup
 const uri = process.env.MONGODB_URI || "";
-const commandUri = process.env.MONGODB_COMMAND_URI || uri;
-const queryUri = process.env.MONGODB_QUERY_URI || uri;
 const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
 import { CURATED_FALLBACKS } from "./src/services/staticFallbacks.js";
 import fs from "fs";
@@ -369,83 +166,36 @@ import { InternshalaAdapter } from "./src/services/dnl/adapters/InternshalaAdapt
 
 let dbCommand: any = null;
 let dbQuery: any = null;
+    // Fetch opportunities if DB is ready
+    if (dbQuery) {
+      try {
+        const items = await dbQuery
+          .collection("opportunities")
+          .find({})
+          .project({ _id: 1, title: 1, created_at: 1 })
+          .toArray();
 
-// VERY simple mock DB for offline fallback
-class MemoryCollection {
-  data: any[];
-  constructor(initialData: any[] = []) { this.data = initialData; }
-  find(query: any = {}) {
-    let result = this.data;
-    for (const key in query) {
-      if (key === 'id') {
-        result = result.filter(r => r.id === query.id || r._id === query.id || r._id?.toString() === query.id);
-      } else if (key === '_id') {
-        result = result.filter(r => r.id === query._id.toString() || r._id?.toString() === query._id.toString() || r.id === query._id);
-      } else if (key === '$text') {
-        result = result.filter(r => JSON.stringify(r).toLowerCase().includes(query.$text.$search.toLowerCase()));
-      } else if (key === '$or') {
-        result = result.filter(r => {
-          return query.$or.some((cond: any) => {
-            for (let k in cond) {
-              if (cond[k].$regex) {
-                const regex = new RegExp(cond[k].$regex, cond[k].$options || "");
-                if (regex.test(r[k])) return true;
-              } else {
-                if (r[k] === cond[k]) return true;
-              }
-            }
-            return false;
-          });
+        const oppUrls = items.map((item: Record<string, any>) => {
+          const id = escapeXml(item._id ? item._id.toString() : item.id);
+          const title = item.title || "opportunity";
+          const cleanTitle = title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+          const lastmod = escapeXml(item.created_at
+            ? new Date(item.created_at).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0]);
+          return `  <url>
+    <loc>${escapedBaseUrl}/opportunity/${id}/${cleanTitle}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
         });
-      } else {
-        // Generic key-value match
-        result = result.filter(r => r[key] === query[key]);
+        urls = urls.concat(oppUrls);
+      } catch (dbErr) {
+        console.error("[Sitemap] Error fetching opportunities:", dbErr);
       }
-    }
-
-    const cursor = {
-      sort: () => cursor,
-      limit: (n: number) => { result = result.slice(0, n); return cursor; },
-      toArray: async () => result
-    };
-    return cursor;
-  }
-  async findOne(query: any) {
-    const res = await this.find(query).toArray();
-    return res[0] || null;
-  }
-  async updateOne(query: any, update: any, options: any = {}) {
-    const item = await this.findOne(query);
-    if (item) {
-      if (update.$set) {
-        Object.assign(item, update.$set);
-      }
-      if (update.$addToSet) {
-        for (const key in update.$addToSet) {
-          if (!Array.isArray(item[key])) {
-            item[key] = [];
-          }
-          const val = update.$addToSet[key];
-          if (!item[key].includes(val)) {
-            item[key].push(val);
-          }
-        }
-      }
-      if (update.$pull) {
-        for (const key in update.$pull) {
-          if (Array.isArray(item[key])) {
-            const val = update.$pull[key];
-            item[key] = item[key].filter((x: any) => x !== val);
-          }
-        }
-      }
-      return { modifiedCount: 1 };
-    }
-    if (options.upsert) {
-      const doc = { ...query };
-      if (update.$set) Object.assign(doc, update.$set);
-      this.data.push(doc);
-      return { upsertedCount: 1, upsertedId: "mock_upsert_id" };
     }
     return { modifiedCount: 0 };
   }
@@ -500,6 +250,9 @@ function setupDNL(database: any) {
 if (commandUri && queryUri) {
   const commandClient = new MongoClient(commandUri);
   const queryClient = new MongoClient(queryUri);
+if (uri) {
+  const commandClient = new MongoClient(uri);
+  const queryClient = new MongoClient(uri);
   
   Promise.all([commandClient.connect(), queryClient.connect()]).then(() => {
     dbCommand = commandClient.db(process.env.MONGODB_COMMAND_DB || dbName);
@@ -511,6 +264,13 @@ if (commandUri && queryUri) {
     dbCommand.collection("opportunities").createIndex({ created_at: -1, source_quality_score: -1 })
       .then(() => console.log(`[Database] Created compound index on opportunities`))
       .catch((err: any) => console.error(`[Database] Failed to create index:`, err));
+
+    dbCommand.collection("opportunities").createIndex(
+      { dedupe_hash: 1 },
+      { unique: true, partialFilterExpression: { dedupe_hash: { $exists: true } } }
+    )
+      .then(() => console.log(`[Database] Created unique index on opportunities.dedupe_hash`))
+      .catch((err: any) => console.error(`[Database] Failed to create unique index on opportunities.dedupe_hash:`, err));
 
     dbQuery.collection("users").createIndex({ uid: 1 }, { unique: true })
       .then(() => console.log(`[Database] Created unique index on users.uid`))
@@ -533,728 +293,182 @@ if (commandUri && queryUri) {
   initializeSearchSync(dbQuery);
 }
 
-class AnalyticsBuffer {
-  private buffer: any[] = [];
-  private flushInterval: NodeJS.Timeout | null = null;
-  private isFlushing = false;
+    const sitemapXml = [
+      `<?xml version="1.0" encoding="UTF-8"?>`,
+      `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
+      ...urls,
+      `</urlset>`,
+    ].join("\n");
 
-  constructor(private intervalMs: number = 5000) {
-    this.startInterval();
+    res.header("Content-Type", "application/xml");
+    res.send(sitemapXml);
+  } catch (err) {
+    console.error("[Sitemap] Generation error:", err);
+    res.status(500).send("Internal Server Error");
   }
+});
 
-  public push(event: any) {
-    if (event) {
-      if (Array.isArray(event)) {
-        this.buffer.push(...event);
-      } else {
-        this.buffer.push(event);
-      }
-    }
+// Serve the static frontend files generated by Vite in production
+const frontendPath = path.join(process.cwd(), "dist");
+app.use(express.static(frontendPath));
+
+// SPA Fallback: Catch non-API GET requests cleanly without path-to-regexp issues
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method === "GET" && !req.path.startsWith("/api/")) {
+    return res.sendFile(path.join(frontendPath, "index.html"));
   }
+  next();
+});
 
-  private startInterval() {
-    this.flushInterval = setInterval(() => {
-      this.flush().catch(err => console.error("[AnalyticsBuffer] Auto-flush error:", err));
-    }, this.intervalMs);
-  }
+// Fallback Route for API endpoints
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ success: false, error: "Endpoint not found" });
+});
 
-  public async flush() {
-    if (this.buffer.length === 0 || this.isFlushing) {
-      return;
-    }
+const PORT = process.env.PORT || 5000;
 
-    this.isFlushing = true;
-    const batch = [...this.buffer];
-    this.buffer = [];
+// ── Graceful Shutdown ─────────────────────────────────────────────────
+let isShuttingDown = false;
+const shutdownTimers: ReturnType<typeof setInterval>[] = [];
 
-    try {
-      if (dbCommand && dbQuery) {
-        const collection = dbCommand.collection("analytics");
-        const bulk = collection.initializeUnorderedBulkOp();
-        for (const doc of batch) {
-          bulk.insert(doc);
-        }
-        await bulk.execute();
-        console.log(`[AnalyticsBuffer] Flushed ${batch.length} events to MongoDB.`);
-      } else {
-        this.buffer.unshift(...batch);
-        console.warn(`[AnalyticsBuffer] DB not ready. Re-queued ${batch.length} events.`);
-      }
-    } catch (err) {
-      console.error("[AnalyticsBuffer] Error flushing batch:", err);
-      this.buffer.unshift(...batch);
-    } finally {
-      this.isFlushing = false;
-    }
-  }
-
-  public stop() {
-    if (this.flushInterval) {
-      clearInterval(this.flushInterval);
-      this.flushInterval = null;
-    }
-  }
+/** Safety net: force-exit if graceful shutdown takes too long. */
+function setShutdownTimeout(ms = 10_000): void {
+  setTimeout(() => {
+    console.error("[Core] Graceful shutdown timed out. Forcing exit.");
+    process.exit(1);
+  }, ms).unref();
 }
 
-const analyticsBuffer = new AnalyticsBuffer(5000);
-
-let isShuttingDown = false;
-const gracefulShutdown = async (signal: string) => {
+async function gracefulShutdown(signal: string) {
   if (isShuttingDown) return;
   isShuttingDown = true;
-  console.log(`[System] Received ${signal}. Starting graceful shutdown...`);
+  console.log(`[Core] Received ${signal}. Starting graceful shutdown...`);
+  setShutdownTimeout();
+
+  // 1. Stop accepting new HTTP connections
+  await new Promise<void>((resolve) => {
+    server.close(() => {
+      console.log("[Core] HTTP server closed.");
+      resolve();
+    });
+    // Socket.IO holds the server open; close its connections too.
+    try {
+      io.close(() => {
+        console.log("[Core] Socket.IO closed.");
+        resolve();
+      });
+    } catch (err) {
+      resolve();
+    }
+  });
+
+  // 2. Clear background scheduler intervals
+  shutdownTimers.forEach((t) => clearInterval(t));
+
+  // 3. Drain analytics buffer (safe — drainAndStop sets isShuttingDown flag,
+  //    rejects new pushes, flushes remaining, then stops the interval)
   try {
-    analyticsBuffer.stop();
-    await analyticsBuffer.flush();
-    console.log("[System] Analytics buffer flushed successfully.");
+    await analyticsBuffer.drainAndStop();
+    console.log("[Core] Analytics buffer drained successfully.");
   } catch (err) {
-    console.error("[System] Error during graceful shutdown analytics flush:", err);
-  } finally {
-    process.exit(0);
+    console.error("[Core] Error draining analytics buffer:", err);
   }
-};
+
+  // 4. Close search change stream, MongoDB clients, and Redis
+  try {
+    await stopSearchSync();
+  } catch (err) {
+    console.error("[Core] Error stopping search sync:", err);
+  }
+  try {
+    await closeDatabaseConnections();
+  } catch (err) {
+    console.error("[Core] Error closing database connections:", err);
+  }
+  try {
+    const { redisClient } = await import("./src/api/redis.js");
+    if (redisClient?.status === "ready" || redisClient?.status === "connecting") {
+      redisClient.disconnect();
+      console.log("[Core] Redis disconnected.");
+    }
+  } catch (err) {
+    console.error("[Core] Error closing Redis:", err);
+  }
+
+  // 5. Exit
+  process.exit(0);
+}
 
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGBREAK", () => gracefulShutdown("SIGBREAK"));
+process.on("uncaughtException", (err) => {
+  console.error("[Core] Uncaught exception:", err);
+  gracefulShutdown("uncaughtException");
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[Core] Unhandled rejection:", reason);
+  gracefulShutdown("unhandledRejection");
+});
 
-import { createAdapter } from "@socket.io/redis-adapter";
+async function bootstrap() {
+  try {
+    // 1. Initialize databases and caches
+    await initializeDatabase();
+    
+    // 2. Start the HTTP server
+    server.listen(PORT, () => {
+      console.log(`[Core] Express Server is listening on port ${PORT}`);
+    });
 
-let ioInstance: any = null;
-export function getSocketIO() {
-  return ioInstance;
+    // 2. Setup Socket.IO Event Handlers
+    setupSocketEvents();
+
+    // 3. Initialize MongoDB Database Connections asynchronously
+    initializeDatabase().catch((err: Error) => {
+      console.warn("[Core] Database initialization fallback mode:", err.message);
+    });
+
+    // 4. Wire Event Bus Consumers (RabbitMQ) asynchronously
+    eventBus
+      .connect()
+      .then(async () => {
+        const notifHandler = await createNotificationConsumer(dbCommand);
+        const scrapedHandler = await createOpportunityScrapedConsumer(dbCommand);
+        await eventBus.subscribe("notifications", "opportunity.scraped", notifHandler);
+        await eventBus.subscribe("opportunity-scraped", "opportunity.scraped", scrapedHandler);
+        console.log("[Core] Event Bus consumers wired successfully");
+      })
+      .catch((err: Error) => {
+        console.warn("[Core] Event Bus unavailable:", err.message);
+      });
+
+    // 5. Start Background Services
+    if (process.env.NODE_ENV !== "test") {
+      shutdownTimers.push(setInterval(() => runDeadlineChecks(dbCommand), 24 * 60 * 60 * 1000));
+      shutdownTimers.push(setInterval(() => runWeeklyDigest(dbCommand), 7 * 24 * 60 * 60 * 1000));
+      
+      // Node.js Central Ingestion
+      if (process.env.START_NODE_SCRAPER === "true") {
+        console.log("[Scraper] Central Ingestion daemon enabled");
+        import("child_process").then(({ spawn }) => {
+          spawn("npx", ["tsx", "scrape-cli.ts"], {
+            cwd: process.cwd(),
+            detached: true,
+            stdio: "ignore"
+          }).unref();
+        });
+      }
+    }
+  } catch (error) {
+    console.error("[Core] Failed to start server:", error);
+    process.exit(1);
+  }
 }
 
-async function startServer() {
-  let viteInstance: any = null;
-  const app = express();
-  const server = http.createServer(app);
-  
-  const frontendUrl = process.env.FRONTEND_URL;
-  const corsOptions = frontendUrl ? { origin: frontendUrl } : { origin: "*" };
-  
-  const io = new Server(server, { 
-    cors: corsOptions,
-    connectionStateRecovery: {
-      maxDisconnectionDuration: 2 * 60 * 1000,
-      skipMiddlewares: true,
-    }
-  });
-
-  if (redisClient) {
-    redisClient.on('ready', () => {
-      try {
-        const pubClient = redisClient.duplicate({ enableOfflineQueue: true });
-        const subClient = redisClient.duplicate({ enableOfflineQueue: true });
-        
-        // Fallback if Redis fails so it doesn't crash the server
-        pubClient.on('error', (err) => {
-          console.warn('[Socket.io Redis Pub] Error:', err.message);
-          global.REDIS_AVAILABLE = false;
-        });
-        subClient.on('error', (err) => {
-          console.warn('[Socket.io Redis Sub] Error:', err.message);
-          global.REDIS_AVAILABLE = false;
-        });
-
-        io.adapter(createAdapter(pubClient, subClient));
-        console.log('[Socket.io Redis] Adapter attached successfully');
-      } catch (e: any) {
-        console.warn('[Socket.io Redis] Failed to attach adapter, falling back to in-memory adapter:', e.message);
-      }
-    });
-  }
-
-  ioInstance = io;
-  const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5173;
-
-  // Trust reverse proxy (Cloud Run, nginx / Cloudflare reverse proxies)
-  app.set('trust proxy', 1);
-
-  const serverAdapter = new ExpressAdapter();
-  serverAdapter.setBasePath('/admin/queues');
-  createBullBoard({
-    queues: [new BullMQAdapter(scraperQueue)],
-    serverAdapter: serverAdapter,
-  });
-  app.use('/admin/queues', serverAdapter.getRouter());
-
-  // Suppress express-rate-limit warnings / errors for forwarded headers when behind proxy
-  app.use((req, res, next) => {
-    delete req.headers['forwarded'];
-    next();
-  });
-
-  app.use(cors(corsOptions));
-  app.use(express.json({ limit: '10mb' }));
-
-  app.post("/api/analytics/track", (req, res) => {
-    analyticsBuffer.push(req.body);
-    res.status(202).json({ status: "Accepted" });
-  });
-
-  app.post("/api/analytics/shutdown", async (req, res) => {
-    res.status(200).json({ status: "Shutting down" });
-    await gracefulShutdown("API_TRIGGER");
-  });
-
-  // REST Fallback for Socket Messages
-  app.post("/api/messages", (req, res) => {
-    const { eventName, data } = req.body;
-    if (!eventName) {
-      return res.status(400).json({ error: "eventName is required" });
-    }
-    console.log(`[REST Backup] Received fallback event: ${eventName}`, data);
-    
-    // Broadcast or process the event if the local socket instance is available
-    if (ioInstance) {
-      ioInstance.emit(eventName, data);
-    }
-    return res.status(200).json({ success: true, message: "Processed via REST backup" });
-  });
-
-  // --- Rate Limiting Middlewares ---
-  const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
-    message: { error: "Too Many Requests", message: "You have exceeded your 100 requests in 15 minutes limit!" },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-
-  const aiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // Limit each IP to 10 requests per window for AI
-    message: { error: "Too Many Requests", message: "You have exceeded your 10 AI requests in 15 minutes limit!" },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-
-  // Apply general limiter to all API endpoints
-  app.use("/api/", generalLimiter);
-  // Apply strict AI limiter specifically to AI endpoints
-  app.use("/api/ai/", aiLimiter);
-
-  // --- Technical SEO Route Interceptors ---
-
-  const serveHtmlWithSeo = async (req: express.Request, res: express.Response) => {
-    try {
-      const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
-      const currentUrl = `${baseUrl}${req.originalUrl}`;
-      
-      let title = "YuvaHub | Student Opportunity Platform (Hackathons, Scholarships, Mentorships)";
-      let description = "YuvaHub is India's leading discovery platform for students. Find life-changing hackathons, scholarships, and mentorships to accelerate your tech career. AI-powered matching for your skills.";
-      let image = `${baseUrl}/og-image.jpg`;
-      let schemaData: any = null;
-
-      const pathName = req.path.toLowerCase();
-      
-      if (pathName.startsWith("/opportunity/")) {
-        const parts = req.path.split("/");
-        const id = parts[2];
-        if (id) {
-          let opp: any = null;
-          if (dbQuery) {
-            try {
-              let query;
-              try {
-                query = { _id: new ObjectId(id) };
-              } catch(e) {
-                query = { id: id };
-              }
-              opp = await dbQuery.collection("opportunities").findOne(query);
-            } catch (dbErr) {
-              console.error("Error retrieving opportunity for SEO:", dbErr);
-            }
-          }
-          
-          if (!opp) {
-            opp = CURATED_FALLBACKS.find(f => f.id === id);
-          }
-
-          if (opp) {
-            const displayOrg = opp.org || opp.organization || "Curated Partner";
-            const cleanTitle = (opp.title || "").substring(0, 50);
-            title = `${cleanTitle} | ${displayOrg} | YuvaHub`;
-            description = opp.description ? (opp.description.substring(0, 150) + "...") : `Apply to ${opp.title} at ${displayOrg} via YuvaHub.`;
-            if (opp.orgLogo) {
-              image = opp.orgLogo;
-            }
-            
-            const isJob = opp.category?.toLowerCase().includes('job') || opp.category?.toLowerCase().includes('internship') || opp.type?.toLowerCase().includes('job') || opp.type?.toLowerCase().includes('internship');
-            
-            if (isJob) {
-              schemaData = {
-                "@context": "https://schema.org",
-                "@type": "JobPosting",
-                "title": opp.title,
-                "description": opp.description || "",
-                "employmentType": opp.category?.toLowerCase().includes('intern') || opp.type?.toLowerCase().includes('intern') ? "INTERN" : "FULL_TIME",
-                "hiringOrganization": {
-                  "@type": "Organization",
-                  "name": displayOrg,
-                  "sameAs": baseUrl
-                },
-                "jobLocation": {
-                  "@type": "Place",
-                  "address": {
-                    "@type": "PostalAddress",
-                    "addressLocality": opp.location || "Remote/Online",
-                    "addressCountry": "Global"
-                  }
-                }
-              };
-            } else {
-              schemaData = {
-                "@context": "https://schema.org",
-                "@type": "Event",
-                "name": opp.title,
-                "description": opp.description || "",
-                "eventStatus": "https://schema.org/EventScheduled",
-                "eventAttendanceMode": "https://schema.org/OnlineEventAttendanceMode",
-                "location": {
-                  "@type": "VirtualLocation",
-                  "url": currentUrl
-                },
-                "organizer": {
-                  "@type": "Organization",
-                  "name": displayOrg
-                }
-              };
-            }
-          }
-        }
-      } else if (pathName === "/opportunities") {
-        title = "Explore Opportunities | Internships, Jobs & Hackathons | YuvaHub";
-        description = "Discover and apply to the latest internships, entry-level jobs, hackathons, and scholarships for Indian students. Real-time updates and AI matching.";
-      } else if (pathName === "/about") {
-        title = "About Us | Empowering Student Careers | YuvaHub";
-        description = "Learn about YuvaHub's mission to connect Indian students with life-changing hackathons, scholarships, internships, and mentors.";
-      } else if (pathName === "/privacy") {
-        title = "Privacy Policy | YuvaHub";
-        description = "Read the YuvaHub Privacy Policy to understand how we protect, handle, and secure your personal information.";
-      } else if (pathName === "/terms") {
-        title = "Terms of Service | YuvaHub";
-        description = "Review the Terms of Service and guidelines for using the YuvaHub platform.";
-      } else if (pathName === "/cookies") {
-        title = "Cookie Policy | YuvaHub";
-        description = "Learn how YuvaHub uses cookies and tracking technologies to optimize your experience.";
-      } else if (pathName === "/guidelines") {
-        title = "Community Guidelines | YuvaHub";
-        description = "Review the YuvaHub Community Guidelines to help build a safe, respectful, and professional student network.";
-      } else if (pathName === "/security") {
-        title = "Security Center | YuvaHub";
-        description = "Learn about YuvaHub's security practices, data encryption, and account protection measures.";
-      } else if (pathName === "/support") {
-        title = "Support & Feedback | YuvaHub";
-        description = "Need help? Contact the YuvaHub support team or submit feedback to help us improve the platform.";
-      } else if (pathName === "/legal") {
-        title = "Legal Index | YuvaHub";
-        description = "Access YuvaHub's legal index containing all terms, privacy policies, cookie policies, and community guidelines.";
-      }
-
-      let htmlPath = process.env.NODE_ENV === "production"
-        ? path.join(process.cwd(), "dist/index.html")
-        : path.join(process.cwd(), "index.html");
-
-      if (!fs.existsSync(htmlPath)) {
-        return res.status(404).send("index.html not found");
-      }
-
-      let html = fs.readFileSync(htmlPath, "utf8");
-
-      if (process.env.NODE_ENV !== "production" && viteInstance) {
-        html = await viteInstance.transformIndexHtml(req.originalUrl, html);
-      }
-
-      // Replacements helper
-      const replaceMeta = (h: string, nameAttr: string, attrVal: string, content: string) => {
-        const regex = new RegExp(`<meta\\s+[^>]*${nameAttr}=["']${attrVal}["'][^>]*content=["'][^"']*["'][^>]*>`, 'i');
-        if (regex.test(h)) {
-          return h.replace(regex, `<meta ${nameAttr}="${attrVal}" content="${content}">`);
-        }
-        const regexReverse = new RegExp(`<meta\\s+[^>]*content=["'][^"']*["'][^>]*${nameAttr}=["']${attrVal}["'][^>]*>`, 'i');
-        if (regexReverse.test(h)) {
-          return h.replace(regexReverse, `<meta ${nameAttr}="${attrVal}" content="${content}">`);
-        }
-        return h.replace('</head>', `  <meta ${nameAttr}="${attrVal}" content="${content}">\n</head>`);
-      };
-
-      const replaceTitle = (h: string, t: string) => {
-        const regex = /<title>[^<]*<\/title>/i;
-        if (regex.test(h)) {
-          return h.replace(regex, `<title>${t}</title>`);
-        }
-        return h.replace('</head>', `  <title>${t}</title>\n</head>`);
-      };
-
-      const replaceCanonical = (h: string, u: string) => {
-        const regex = /<link\s+[^>]*rel=["']canonical["'][^>]*>/i;
-        if (regex.test(h)) {
-          return h.replace(regex, `<link rel="canonical" href="${u}">`);
-        }
-        return h.replace('</head>', `  <link rel="canonical" href="${u}">\n</head>`);
-      };
-
-      const injectJsonLd = (h: string, data: any) => {
-        if (!data) return h;
-        const scriptTag = `  <script type="application/ld+json" id="jsonld-seo-schema">${JSON.stringify(data)}</script>\n`;
-        return h.replace('</head>', `${scriptTag}</head>`);
-      };
-
-      html = replaceTitle(html, title);
-      html = replaceMeta(html, 'name', 'description', description);
-      html = replaceMeta(html, 'property', 'og:title', title);
-      html = replaceMeta(html, 'property', 'og:description', description);
-      html = replaceMeta(html, 'property', 'og:image', image);
-      html = replaceMeta(html, 'property', 'og:url', currentUrl);
-      html = replaceMeta(html, 'property', 'og:type', 'website');
-      html = replaceMeta(html, 'name', 'twitter:card', 'summary_large_image');
-      html = replaceMeta(html, 'name', 'twitter:title', title);
-      html = replaceMeta(html, 'name', 'twitter:description', description);
-      html = replaceMeta(html, 'name', 'twitter:image', image);
-      html = replaceMeta(html, 'name', 'twitter:url', currentUrl);
-      html = replaceCanonical(html, currentUrl);
-      html = injectJsonLd(html, schemaData);
-
-      res.setHeader("Content-Type", "text/html");
-      res.send(html);
-    } catch (err) {
-      console.error("HTML SEO injection error:", err);
-      res.status(500).send("Internal Server Error");
-    }
-  };
-
-  app.get("/robots.txt", (req, res) => {
-    const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
-    const robotsTxt = `User-agent: *
-Allow: /
-Allow: /opportunities
-Allow: /about
-Allow: /privacy
-Allow: /terms
-Allow: /cookies
-Allow: /guidelines
-Allow: /security
-Allow: /support
-Allow: /legal
-Allow: /opportunity/
-Disallow: /admin/
-Disallow: /dashboard/
-Disallow: /bookmarks/
-Disallow: /submit/
-Disallow: /settings/
-Disallow: /profile/
-Disallow: /mentorship/
-Disallow: /community/
-Disallow: /ai_assistant/
-Disallow: /api/
-
-Content-Signal: ai-train=no, search=yes, ai-input=no
-
-Sitemap: ${baseUrl}/sitemap.xml
-`;
-    res.header("Content-Type", "text/plain");
-    res.send(robotsTxt);
-  });
-
-  app.get("/sitemap.xml", async (req, res) => {
-    try {
-      const baseUrl = process.env.APP_URL || "https://yuvahub.xyz";
-      const staticPaths = [
-        "",
-        "/opportunities",
-        "/about",
-        "/privacy",
-        "/terms",
-        "/cookies",
-        "/guidelines",
-        "/security",
-        "/support",
-        "/legal"
-      ];
-
-      let urls = staticPaths.map(p => {
-        return `  <url>
-    <loc>${baseUrl}${p}</loc>
-    <changefreq>daily</changefreq>
-    <priority>${p === "" ? "1.0" : "0.8"}</priority>
-  </url>`;
-      });
-
-      // Fetch opportunities if DB is ready
-      if (dbQuery) {
-        try {
-          const items = await dbQuery.collection("opportunities")
-            .find({})
-            .project({ _id: 1, title: 1, created_at: 1 })
-            .toArray();
-
-          const slugify = (text: string): string => {
-            return (text || "")
-              .toString()
-              .toLowerCase()
-              .trim()
-              .replace(/\s+/g, '-')
-              .replace(/[^\w\-]+/g, '')
-              .replace(/\-\-+/g, '-')
-              .replace(/^-+/, '')
-              .replace(/-+$/, '');
-          };
-
-          items.forEach((item: any) => {
-            const id = item._id.toString();
-            const slug = slugify(item.title);
-            const dateStr = item.created_at ? new Date(item.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
-            urls.push(`  <url>
-    <loc>${baseUrl}/opportunity/${id}/${slug}</loc>
-    <lastmod>${dateStr}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>`);
-          });
-        } catch (dbErr) {
-          console.error("Error fetching opportunities for sitemap:", dbErr);
-        }
-      }
-
-      const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.join("\n")}
-</urlset>`;
-
-      res.header("Content-Type", "application/xml");
-      res.send(sitemapXml);
-    } catch (err) {
-      console.error("Sitemap generation error:", err);
-      res.status(500).send("Internal Server Error");
-    }
-  });
-
-  const publicHtmlRoutes = [
-    "/",
-    "/opportunities",
-    "/about",
-    "/privacy",
-    "/terms",
-    "/cookies",
-    "/guidelines",
-    "/security",
-    "/support",
-    "/legal",
-    "/opportunity/:id",
-    "/opportunity/:id/:slug"
-  ];
-
-  app.get(publicHtmlRoutes, serveHtmlWithSeo);
-
-  // --- DNS-AID Agent Discovery Endpoints ---
-  app.get("/.well-known/agents/:file", (req, res) => {
-    const file = req.params.file;
-    if (file === "index.json") {
-      return res.json({
-        agents: [
-          {
-            name: "YuvaHub Agent",
-            description: "Agent to find hackathons, internships, and scholarships for Indian students."
-          }
-        ]
-      });
-    } else if (file === "a2a.json") {
-      return res.json({ a2a: true });
-    }
-    res.status(404).json({ error: "Not found" });
-  });
-
-  // --- API Catalog Discovery Endpoint ---
-  app.get("/.well-known/api-catalog", (req, res) => {
-    res.set("Content-Type", "application/linkset+json");
-    res.json({
-      linkset: [
-        {
-          anchor: "https://yuvahub.xyz/api/v1/",
-          "service-desc": [
-            {
-              href: "https://yuvahub.xyz/api/openapi.yaml",
-              type: "application/vnd.oai.openapi"
-            }
-          ],
-          "service-doc": [
-            {
-              href: "https://yuvahub.xyz/api/docs",
-              type: "text/html"
-            }
-          ],
-          status: [
-            {
-              href: "https://yuvahub.xyz/api/v1/health",
-              type: "application/json"
-            }
-          ]
-        }
-      ]
-    });
-  });
-
-  // --- OAuth/OIDC Discovery Endpoint ---
-  app.get(["/.well-known/openid-configuration", "/.well-known/oauth-authorization-server"], (req, res) => {
-    res.json({
-      issuer: "https://securetoken.google.com/gen-lang-client-0238861756",
-      authorization_endpoint: "https://gen-lang-client-0238861756.firebaseapp.com/__/auth/handler",
-      token_endpoint: "https://securetoken.googleapis.com/v1/token",
-      jwks_uri: "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-      response_types_supported: ["id_token", "token"],
-      grant_types_supported: ["implicit", "authorization_code", "refresh_token"],
-      subject_types_supported: ["public"],
-      id_token_signing_alg_values_supported: ["RS256"],
-      agent_auth: {
-        skill: "https://auth.md",
-        register_uri: "https://yuvahub.xyz/agent/auth",
-        identity_types_supported: ["anonymous"],
-        anonymous: {
-          credential_types_supported: ["bearer"]
-        },
-        claim_uri: "https://yuvahub.xyz/agent/claim"
-      }
-    });
-  });
-
-  // --- OAuth Protected Resource Metadata ---
-  app.get("/.well-known/oauth-protected-resource", (req, res) => {
-    res.json({
-      resource: "https://yuvahub.xyz/api/",
-      authorization_servers: [
-        "https://securetoken.google.com/gen-lang-client-0238861756"
-      ],
-      scopes_supported: ["read", "write"],
-      bearer_methods_supported: ["header"]
-    });
-  });
-
-  // --- MCP Server Card Endpoint ---
-  app.get("/.well-known/mcp/server-card.json", (req, res) => {
-    res.json({
-      serverInfo: {
-        name: "YuvaHub MCP Server",
-        version: "1.0.0"
-      },
-      endpoint: "https://yuvahub.xyz/mcp",
-      capabilities: {
-        tools: true,
-        resources: true,
-        prompts: true
-      }
-    });
-  });
-
-  // --- Agent Skills Discovery Endpoint ---
-  app.get("/.well-known/agent-skills/index.json", (req, res) => {
-    res.json({
-      $schema: "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
-      skills: [
-        {
-          name: "yuvahub-api-skill",
-          type: "skill-md",
-          description: "Skill to query YuvaHub for opportunities",
-          url: "https://yuvahub.xyz/skills/yuvahub-api/SKILL.md",
-          digest: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        }
-      ]
-    });
-  });
-
-  const cacheMiddleware = (ttlSeconds: number, keyGenerator?: (req: express.Request) => string) => {
-    return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-      if (!redisClient || redisClient.status !== 'ready') {
-        res.setHeader("X-Cache-Status", "BYPASS");
-        return next();
-      }
-
-      const key = keyGenerator ? keyGenerator(req) : req.originalUrl;
-
-      try {
-        const cached = await redisClient.get(key);
-        if (cached) {
-          res.setHeader("X-Cache-Status", "HIT");
-          return res.json(JSON.parse(cached));
-        }
-      } catch (err) {
-        console.error("[Cache] Redis get error:", err);
-      }
-
-      res.setHeader("X-Cache-Status", "MISS");
-
-      const originalJson = res.json.bind(res);
-      res.json = (body: any) => {
-        try {
-          if (redisClient && redisClient.status === 'ready' && res.statusCode >= 200 && res.statusCode < 300) {
-            redisClient.set(key, JSON.stringify(body), "EX", ttlSeconds).catch((err: any) => {
-              console.error("[Cache] Redis set error:", err);
-            });
-          }
-        } catch (err) {
-          console.error("[Cache] Error stringifying response:", err);
-        }
-        return originalJson(body);
-      };
-
-      next();
-    };
-  };
-
-  // --- Real API Routes ---
-  
-  // Example of a protected route to initialize/sync user JIT
-  app.get("/api/v1/user/sync", authenticateUser(dbCommand), (req, res) => {
-    res.json({ status: "ok", user: req.user });
-  });
-
-  // Cascading Deletion
-  app.delete("/api/v1/user/account", authenticateUser(dbCommand), async (req, res) => {
-    try {
-      const uid = req.user.uid;
-      
-      // 1. Delete from Firebase Auth
-      await deleteFirebaseUser(uid);
-      
-      // 2. Delete from MongoDB
-      if (dbCommand) {
-        await dbCommand.collection("users").deleteOne({ firebaseUid: uid });
-        
-        // Also clean up any associated data
-        await dbCommand.collection("interactions").deleteMany({ firebaseUid: uid });
-        // Add more cleanup as needed (e.g. saved opportunities, profiles, etc.)
-      }
-      
-      res.json({ status: "success", message: "Account completely deleted" });
-    } catch (err: any) {
-      console.error("[Auth] Error deleting user account:", err);
-      res.status(500).json({ error: "Failed to delete account" });
-    }
-  });
-
-  app.get("/api/v1/opportunities", async (req, res) => {
-    try {
-      let page = parseInt((req.query.page as string) || "1", 10);
-      if (req.query.cursor) {
-        const cInt = parseInt(req.query.cursor as string, 10);
-        if (!isNaN(cInt) && cInt > 0) page = cInt;
-      }
-      const limit = parseInt((req.query.limit as string) || "10", 10);
-      
-      if (!dbCommand || !dbQuery) {
-        return res.json({ num_results: 1, next_page: null, next_cursor: null, items: [{
-          id: "sys_nodeDbMissing", title: "Awaiting Live Ingestion...", organization: "Yuvahub System", type: "status", tags: ["system"], apply_link: "#"
-        }]});
-      }
-
-      const profile = {
-        skills: (req.query.skills as string) || "",
-        country: (req.query.country as string) || "",
-        field: (req.query.field as string) || ""
-      };
-
-      const result = await getRankedOpportunities(dbQuery, profile, page, limit);
+// Only auto-start the server when not running in test mode
+if (process.env.NODE_ENV !== "test") {
+  bootstrap();
+}
 
       res.json({
         num_results: result.items.length,
@@ -4234,7 +3448,15 @@ async function bootstrap() {
     console.error("Failed to start event bus and consumers", err);
   }
 }
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("uncaughtException", (err) => {
+  console.error("[Core] Uncaught exception:", err);
+  gracefulShutdown("uncaughtException");
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[Core] Unhandled rejection:", reason);
+  gracefulShutdown("unhandledRejection");
+});
 
-if (!process.argv[1]?.includes('test')) {
-  bootstrap();
-}
+export { app, server, bootstrap };

@@ -203,8 +203,8 @@ export const PHILOSOPHY_PRINCIPLES: PhilosophyPrinciple[] = [
 
 // ─── Platform highlight stats ─────────────────────────────────────────────────
 export const PLATFORM_HIGHLIGHTS: StatHighlight[] = [
-  { value: '5M+', label: 'Students Served' },
-  { value: '100k+', label: 'Opportunities Listed' },
-  { value: '2k+', label: 'Partner Companies' },
-  { value: '500k+', label: 'Successful Placements' },
+  { value: '+', label: 'Students Served' },
+  { value: '00k+', label: 'Opportunities Listed' },
+  { value: 'k+', label: 'Partner Companies' },
+  { value: '0k+', label: 'Successful Placements' },
 ];

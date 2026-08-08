@@ -7,3 +7,10 @@ coverage/
 .env*
 !.env.example
 public/uploads
+
+# Playwright Test Outputs
+test-results/
+playwright-report/
+
+# Firebase configuration
+firebase-applet-config.json

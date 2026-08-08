@@ -153,3 +153,46 @@ export function generateHackathonAlertHtml(title: string, organization: string, 
     </div>
   `;
 }
+
+export function generateAdminAlertHtml(workerName: string, jobId: string, domain: string, errorMessage: string, retryCount: number): string {
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #ef4444; border-radius: 12px; background-color: #ffffff;">
+      <h2 style="color: #dc2626; margin: 0 0 6px 0; font-size: 20px; font-weight: 800;">🚨 Critical System Alert</h2>
+      <p style="color: #64748b; font-size: 14px; margin-top: 0;">A background worker job has exhausted all retries and failed permanently.</p>
+      <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 16px 0;" />
+      
+      <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
+        <h3 style="color: #991b1b; margin: 0 0 8px 0; font-size: 15px; font-weight: 700;">Worker: ${workerName}</h3>
+        <table style="width: 100%; font-size: 13px; color: #475569; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 4px 0; font-weight: 600; width: 30%;">Job ID:</td>
+            <td style="padding: 4px 0;"><code>${jobId}</code></td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 0; font-weight: 600;">Target Domain:</td>
+            <td style="padding: 4px 0;">${domain || "N/A"}</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 0; font-weight: 600;">Retry Attempts:</td>
+            <td style="padding: 4px 0;">${retryCount}</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px 0; font-weight: 600;">Timestamp:</td>
+            <td style="padding: 4px 0;">${new Date().toISOString()}</td>
+          </tr>
+        </table>
+      </div>
+
+      <h4 style="color: #0f172a; margin: 0 0 8px 0; font-size: 14px; font-weight: 700;">Failure Reason</h4>
+      <p style="color: #b91c1c; line-height: 1.5; font-size: 13px; background-color: #fee2e2; padding: 12px; border-radius: 6px; font-family: monospace;">
+        ${errorMessage || "Unknown Error"}
+      </p>
+      
+      <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #f1f5f9; text-align: center;">
+        <p style="color: #94a3b8; font-size: 11px; margin: 0;">
+          This is an automated administrative alert from YuvaHub.
+        </p>
+      </div>
+    </div>
+  `;
+}

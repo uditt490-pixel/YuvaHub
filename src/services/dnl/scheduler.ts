@@ -1,156 +1,285 @@
-import { IOpportunityAdapter } from './types';
-import { ingestOpportunities } from './deduplicator';
-import { logTelemetry } from './metrics';
-import { createBreaker } from '../circuitBreaker';
+import { createBreaker } from "../circuitBreaker";
+import { AdapterError, toAdapterError } from "./adapterError";
+import { ingestOpportunities } from "./deduplicator";
+import { logTelemetry } from "./metrics";
+import type {
+  AdapterBatchResult,
+  AdapterRunResult,
+  IOpportunityAdapter,
+} from "./types";
+
+type BreakerFetchResult = {
+  text: string;
+  ttfb: number;
+  fallbackError?: string;
+};
 
 export class DNLDispatcher {
-  private db: any;
-  private adapters: IOpportunityAdapter[] = [];
+  private readonly db: any;
+  private readonly adapters: IOpportunityAdapter[] = [];
   private intervalId: NodeJS.Timeout | null = null;
-  private breakers: Record<string, any> = {};
+  private readonly breakers: Record<string, any> = {};
 
   constructor(db: any) {
     this.db = db;
   }
 
-  registerAdapter(adapter: IOpportunityAdapter) {
+  registerAdapter(adapter: IOpportunityAdapter): void {
     this.adapters.push(adapter);
   }
 
   private getBreaker(sourceName: string) {
     if (!this.breakers[sourceName]) {
-      const fetchCb = async (url: string) => {
+      const fetchCb = async (url: string): Promise<BreakerFetchResult> => {
         const fetchStart = performance.now();
         const response = await fetch(url);
+
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(
+            `HTTP request failed with status ${response.status}.`,
+          );
         }
-        
-        let ttfb = 0;
-        // In Node.js environment, response.body might not have getReader if it's node-fetch.
-        // We'll do a simple fallback if reader is not available.
-        if (response.body && typeof (response.body as any).getReader === 'function') {
-          const reader = (response.body as any).getReader();
-          await reader.read();
-          ttfb = Math.round(performance.now() - fetchStart);
-        } else {
-          ttfb = Math.round(performance.now() - fetchStart);
-        }
-        
+
         const text = await response.text();
-        return { text, ttfb };
+        return {
+          text,
+          ttfb: Math.round(performance.now() - fetchStart),
+        };
       };
-      
+
       const breaker = createBreaker(
         fetchCb,
-        { timeout: 10000, errorThresholdPercentage: 50, resetTimeout: 30000 },
-        sourceName
+        {
+          timeout: 10_000,
+          errorThresholdPercentage: 50,
+          resetTimeout: 30_000,
+        },
+        sourceName,
       );
-      
-      breaker.fallback((url, err) => {
-        // Return empty payload array if circuit opens or fetch fails
-        return { text: "[]", ttfb: 0 };
-      });
+
+      breaker.fallback((_url: string, error: unknown) => ({
+        text: "[]",
+        ttfb: 0,
+        fallbackError:
+          error instanceof Error
+            ? error.message
+            : "Circuit breaker fallback used.",
+      }));
 
       this.breakers[sourceName] = breaker;
     }
+
     return this.breakers[sourceName];
   }
 
-  // Orchestrate a single run for an adapter with its payload/url
-  async runScrape(adapter: IOpportunityAdapter, fetchUrlOrPayload: string | any[]): Promise<void> {
+  async runScrape(
+    adapter: IOpportunityAdapter,
+    fetchUrlOrPayload: string | unknown[],
+  ): Promise<AdapterRunResult> {
     const startTime = performance.now();
     let ttfb = 0;
-    let rawPayload: any = null;
-    let errorStack: string | null = null;
-    let status: 'healthy' | 'degraded' | 'failed' = 'healthy';
 
     try {
-      if (typeof fetchUrlOrPayload === 'string') {
-        const breaker = this.getBreaker(adapter.sourceName);
-        const result = await breaker.fire(fetchUrlOrPayload);
+      let rawPayload: unknown;
+
+      if (typeof fetchUrlOrPayload === "string") {
+        const result = (await this.getBreaker(adapter.sourceName).fire(
+          fetchUrlOrPayload,
+        )) as BreakerFetchResult;
+
         ttfb = result.ttfb;
-        rawPayload = JSON.parse(result.text);
+
+        if (result.fallbackError) {
+          throw new AdapterError({
+            source: adapter.sourceName,
+            stage: "fetch",
+            code: "FETCH_FAILED",
+            message: result.fallbackError,
+            retryable: true,
+          });
+        }
+
+        try {
+          rawPayload = JSON.parse(result.text);
+        } catch (error) {
+          throw new AdapterError({
+            source: adapter.sourceName,
+            stage: "parse",
+            code: "INVALID_JSON",
+            message: "Adapter endpoint returned invalid JSON.",
+            retryable: true,
+            cause: error,
+          });
+        }
       } else {
-        // Static/mock payload
-        const simulatedDelay = Math.floor(Math.random() * 50) + 10; // 10ms-60ms
-        await new Promise((resolve) => setTimeout(resolve, simulatedDelay));
-        ttfb = simulatedDelay;
         rawPayload = fetchUrlOrPayload;
       }
 
-      // 2. Normalization
       const normalized = adapter.normalize(rawPayload);
-
-      // 3. Deduplication & Database Ingestion
-      const result = await ingestOpportunities(this.db, normalized);
-
-      const durationSec = (performance.now() - startTime) / 1000;
-
-      if (result.failures > 0) {
-        status = 'degraded';
-      }
+      const ingestion = await ingestOpportunities(this.db, normalized);
+      const durationMs = Math.round(performance.now() - startTime);
+      const status = ingestion.failures > 0 ? "degraded" : "healthy";
 
       await logTelemetry(this.db, {
-        id: adapter.sourceName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        id: this.telemetryId(adapter.sourceName),
         name: adapter.sourceName,
         status,
         lastRun: new Date().toISOString(),
         ttfb_ms: ttfb,
-        payloads_processed: result.processed,
-        inserted: result.inserted,
-        duplicates: result.duplicates,
-        failures: result.failures,
-        duration_sec: parseFloat(durationSec.toFixed(3)),
-        error: result.errors.length > 0 ? result.errors.join('\n') : null,
-        yield_quality: result.processed > 0 ? Math.round(((result.processed - result.failures) / result.processed) * 100) : 100,
-        ops_per_hour: Math.round((result.inserted / durationSec) * 3600) || 0,
-        proxyHealth: 'green'
+        payloads_processed: ingestion.processed,
+        inserted: ingestion.inserted,
+        duplicates: ingestion.duplicates,
+        failures: ingestion.failures,
+        duration_sec: durationMs / 1000,
+        error:
+          ingestion.errors.length > 0
+            ? ingestion.errors.join("\n").slice(0, 2000)
+            : null,
+        error_code: ingestion.failures > 0 ? "INGESTION_FAILED" : null,
+        error_stage: ingestion.failures > 0 ? "ingest" : null,
+        retryable: ingestion.failures > 0,
+        yield_quality:
+          ingestion.processed > 0
+            ? Math.round(
+                ((ingestion.processed - ingestion.failures) /
+                  ingestion.processed) *
+                  100,
+              )
+            : 100,
+        ops_per_hour:
+          durationMs > 0
+            ? Math.round((ingestion.inserted / durationMs) * 3_600_000)
+            : 0,
+        proxyHealth: status === "healthy" ? "green" : "yellow",
       });
-    } catch (err: any) {
-      const durationSec = (performance.now() - startTime) / 1000;
-      errorStack = err.stack || err.message || String(err);
-      
+
+      return {
+        source: adapter.sourceName,
+        success: true,
+        status,
+        processed: ingestion.processed,
+        inserted: ingestion.inserted,
+        duplicates: ingestion.duplicates,
+        failures: ingestion.failures,
+        durationMs,
+      };
+    } catch (error) {
+      const adapterError = toAdapterError(
+        adapter.sourceName,
+        "normalize",
+        error,
+        "NORMALIZATION_FAILED",
+      );
+      const failure = adapterError.toFailureDetails();
+      const durationMs = Math.round(performance.now() - startTime);
+
       await logTelemetry(this.db, {
-        id: adapter.sourceName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        id: this.telemetryId(adapter.sourceName),
         name: adapter.sourceName,
-        status: 'failed',
+        status: "failed",
         lastRun: new Date().toISOString(),
         ttfb_ms: ttfb,
         payloads_processed: 0,
         inserted: 0,
         duplicates: 0,
         failures: 1,
-        duration_sec: parseFloat(durationSec.toFixed(3)),
-        error: errorStack,
+        duration_sec: durationMs / 1000,
+        error: failure.message,
+        error_code: failure.code,
+        error_stage: failure.stage,
+        retryable: failure.retryable,
         yield_quality: 0,
         ops_per_hour: 0,
-        proxyHealth: 'red'
+        proxyHealth: "red",
       });
-      console.error(`[DNLDispatcher] Run failed for ${adapter.sourceName}:`, err);
+
+      console.error(
+        `[DNLDispatcher] ${failure.source} failed during ${failure.stage} (${failure.code}): ${failure.message}`,
+      );
+
+      return {
+        source: adapter.sourceName,
+        success: false,
+        status: "failed",
+        processed: 0,
+        inserted: 0,
+        duplicates: 0,
+        failures: 1,
+        durationMs,
+        failure,
+      };
     }
   }
 
-  // Start periodic scraping runs (cron-job dispatcher)
-  start(intervalMs: number = 3600000) {
+  async runAdapters(
+    tasks: Array<{
+      adapter: IOpportunityAdapter;
+      input: string | unknown[];
+    }>,
+  ): Promise<AdapterBatchResult> {
+    const settled = await Promise.all(
+      tasks.map(({ adapter, input }) => this.runScrape(adapter, input)),
+    );
+
+    return {
+      total: settled.length,
+      succeeded: settled.filter((result) => result.success).length,
+      failed: settled.filter((result) => !result.success).length,
+      results: settled,
+    };
+  }
+
+  start(intervalMs = 3_600_000): void {
     if (this.intervalId) return;
-    
-    console.log(`[DNLDispatcher] Scheduler started. Dispatching runs every ${intervalMs / 1000}s.`);
+
+    console.log(
+      `[DNLDispatcher] Scheduler started. Dispatching every ${intervalMs / 1000}s.`,
+    );
+
     this.intervalId = setInterval(() => {
-      this.dispatchAll();
+      void this.dispatchAll();
     }, intervalMs);
   }
 
-  stop() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-      console.log('[DNLDispatcher] Scheduler stopped.');
+  stop(): void {
+    if (!this.intervalId) return;
+
+    clearInterval(this.intervalId);
+    this.intervalId = null;
+    console.log("[DNLDispatcher] Scheduler stopped.");
+  }
+
+  private async dispatchAll(): Promise<void> {
+    const tasks = this.adapters.flatMap((adapter) => {
+      const environmentKey = `SCRAPER_URL_${adapter.sourceName
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "_")}`;
+      const configuredUrl = process.env[environmentKey];
+
+      if (!configuredUrl) {
+        console.warn(
+          `[DNLDispatcher] ${environmentKey} is not configured. Skipping ${adapter.sourceName}.`,
+        );
+        return [];
+      }
+
+      return [{ adapter, input: configuredUrl }];
+    });
+
+    const summary = await this.runAdapters(tasks);
+
+    if (summary.failed > 0) {
+      console.error(
+        `[DNLDispatcher] Completed with ${summary.failed}/${summary.total} adapter failure(s).`,
+      );
+    } else {
+      console.log(
+        `[DNLDispatcher] All ${summary.succeeded} configured adapter run(s) completed.`,
+      );
     }
   }
 
-  private async dispatchAll() {
-    console.log('[DNLDispatcher] Cron trigger: Dispatching all scraper runs...');
-    // Orchestrated scraping runs would go here in production.
+  private telemetryId(sourceName: string): string {
+    return sourceName.toLowerCase().replace(/[^a-z0-9]/g, "_");
   }
 }

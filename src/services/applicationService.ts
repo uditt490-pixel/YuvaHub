@@ -139,8 +139,8 @@ export async function updateApplicationStatus(
         },
 
         $push: {
-          auditLogs: auditLog as any,
-        },
+          auditLogs: auditLog,
+        } as any,
       }
     );
 
@@ -176,12 +176,12 @@ export async function retryApplication(
         },
 
         $push: {
-  auditLogs: {
-    action: "RETRY_TRIGGERED",
-    timestamp: new Date(),
-    message: "Retry requested",
-  } as any,
-},
+          auditLogs: {
+            action: "RETRY_TRIGGERED",
+            timestamp: new Date(),
+            message: "Retry requested",
+          },
+        } as any,
       }
     );
 

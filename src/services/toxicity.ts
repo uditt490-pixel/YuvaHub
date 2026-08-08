@@ -9,10 +9,24 @@ const TOXIC_KEYWORDS = [
   'die', 'hate you'
 ];
 
+/**
+ * Escapes special regex characters so a string can be safely embedded
+ * inside a RegExp pattern.
+ */
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Pre-compile case-insensitive regex patterns with word boundaries (\b)
+// to prevent false positives from substring matches (e.g., "peacock" → "cock").
+const TOXIC_PATTERNS = TOXIC_KEYWORDS.map(word =>
+  new RegExp(`\\b${escapeRegExp(word)}\\b`, 'i')
+);
+
 const geminiBreaker = createBreaker(
   async (genAI: GoogleGenAI, text: string) => {
     return await genAI.models.generateContent({
-      model: "gemini-2.5-flash", // Using a fast, standard model
+      model: "gemini-2.5-flash",
       contents: `Classify if the following text is toxic, abusive, hateful, or highly inappropriate. Respond with ONLY 'toxic' or 'clean' (in lowercase): \n\n"${text}"`
     });
   },
@@ -21,25 +35,25 @@ const geminiBreaker = createBreaker(
 );
 
 geminiBreaker.fallback((genAI, text, err) => {
-  // If Gemini fails or circuit is open, we fallback to 'clean' to not block users unnecessarily
   return { text: 'clean' };
 });
 
 /**
  * Checks if a string contains toxic content.
- * First uses a fast keyword list check. If configured, falls back to Google Gemini.
+ * First uses a fast keyword list check with word boundaries.
+ * If configured, falls back to Google Gemini.
  */
 export async function isToxic(text: string, genAI?: GoogleGenAI | null): Promise<boolean> {
   if (!text || typeof text !== 'string') {
     return false;
   }
 
-  const cleanText = text.toLowerCase().trim();
+  const cleanText = text.trim();
 
-  // 1. Fast local regex / keyword check
-  for (const word of TOXIC_KEYWORDS) {
-    if (cleanText.includes(word)) {
-      console.log(`[Toxicity Checker] Blocked by local keyword check matching word: "${word}"`);
+  // 1. Fast local regex / keyword check with word boundaries
+  for (let i = 0; i < TOXIC_PATTERNS.length; i++) {
+    if (TOXIC_PATTERNS[i].test(cleanText)) {
+      console.log(`[Toxicity Checker] Blocked by local keyword check matching word: "${TOXIC_KEYWORDS[i]}"`);
       return true;
     }
   }

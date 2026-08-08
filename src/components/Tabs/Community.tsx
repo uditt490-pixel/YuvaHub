@@ -68,8 +68,9 @@ export default function Community() {
       const res = await fetch(`/api/v1/posts?sort=${sort}`);
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
-      if (Array.isArray(data)) {
-        setPosts(data);
+      const postList = Array.isArray(data) ? data : (data.items ?? data.data ?? []);
+      if (postList.length > 0) {
+        setPosts(postList);
       }
     } catch (err) {
       console.error('Error fetching community posts:', err);
@@ -181,18 +182,19 @@ export default function Community() {
 
     if (!commentsMap[postId]) {
       setLoadingCommentsPostId(postId);
+    }
       try {
         const res = await fetch(`/api/v1/posts/${postId}/comments`);
         if (res.ok) {
-          const comments = await res.json();
-          setCommentsMap(prev => ({ ...prev, [postId]: Array.isArray(comments) ? comments : [] }));
+          const data = await res.json();
+          const comments = Array.isArray(data) ? data : (data.comments ?? []);
+          setCommentsMap(prev => ({ ...prev, [postId]: comments }));
         }
       } catch (err) {
         console.error('Error loading comments:', err);
       } finally {
         setLoadingCommentsPostId(null);
       }
-    }
   };
 
   const handleAddComment = async (postId: string) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Target, Search, Compass, ShieldCheck, Loader2, ArrowRight, RefreshCw, Sparkles, Share2, FileText } from 'lucide-react';
+import { Target, Search, Compass, ShieldCheck, Loader2, ArrowRight, RefreshCw, Sparkles, Share2, FileText, Zap, Bookmark, Briefcase, GraduationCap, Users, Brain } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { useSocket } from '../../context/SocketContext';
 import { fetchSmartFeed, fetchExploreFeed, trackInteraction, runScoutProtocolBackend, generateApplyAssistBackend, fetchLatestFeed } from '../../services/apiClient';
@@ -7,10 +7,9 @@ import { ErrorState } from '../ui/states';
 import ShareModal from '../ui/ShareModal';
 import ApplyAssistModal from '../ui/ApplyAssistModal';
 import { useAppContext } from '../../context/AppContext';
-import { FaqPreview } from '../ui/FaqPreview';
 
 export default function Dashboard() {
-  const { user, profile, viewOpportunity: onViewDetails } = useAppContext();
+  const { user, profile, viewOpportunity: onViewDetails, setActiveTab } = useAppContext();
   const { socket } = useSocket();
   const [showScoutModal, setShowScoutModal] = useState(false);
   const [scoutStep, setScoutStep] = useState(1);
@@ -48,7 +47,6 @@ export default function Dashboard() {
         });
       }
       
-      // Also refresh on window focus
       const handleFocus = () => loadInitialFeed(false, discoveryMode);
       window.addEventListener('focus', handleFocus);
       
@@ -63,7 +61,6 @@ export default function Dashboard() {
   }, [user, profile, discoveryMode, socket]);
 
   const loadInitialFeed = async (force = false, mode = discoveryMode) => {
-    // Only show full loading spinner for first load or force refresh
     const isFirstLoad = feedItems.length === 0;
     if (isFirstLoad || force) setLoading(true);
     
@@ -127,7 +124,7 @@ export default function Dashboard() {
       console.error(e);
     } finally {
       setLoading(false);
-      setScoutStep(1); // reset for next time
+      setScoutStep(1);
     }
   };
 
@@ -152,104 +149,171 @@ export default function Dashboard() {
     }
   };
 
+  const userName = profile?.name || user?.displayName || user?.email?.split('@')[0] || 'Student';
+
   return (
-    <div className="max-w-[1200px] mx-auto space-y-10 pb-12 font-sans px-4 md:px-0">
-      <header className="pt-2 flex justify-between items-start">
+    <div className="max-w-[1200px] mx-auto space-y-8 pb-12 font-sans px-4 md:px-0">
+      
+      {/* Personalized Senior Header */}
+      <header className="pt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#e8ded1] pb-6">
         <div>
-          <h1 className="text-[28px] font-[800] tracking-tight text-gray-900 mb-2">
-            Dashboard
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-full bg-[#f6efe2] text-[#b56b37] border border-[#e8ded1]">
+              {profile?.field || 'Tech & Engineering'} Candidate
+            </span>
+            {profile?.college && (
+              <span className="text-xs text-[#8c7569] font-medium">• {profile.college}</span>
+            )}
+          </div>
+          <h1 className="text-2xl md:text-3xl font-serif font-bold tracking-tight text-[#231f20]">
+            Welcome back, <span className="text-[#b56b37] italic">{userName}</span>
           </h1>
-          <p className="text-[15px] text-[#64748B]">Here is your personalized intelligence briefing.</p>
+          <p className="text-xs md:text-sm text-[#603620] mt-1">
+            Here is your live AI opportunity briefing & career pipeline updates.
+          </p>
         </div>
-        <button 
-          onClick={() => loadInitialFeed(true)}
-          disabled={loading}
-          className="flex items-center gap-2 bg-white border border-[#E2E8F0] px-4 py-2 rounded-[8px] text-[13px] font-[600] text-[#0F172A] hover:bg-[#F8FAFC] transition-colors shadow-sm disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setActiveTab('opportunity_match')}
+            className="flex items-center gap-2 bg-[#b56b37] hover:bg-[#603620] text-white px-4 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-[#f3e4bd]" />
+            AI Match Studio
+          </button>
+
+          <button 
+            onClick={() => loadInitialFeed(true)}
+            disabled={loading}
+            className="flex items-center gap-2 bg-white border border-[#e8ded1] px-3.5 py-2.5 rounded-xl text-xs font-bold text-[#603620] hover:bg-[#f6efe2] transition-colors shadow-xs disabled:opacity-50 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+        </div>
       </header>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[20px]">
-        <MetricCard title="Matched Opportunities" value={feedItems.length > 0 ? feedItems.length : "0"} icon={Target} />
-        <MetricCard title="Applications Tracked" value="0" icon={Compass} />
-        <MetricCard title="Mentor Sessions" value="0" icon={Search} />
-        <MetricCard title="Profile Strength" value={`${profileStrength()}%`} icon={ShieldCheck} highlight />
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard title="Matched Opportunities" value={feedItems.length > 0 ? feedItems.length : "0"} icon={Target} subtitle="Live opportunities" />
+        <MetricCard title="Profile Match Index" value={`${profileStrength()}%`} icon={ShieldCheck} subtitle="Completeness score" highlight />
+        <MetricCard title="Saved Bookmarks" value={profile?.bookmarks?.length || "0"} icon={Bookmark} subtitle="In your vault" />
+        <MetricCard title="AI Career Intelligence" value="Active" icon={Zap} subtitle="Real-time matcher" />
+      </div>
+
+      {/* Quick Launchpad Cards for Senior Student Devs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <button 
+          onClick={() => setActiveTab('resume_ats')}
+          className="p-3.5 bg-white border border-[#e8ded1] rounded-xl text-left hover:border-[#b56b37] hover:bg-[#f6efe2]/50 transition-all group cursor-pointer"
+        >
+          <div className="w-8 h-8 rounded-lg bg-[#f6efe2] text-[#b56b37] flex items-center justify-center mb-2 group-hover:bg-[#b56b37] group-hover:text-white transition-colors">
+            <FileText className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-extrabold text-[#231f20]">Resume ATS</p>
+          <p className="text-[10px] text-[#8c7569]">Score & optimize</p>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('interview_prep')}
+          className="p-3.5 bg-white border border-[#e8ded1] rounded-xl text-left hover:border-[#b56b37] hover:bg-[#f6efe2]/50 transition-all group cursor-pointer"
+        >
+          <div className="w-8 h-8 rounded-lg bg-[#f6efe2] text-[#b56b37] flex items-center justify-center mb-2 group-hover:bg-[#b56b37] group-hover:text-white transition-colors">
+            <Brain className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-extrabold text-[#231f20]">AI Interview Prep</p>
+          <p className="text-[10px] text-[#8c7569]">Mock questions</p>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('teams')}
+          className="p-3.5 bg-white border border-[#e8ded1] rounded-xl text-left hover:border-[#b56b37] hover:bg-[#f6efe2]/50 transition-all group cursor-pointer"
+        >
+          <div className="w-8 h-8 rounded-lg bg-[#f6efe2] text-[#b56b37] flex items-center justify-center mb-2 group-hover:bg-[#b56b37] group-hover:text-white transition-colors">
+            <Users className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-extrabold text-[#231f20]">Team Matcher</p>
+          <p className="text-[10px] text-[#8c7569]">Find hackathon teammates</p>
+        </button>
+
+        <button 
+          onClick={() => setActiveTab('opensource_bounties')}
+          className="p-3.5 bg-white border border-[#e8ded1] rounded-xl text-left hover:border-[#b56b37] hover:bg-[#f6efe2]/50 transition-all group cursor-pointer"
+        >
+          <div className="w-8 h-8 rounded-lg bg-[#f6efe2] text-[#b56b37] flex items-center justify-center mb-2 group-hover:bg-[#b56b37] group-hover:text-white transition-colors">
+            <Briefcase className="w-4 h-4" />
+          </div>
+          <p className="text-xs font-extrabold text-[#231f20]">Open Source Bounties</p>
+          <p className="text-[10px] text-[#8c7569]">Paid bounties & PRs</p>
+        </button>
       </div>
 
       {/* Scout Protocol Banner */}
-      <div className="bg-gradient-to-br from-[#EFF6FF] to-[#DBEAFE] border border-[#BFDBFE] rounded-[20px] p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_4px_24px_rgba(37,99,235,0.06)]">
+      <div className="bg-gradient-to-r from-[#f6efe2] via-white to-[#f6efe2] border border-[#e8ded1] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
         <div>
-          <div className="inline-block px-3 py-1 bg-[#2563EB] text-white text-[11px] font-[800] uppercase tracking-wide rounded-full mb-4">
-            New Feature
+          <div className="inline-block px-3 py-1 bg-[#603620] text-[#f3e4bd] text-[10px] font-black uppercase tracking-wider rounded-full mb-3">
+            AI Scout Protocol
           </div>
-          <h2 className="text-[24px] font-[800] text-gray-900 mb-3">Scout Protocol</h2>
-          <p className="text-[15px] text-[#475569] max-w-xl leading-relaxed">Find your best matches in seconds. Our AI will calibrate your feed based on your specific requirements and background, updating in real-time.</p>
-          <div className="flex flex-wrap items-center gap-3 mt-6 text-[13px] font-[600] text-[#1D4ED8]">
-            <span className="flex items-center gap-[6px]"><span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold shadow-sm">1</span> Year</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#93C5FD]" />
-            <span className="flex items-center gap-[6px]"><span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold shadow-sm">2</span> Field</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#93C5FD]" />
-            <span className="flex items-center gap-[6px]"><span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold shadow-sm">3</span> Tech</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#93C5FD]" />
-            <span className="flex items-center gap-[6px]"><span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold shadow-sm">4</span> Goal</span>
+          <h2 className="text-xl md:text-2xl font-serif font-bold text-[#231f20] mb-2">High-Precision Match Scout</h2>
+          <p className="text-xs md:text-sm text-[#603620] max-w-xl leading-relaxed">
+            Target high-converting hackathons, stipends, and research grants calibrated specifically to your year and tech stack.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 mt-4 text-xs font-bold text-[#b56b37]">
+            <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-white border border-[#e8ded1] flex items-center justify-center text-[10px] font-extrabold">1</span> Year</span>
+            <ArrowRight className="w-3 h-3 text-[#8c7569]" />
+            <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-white border border-[#e8ded1] flex items-center justify-center text-[10px] font-extrabold">2</span> Field</span>
+            <ArrowRight className="w-3 h-3 text-[#8c7569]" />
+            <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-white border border-[#e8ded1] flex items-center justify-center text-[10px] font-extrabold">3</span> Tech</span>
+            <ArrowRight className="w-3 h-3 text-[#8c7569]" />
+            <span className="flex items-center gap-1.5"><span className="w-5 h-5 rounded-full bg-white border border-[#e8ded1] flex items-center justify-center text-[10px] font-extrabold">4</span> Goal</span>
           </div>
         </div>
-        <button onClick={() => setShowScoutModal(true)} className="bg-[#2563EB] hover:bg-blue-700 text-white font-[700] px-8 py-3.5 rounded-[12px] whitespace-nowrap shadow-[0_4px_16px_rgba(37,99,235,0.25)] transition-all transform hover:-translate-y-1">
+        <button 
+          onClick={() => setShowScoutModal(true)} 
+          className="bg-[#b56b37] hover:bg-[#603620] text-white font-extrabold text-xs uppercase tracking-wider px-6 py-3.5 rounded-xl whitespace-nowrap shadow-md transition-all cursor-pointer"
+        >
           Run Protocol Now
         </button>
       </div>
 
-      {/* Feed Preview */}
-      <div className="space-y-6 pt-6">
+      {/* Feed Discovery Section */}
+      <div className="space-y-6 pt-2">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-[20px] font-[800] text-gray-900 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-[#F59E0B]" /> {discoveryMode === 'daily' ? "Daily Summary" : "Personalized Feed"}
+            <h2 className="text-xl font-serif font-bold text-[#231f20] flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[#b56b37]" /> {discoveryMode === 'daily' ? "Daily Summary" : "Personalized Feed"}
             </h2>
             {lastUpdated && !loading && (
-              <p className="text-[12px] font-[500] text-[#64748B] mt-1.5 flex items-center gap-1.5">
-                <RefreshCw className="w-3 h-3" /> Last checked: {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <p className="text-xs text-[#8c7569] font-medium mt-1 flex items-center gap-1.5">
+                <RefreshCw className="w-3 h-3" /> Updated: {new Date(lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             )}
           </div>
           
-          <div className="flex items-center gap-2 bg-white p-1 rounded-full shadow-sm border border-[#E2E8F0] relative overflow-hidden">
-            <div 
-              className={`absolute inset-y-1 w-[110px] rounded-full bg-[#F1F5F9] transition-all duration-300 ease-out`}
-              style={{ 
-                 left: discoveryMode === 'smart'     ? '4px' : 
-                       discoveryMode === 'explore'   ? '122px' : 
-                                                       '240px' 
-              }}
-            />
+          <div className="flex items-center gap-1 bg-[#fcf9f2] p-1 rounded-xl border border-[#e8ded1] shadow-xs">
             <button
               onClick={() => setDiscoveryMode('smart')}
-              className={`relative w-[110px] z-10 flex items-center justify-center py-2 px-1 rounded-full text-[11px] font-[700] uppercase tracking-wide transition-colors ${discoveryMode === 'smart' ? 'text-[#0F172A]' : 'text-[#64748B] hover:text-[#0F172A]'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                discoveryMode === 'smart' ? 'bg-[#b56b37] text-white shadow-xs' : 'text-[#603620] hover:text-[#231f20]'
+              }`}
             >
               Smart Match
             </button>
             <button
               onClick={() => setDiscoveryMode('explore')}
-              className={`relative w-[110px] z-10 flex items-center justify-center py-2 px-1 rounded-full text-[11px] font-[700] uppercase tracking-wide transition-colors ${discoveryMode === 'explore' ? 'text-[#0F172A]' : 'text-[#64748B] hover:text-[#0F172A]'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                discoveryMode === 'explore' ? 'bg-[#b56b37] text-white shadow-xs' : 'text-[#603620] hover:text-[#231f20]'
+              }`}
             >
               Explore
             </button>
             <button
               onClick={() => setDiscoveryMode('daily')}
-              className={`relative w-[110px] z-10 flex items-center justify-center py-2 px-1 rounded-full text-[11px] font-[700] uppercase tracking-wide transition-colors ${discoveryMode === 'daily' ? 'text-[#0F172A]' : 'text-[#64748B] hover:text-[#0F172A]'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                discoveryMode === 'daily' ? 'bg-[#b56b37] text-white shadow-xs' : 'text-[#603620] hover:text-[#231f20]'
+              }`}
             >
               Daily
-            </button>
-            
-            <button 
-              onClick={() => loadInitialFeed(true)}
-              disabled={loading}
-              className="ml-2 mr-1 w-8 h-8 z-10 rounded-full bg-white border border-[#E2E8F0] shadow-sm flex items-center justify-center text-[#2563EB] disabled:opacity-50 hover:bg-[#F8FAFC]"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -257,25 +321,25 @@ export default function Dashboard() {
         {feedError && feedItems.length === 0 ? (
           <ErrorState description={feedError} onRetry={() => void loadInitialFeed(true)} retrying={loading} />
         ) : loading ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[16px] border border-[#E2E8F0]">
-            <div className="w-10 h-10 border-4 border-[#2563EB] border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-[#64748B] font-[500] text-[14px]">Discovering more opportunities for you 🚀</p>
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-[#e8ded1]">
+            <div className="w-10 h-10 border-4 border-[#b56b37] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-[#603620] font-bold text-sm">Discovering relevant opportunities for you 🚀</p>
           </div>
         ) : (feedItems.length > 0 || newLiveItems.length > 0) ? (
-          <div className="space-y-8 relative">
+          <div className="space-y-6 relative">
 
             {/* Fallback Banner */}
             {feedItems.some(i => i.isFallback) && discoveryMode !== 'daily' && (
-              <div className="bg-[#FFFBEB] border border-[#FEF3C7] px-5 py-4 rounded-[12px] flex items-center gap-3">
-                <Sparkles className="w-5 h-5 shrink-0 text-[#D97706]" />
-                <p className="text-[14px] text-[#92400E] font-[500]">Showing curated opportunities while we refresh new matches ✨</p>
+              <div className="bg-[#f6efe2] border border-[#e8ded1] px-5 py-3.5 rounded-xl flex items-center gap-3">
+                <Sparkles className="w-4 h-4 shrink-0 text-[#b56b37]" />
+                <p className="text-xs text-[#603620] font-semibold">Showing curated opportunities while we refresh new matches ✨</p>
               </div>
             )}
 
             {discoveryMode === 'daily' && (
-              <div className="bg-[#EFF6FF] border border-[#BFDBFE] px-5 py-4 rounded-[12px] flex items-center gap-3">
-                <Sparkles className="w-5 h-5 shrink-0 text-[#2563EB]" />
-                <p className="text-[14px] text-[#1E3A8A] font-[500]">Here are the latest fresh opportunities discovered within the past 24 hours.</p>
+              <div className="bg-[#f6efe2] border border-[#e8ded1] px-5 py-3.5 rounded-xl flex items-center gap-3">
+                <Sparkles className="w-4 h-4 shrink-0 text-[#b56b37]" />
+                <p className="text-xs text-[#603620] font-semibold">Here are fresh student opportunities discovered within the past 24 hours.</p>
               </div>
             )}
 
@@ -289,44 +353,48 @@ export default function Dashboard() {
                     setHasNewUpdates(false);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="bg-[#2563EB] hover:bg-blue-700 text-white shadow-lg rounded-full px-6 py-2.5 text-[13px] font-[700] flex items-center gap-2 transition-transform hover:scale-105"
+                  className="bg-[#b56b37] hover:bg-[#603620] text-white shadow-lg rounded-full px-6 py-2.5 text-xs font-bold flex items-center gap-2 transition-transform hover:scale-105 cursor-pointer"
                 >
                   ↑ {newLiveItems.length} New Update{newLiveItems.length !== 1 && 's'}
                 </button>
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-[20px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                {feedItems.map((item, i) => {
                  const tType = (item.type || '').toLowerCase();
-                 let badgeClass = "bg-[#EFF6FF] text-[#2563EB]";
-                 if (tType.includes("hackathon")) badgeClass = "bg-[#F3E8FF] text-[#7E22CE]";
-                 if (tType.includes("job")) badgeClass = "bg-[#ECFDF5] text-[#059669]";
-                 if (tType.includes("scholarship")) badgeClass = "bg-[#FFF7ED] text-[#C2410C]";
+                 let badgeClass = "bg-[#f6efe2] text-[#b56b37] border border-[#e8ded1]";
+                 if (tType.includes("hackathon")) badgeClass = "bg-purple-50 text-purple-700 border border-purple-200";
+                 if (tType.includes("job")) badgeClass = "bg-emerald-50 text-emerald-700 border border-emerald-200";
+                 if (tType.includes("scholarship")) badgeClass = "bg-amber-50 text-amber-700 border border-amber-200";
 
                  return (
-                    <div key={i} className="bg-white border border-[#E2E8F0] p-6 rounded-[16px] flex flex-col relative hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-[2px] transition-all duration-300">
+                    <div key={i} className="bg-white border border-[#e8ded1] p-6 rounded-2xl flex flex-col relative hover:shadow-md transition-all duration-300">
                        <button 
                          onClick={() => {
                            setShareOpp({ title: item.title, link: item.applyLink || item.apply_link || window.location.href });
                            trackInteraction(item.id, 'save');
                          }}
-                         className="absolute top-6 right-6 text-[#94A3B8] hover:text-[#2563EB] transition-colors"
+                         className="absolute top-6 right-6 text-[#8c7569] hover:text-[#b56b37] transition-colors cursor-pointer"
                        >
-                         <Share2 className="w-[18px] h-[18px]" />
+                         <Share2 className="w-4 h-4" />
                        </button>
 
-                       <div className="flex gap-[16px] mb-5">
-                          <div className="w-[48px] h-[48px] rounded-[10px] bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center font-[700] text-[18px] text-[#475569] shrink-0">
+                       <div className="flex gap-4 mb-4">
+                          <div className="w-11 h-11 rounded-xl bg-[#603620] border border-[#e8ded1] flex items-center justify-center font-bold text-base text-[#f3e4bd] shrink-0 shadow-xs">
                              {item.org ? item.org.substring(0,1).toUpperCase() : (item.organization ? item.organization.substring(0,1).toUpperCase() : 'C')}
                           </div>
-                          <div className="pr-10">
-                            <div className="flex items-center gap-[8px] mb-1.5 flex-wrap">
-                               <span className={`px-[8px] py-[3px] rounded-[6px] text-[10px] font-[800] uppercase tracking-wide ${badgeClass}`}>
+                          <div className="pr-8">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                               <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${badgeClass}`}>
                                  {item.type || 'Opportunity'}
                                </span>
-                               {item.isLive && <span className="text-[10px] uppercase font-[800] text-white bg-[#EF4444] px-[8px] py-[3px] rounded-[6px] animate-pulse">Live</span>}
-                               {(item.matchScore || item.match_score || item.smartMatch || item.smart_match) && <span className="text-[10px] font-[800] uppercase tracking-wide text-[#059669] bg-[#ECFDF5] px-[8px] py-[3px] rounded-[6px]">⚡ {item.matchScore || item.match_score ? (item.matchScore || item.match_score) + '% Match' : 'Smart Match'}</span>}
+                               {item.isLive && <span className="text-[9px] uppercase font-black text-white bg-red-600 px-2 py-0.5 rounded-md animate-pulse">Live</span>}
+                               {(item.matchScore || item.match_score || item.smartMatch || item.smart_match) && (
+                                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                                   ⚡ {item.matchScore || item.match_score ? (item.matchScore || item.match_score) + '% Match' : 'Smart Match'}
+                                 </span>
+                               )}
                             </div>
                             <a 
                               href={`/opportunity/${item.id}/${(item.title || "opportunity").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`}
@@ -337,65 +405,65 @@ export default function Dashboard() {
                               }}
                               className="block group"
                             >
-                              <h4 className="font-[700] text-[16px] md:text-[18px] leading-[1.3] text-[#0F172A] group-hover:text-[#2563EB] transition-colors mb-1.5">{item.title}</h4>
+                              <h4 className="font-serif font-bold text-base md:text-lg leading-tight text-[#231f20] group-hover:text-[#b56b37] transition-colors mb-1">{item.title}</h4>
                             </a>
-                            <p className="text-[14px] text-[#64748B] font-[500]">{item.organization || item.org}</p>
+                            <p className="text-xs text-[#603620] font-semibold">{item.organization || item.org}</p>
                           </div>
                        </div>
 
-                       <p className="text-[14px] text-[#475569] line-clamp-2 leading-relaxed mb-4">{item.description}</p>
+                       <p className="text-xs text-[#8c7569] line-clamp-2 leading-relaxed mb-4">{item.description}</p>
                        
                        {(item.matchReason || item.match_reason) && (
-                          <div className="bg-[#F8FAFC] border border-[#E2E8F0] p-3 rounded-[8px] mb-5 flex items-start gap-2">
-                             <Sparkles className="w-4 h-4 text-[#2563EB] shrink-0 mt-0.5" />
-                             <p className="text-[13px] text-[#475569]">{item.matchReason || item.match_reason}</p>
+                          <div className="bg-[#fcf9f2] border border-[#e8ded1] p-3 rounded-xl mb-4 flex items-start gap-2">
+                             <Sparkles className="w-3.5 h-3.5 text-[#b56b37] shrink-0 mt-0.5" />
+                             <p className="text-xs text-[#603620]">{item.matchReason || item.match_reason}</p>
                           </div>
                        )}
 
-                       <div className="mt-auto pt-5 border-t border-[#F1F5F9] flex flex-wrap items-center justify-between gap-4">
-                          <div className="flex flex-wrap gap-[6px]">
+                       <div className="mt-auto pt-4 border-t border-[#e8ded1] flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex flex-wrap gap-1.5">
                             {item.tags?.slice(0,2).map((t: string) => (
-                              <span key={t} className="text-[11px] font-[600] text-[#64748B] bg-[#F1F5F9] px-[10px] py-[4px] rounded-[100px]">{t}</span>
+                              <span key={t} className="text-[10px] font-bold text-[#603620] bg-[#f6efe2] border border-[#e8ded1] px-2.5 py-1 rounded-full">{t}</span>
                             ))}
                           </div>
-                          <div className="flex items-center gap-[10px]">
-                            <button 
-                              onClick={() => handleApplyAssist(item)}
-                              className="flex items-center gap-1.5 px-3 py-2 bg-[#F8FAFC] border border-[#E2E8F0] text-[#475569] hover:bg-[#F1F5F9] rounded-[8px] text-[13px] font-[600] transition-colors"
-                            >
-                              <FileText className="w-[14px] h-[14px]" /> <span>Assist</span>
-                            </button>
-                            {(item.apply_link || item.applyLink) ? (
-                              <a 
-                                href={item.apply_link || item.applyLink} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                onClick={() => trackInteraction(item.id, 'apply')}
-                                className="bg-[#2563EB] text-white px-4 py-2 rounded-[8px] text-[13px] font-[700] hover:bg-blue-700 transition-colors shadow-sm"
-                              >
-                                Apply Now
-                              </a>
-                            ) : (
-                              <div className="bg-[#FFF7ED] border border-[#FFEDD5] text-[#C2410C] px-3 py-2 rounded-[8px] text-[12px] font-[600]">
-                                {item.deadline || item.daysLeft + ' Days Left'}
-                              </div>
-                            )}
+                          <div className="flex items-center gap-2">
+                             <button 
+                               onClick={() => handleApplyAssist(item)}
+                               className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e8ded1] text-[#603620] hover:bg-[#f6efe2] rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                             >
+                               <FileText className="w-3.5 h-3.5" /> <span>Assist</span>
+                             </button>
+                             {(item.apply_link || item.applyLink) ? (
+                               <a 
+                                 href={item.apply_link || item.applyLink} 
+                                 target="_blank" 
+                                 rel="noopener noreferrer" 
+                                 onClick={() => trackInteraction(item.id, 'apply')}
+                                 className="bg-[#b56b37] text-white px-3.5 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider hover:bg-[#603620] transition-colors shadow-xs"
+                               >
+                                 Apply Now
+                               </a>
+                             ) : (
+                               <div className="bg-[#f6efe2] border border-[#e8ded1] text-[#603620] px-3 py-1.5 rounded-lg text-xs font-bold">
+                                 {item.deadline || item.daysLeft + ' Days Left'}
+                               </div>
+                             )}
                           </div>
                        </div>
                     </div>
-                 )
-               })}
+                  )
+                })}
             </div>
             
             {discoveryMode !== 'daily' && (
-              <div className="flex justify-center pt-8">
+              <div className="flex justify-center pt-6">
                 <button 
                   onClick={handleLoadMore}
                   disabled={loadingMore || !hasNextPage}
-                  className="bg-white border-[1.5px] border-[#E2E8F0] text-[#0F172A] px-8 py-3 rounded-[12px] text-[14px] font-[700] flex items-center gap-2 hover:bg-[#F8FAFC] transition-colors disabled:opacity-50"
+                  className="bg-white border border-[#e8ded1] text-[#231f20] px-6 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center gap-2 hover:bg-[#f6efe2] transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {loadingMore ? (
-                    <><div className="w-4 h-4 border-2 border-[#0F172A] border-t-transparent rounded-full animate-spin"></div> Loading...</>
+                    <><div className="w-3.5 h-3.5 border-2 border-[#231f20] border-t-transparent rounded-full animate-spin"></div> Loading...</>
                   ) : !hasNextPage ? (
                     <>You're all caught up!</>
                   ) : (
@@ -406,36 +474,17 @@ export default function Dashboard() {
             )}
           </div>
         ) : (
-          <div className="bg-white border border-[#E2E8F0] rounded-[16px] py-20 px-6 text-center shadow-sm">
-            <div className="w-16 h-16 bg-[#F8FAFC] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#E2E8F0]">
-               <Target className="w-8 h-8 text-[#94A3B8]" />
+          <div className="bg-white border border-[#e8ded1] rounded-2xl py-16 px-6 text-center shadow-xs">
+            <div className="w-14 h-14 bg-[#f6efe2] rounded-full flex items-center justify-center mx-auto mb-3 border border-[#e8ded1]">
+               <Target className="w-7 h-7 text-[#b56b37]" />
             </div>
-            <h3 className="text-[18px] font-[700] text-gray-900 mb-2">No matches exactly fit this yet.</h3>
-            <p className="text-[14px] text-[#64748B] max-w-md mx-auto mb-6">Run the Scout Protocol to force our system to aggressively match your profile against our entire database.</p>
-            <button onClick={() => setShowScoutModal(true)} className="bg-[#0F172A] text-white px-6 py-2.5 rounded-[8px] text-[14px] font-[700] hover:bg-gray-800 transition-colors">
+            <h3 className="text-lg font-serif font-bold text-[#231f20] mb-1">No matches found for your filter.</h3>
+            <p className="text-xs text-[#8c7569] max-w-md mx-auto mb-5">Run the Scout Protocol to force our system to aggressively match your profile against live opportunities.</p>
+            <button onClick={() => setShowScoutModal(true)} className="bg-[#b56b37] hover:bg-[#603620] text-white px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer shadow-sm">
                Launch Scout Protocol
             </button>
           </div>
         )}
-      </div>
-
-      {/* FAQ Preview */}
-      <div className="mt-12 mb-8">
-        <FaqPreview />
-      </div>
-
-      {/* Newsletter Signup */}
-      <div className="bg-white border border-[#E2E8F0] rounded-[16px] p-8 text-center shadow-sm relative overflow-hidden mb-8">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#2563EB] to-[#4F46E5]"></div>
-        <div className="w-16 h-16 bg-[#EFF6FF] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#DBEAFE]">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#2563EB]"><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z"></path><polyline points="15,9 18,9 18,11"></polyline><path d="M5.5 19C7.4 19 9 17.4 9 15.5S7.4 12 5.5 12"></path><polyline points="2 5 12 12 22 5"></polyline></svg>
-        </div>
-        <h3 className="text-[22px] font-[800] text-gray-900 mb-2">Stay Updated</h3>
-        <p className="text-[15px] text-[#64748B] max-w-md mx-auto mb-6">Get the latest opportunities right in your inbox.</p>
-        <form onSubmit={(e) => { e.preventDefault(); alert("Thanks for subscribing!"); }} className="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
-           <input type="email" placeholder="Email address" required className="flex-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[8px] px-4 py-3 text-[15px] text-gray-900 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all placeholder:text-[#94A3B8]" />
-           <button type="submit" className="bg-[#0F172A] text-white px-8 py-3 rounded-[8px] text-[15px] font-[700] hover:bg-gray-800 transition-colors whitespace-nowrap">Join</button>
-        </form>
       </div>
 
       <ShareModal 
@@ -454,29 +503,29 @@ export default function Dashboard() {
 
       {/* Scout Modal */}
       {showScoutModal && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[24px] w-full max-w-2xl shadow-2xl overflow-hidden animate-fade-in">
-            <div className="px-8 py-6 border-b border-[#E2E8F0] flex justify-between items-center bg-white">
+        <div className="fixed inset-0 bg-[#231f20]/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden animate-fade-in border border-[#e8ded1]">
+            <div className="px-6 py-5 border-b border-[#e8ded1] flex justify-between items-center bg-[#fcf9f2]">
                <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded-[10px] bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center">
-                    <Sparkles className="w-5 h-5" />
+                 <div className="w-9 h-9 rounded-full bg-[#603620] text-[#f3e4bd] flex items-center justify-center">
+                    <Sparkles className="w-4 h-4" />
                  </div>
                  <div>
-                   <h3 className="text-[18px] font-[800] text-gray-900">Scout Protocol</h3>
+                   <h3 className="text-base font-serif font-bold text-[#231f20]">AI Scout Protocol</h3>
                    <div className="flex items-center gap-2 mt-0.5">
-                      <div className="h-1.5 w-16 bg-[#F1F5F9] rounded-full overflow-hidden">
-                         <div className="h-full bg-[#2563EB] rounded-full transition-all duration-500" style={{ width: `${(scoutStep / 4) * 100}%` }}></div>
+                      <div className="h-1.5 w-16 bg-[#e8ded1] rounded-full overflow-hidden">
+                         <div className="h-full bg-[#b56b37] rounded-full transition-all duration-500" style={{ width: `${(scoutStep / 4) * 100}%` }}></div>
                       </div>
-                      <p className="text-[11px] text-[#64748B] font-[700] uppercase tracking-wider">Step {scoutStep} of 4</p>
+                      <p className="text-[10px] text-[#603620] font-extrabold uppercase tracking-wider">Step {scoutStep} of 4</p>
                    </div>
                  </div>
                </div>
-               <button onClick={() => setShowScoutModal(false)} className="w-[36px] h-[36px] rounded-full bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-center text-[#64748B] hover:text-[#0F172A] transition-colors">
-                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+               <button onClick={() => setShowScoutModal(false)} className="w-8 h-8 rounded-full bg-white border border-[#e8ded1] flex items-center justify-center text-[#8c7569] hover:text-[#231f20] transition-colors cursor-pointer">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                </button>
             </div>
             
-            <div className="p-8">
+            <div className="p-6">
               {scoutStep === 1 && (
                 <ScoutStep title="What year are you in?" 
                   options={['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', 'Postgrad']}
@@ -493,20 +542,20 @@ export default function Dashboard() {
                 />
               )}
               {scoutStep === 3 && (
-                <div className="space-y-6 animate-fade-in">
+                <div className="space-y-4 animate-fade-in">
                   <div>
-                     <h4 className="text-[20px] font-[800] text-gray-900 mb-2">Technology Focus?</h4>
-                     <p className="text-[14px] text-[#64748B] mb-6">Enter your primary technical interests separated by commas.</p>
+                     <h4 className="text-lg font-serif font-bold text-[#231f20] mb-1">Technology Focus?</h4>
+                     <p className="text-xs text-[#8c7569] mb-4">Enter your primary technical interests separated by commas.</p>
                      <input type="text" placeholder="e.g. AI/ML, Web Dev, Finance..." 
-                       className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] px-4 py-3.5 text-[15px] text-gray-900 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all"
+                       className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl px-4 py-3 text-sm text-[#231f20] outline-none focus:ring-2 focus:ring-[#b56b37]/20 focus:border-[#b56b37] transition-all"
                        value={scoutData.tech}
                        onChange={e => setScoutData({...scoutData, tech: e.target.value})}
                        onKeyDown={e => { if (e.key === 'Enter') setScoutStep(4) }}
                      />
                   </div>
-                  <div className="pt-6 flex justify-between items-center">
-                    <button onClick={() => setScoutStep(2)} className="text-[14px] font-[600] text-[#64748B] hover:text-[#0F172A] transition-colors">← Back</button>
-                    <button onClick={() => setScoutStep(4)} className="bg-[#0F172A] text-white px-6 py-2.5 rounded-[8px] text-[14px] font-[700] hover:bg-gray-800 transition-colors">Next Step →</button>
+                  <div className="pt-4 flex justify-between items-center">
+                    <button onClick={() => setScoutStep(2)} className="text-xs font-bold text-[#603620] hover:text-[#231f20] transition-colors cursor-pointer">← Back</button>
+                    <button onClick={() => setScoutStep(4)} className="bg-[#b56b37] text-white px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider hover:bg-[#603620] transition-colors cursor-pointer shadow-xs">Next Step →</button>
                   </div>
                 </div>
               )}
@@ -530,38 +579,45 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ title, value, icon: Icon, highlight = false }: any) {
+function MetricCard({ title, value, icon: Icon, subtitle, highlight = false }: any) {
   return (
-    <div className={`bg-white border rounded-[16px] p-6 shadow-sm hover:shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all ${highlight ? 'border-[#BFDBFE] bg-gradient-to-br from-[#EFF6FF] to-white' : 'border-[#E2E8F0]'}`}>
-      <div className="flex justify-between items-start mb-3">
-        <p className="text-[13px] font-[600] text-[#64748B] uppercase tracking-[0.05em] pr-4">{title}</p>
-        <div className={`w-8 h-8 rounded-[8px] flex items-center justify-center shrink-0 ${highlight ? 'bg-[#DBEAFE] text-[#2563EB]' : 'bg-[#F1F5F9] text-[#94A3B8]'}`}>
+    <div className={`border rounded-2xl p-5 shadow-xs transition-all ${highlight ? 'border-[#e8ded1] bg-gradient-to-br from-[#f6efe2] to-white' : 'border-[#e8ded1] bg-white'}`}>
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#603620]">{title}</p>
+          {subtitle && <p className="text-[10px] text-[#8c7569]">{subtitle}</p>}
+        </div>
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${highlight ? 'bg-[#603620] text-[#f3e4bd]' : 'bg-[#f6efe2] text-[#b56b37]'}`}>
            <Icon className="w-4 h-4" />
         </div>
       </div>
-      <h3 className={`text-[32px] font-[800] tracking-tight ${highlight ? 'text-[#1D4ED8]' : 'text-gray-900'}`}>{value}</h3>
+      <h3 className={`text-2xl md:text-3xl font-serif font-bold tracking-tight mt-1 ${highlight ? 'text-[#b56b37]' : 'text-[#231f20]'}`}>{value}</h3>
     </div>
   );
 }
 
 function ScoutStep({ title, options, selected, onSelect, showBack }: any) {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <h4 className="text-[20px] font-[800] text-gray-900 mb-6">{title}</h4>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-[12px]">
+    <div className="space-y-4 animate-fade-in">
+      <h4 className="text-lg font-serif font-bold text-[#231f20] mb-4">{title}</h4>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
         {options.map((opt: string) => (
           <button 
             key={opt}
             onClick={() => onSelect(opt)}
-            className={`px-4 py-4 text-[14px] font-[600] rounded-[12px] border-[1.5px] transition-all text-center ${selected === opt ? 'bg-[#EFF6FF] text-[#2563EB] border-[#2563EB] shadow-[0_0_0_2px_rgba(37,99,235,0.1)]' : 'bg-white text-[#475569] border-[#E2E8F0] hover:border-[#CBD5E1] hover:bg-[#F8FAFC]'}`}
+            className={`px-3.5 py-3 text-xs font-bold rounded-xl border transition-all text-center cursor-pointer ${
+              selected === opt 
+                ? 'bg-[#f6efe2] text-[#b56b37] border-[#b56b37] font-extrabold shadow-xs' 
+                : 'bg-white text-[#603620] border-[#e8ded1] hover:border-[#b56b37] hover:bg-[#f6efe2]/50'
+            }`}
           >
             {opt}
           </button>
         ))}
       </div>
       {showBack && (
-        <div className="pt-6 flex justify-start">
-          <button onClick={showBack} className="text-[14px] font-[600] text-[#64748B] hover:text-[#0F172A] transition-colors">← Back</button>
+        <div className="pt-4 flex justify-start">
+          <button onClick={showBack} className="text-xs font-bold text-[#603620] hover:text-[#231f20] transition-colors cursor-pointer">← Back</button>
         </div>
       )}
     </div>

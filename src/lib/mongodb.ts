@@ -14,13 +14,6 @@ import { MongoClient, Db } from "mongodb";
 
 const uri = process.env.MONGODB_URI || "";
 
-const commandUri =
-  process.env.MONGODB_COMMAND_URI || uri;
-
-const queryUri =
-  process.env.MONGODB_QUERY_URI || uri;
-
-
 const dbName =
   process.env.MONGODB_DB_NAME || "yuvahub";
 
@@ -40,7 +33,7 @@ async function connectCommandDB(): Promise<Db> {
   }
 
 
-  if (!commandUri) {
+  if (!uri) {
     throw new Error(
       "MongoDB command URI missing"
     );
@@ -48,7 +41,7 @@ async function connectCommandDB(): Promise<Db> {
 
 
   commandClient =
-    new MongoClient(commandUri);
+    new MongoClient(uri);
 
 
   await commandClient.connect();
@@ -78,7 +71,7 @@ async function connectQueryDB(): Promise<Db> {
   }
 
 
-  if (!queryUri) {
+  if (!uri) {
     throw new Error(
       "MongoDB query URI missing"
     );
@@ -86,7 +79,7 @@ async function connectQueryDB(): Promise<Db> {
 
 
   queryClient =
-    new MongoClient(queryUri);
+    new MongoClient(uri);
 
 
   await queryClient.connect();

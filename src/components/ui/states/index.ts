@@ -5,3 +5,5 @@ export { default as LoadingState } from "./LoadingState";
 export { default as OfflineBanner } from "./OfflineBanner";
 export { default as RetryButton } from "./RetryButton";
 export { default as SkeletonCard } from "./SkeletonCard";
+export { AIRetryFallback } from "../AIRetryFallback";
+

@@ -85,6 +85,28 @@ async function runVerification() {
           opportunity_type: "hackathon",
           description: "Build next-gen AI apps using Google Cloud GenAI.",
           source_name: "Devfolio"
+      },
+      {
+          title: "AI Startup Founder Meetup",
+          organization: "Luma Events",
+          apply_link: "https://lu.ma/ai-startup-meetup",
+          tags: ["AI", "Startup", "Networking", "Meetup"],
+          deadline: "2026-08-20T18:00:00Z",
+          location: "San Francisco, CA",
+          opportunity_type: "event",
+          description: "Join top AI founders and investors for an evening of networking and panel discussions. Speakers include prominent VCs and successful founders.",
+          source_name: "Luma"
+      },
+      {
+          title: "Google Summer of Code (GSoC) 2026",
+          organization: "Google Open Source",
+          apply_link: "https://summerofcode.withgoogle.com/",
+          tags: ["Open Source", "Software Engineering", "Fellowship"],
+          deadline: "2026-04-02T18:00:00Z",
+          location: "Remote",
+          opportunity_type: "fellowship",
+          description: "A global, online program focused on bringing new contributors into open source software development.",
+          source_name: "GSoC"
       }
     ];
 

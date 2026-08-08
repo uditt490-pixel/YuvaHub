@@ -38,7 +38,7 @@ Scroll down to **Environment Variables** and add the following keys. This is cri
 | `NODE_ENV` | `production` |
 | `PORT` | `3000` (Render will override and use this internally) |
 | `FRONTEND_URL` | The URL of your Vercel frontend (e.g., `https://yuvahub.vercel.app`). **Important:** This secures your API by restricting CORS to only your frontend. |
-| `MONGO_URI` | Your MongoDB Atlas connection string (e.g., `mongodb+srv://<username>:<password>@cluster.mongodb.net/yuvahub?retryWrites=true&w=majority`). |
+| `MONGODB_URI` | Your MongoDB Atlas connection string (e.g., `mongodb+srv://<username>:<password>@cluster.mongodb.net/yuvahub?retryWrites=true&w=majority`). |
 | `GEMINI_API_KEY` | Your Google AI Studio API key. |
 | `FIREBASE_PROJECT_ID` | (Optional/If needed by admin SDK) Your Firebase project ID. |
 
@@ -72,7 +72,7 @@ To prevent the scraper from blocking API requests and timing out, you should run
    - **Build Command**: `npm install && npm run build`
    - **Schedule**: `0 */12 * * *` (Runs every 12 hours)
    - **Command**: `npm run scrape`
-4. **Environment Variables**: Re-add the exact same variables you added to the Web Service, especially the `MONGO_URI`.
+4. **Environment Variables**: Re-add the exact same variables you added to the Web Service, especially the `MONGODB_URI`.
 5. Click **Create Cron Job**. Your opportunities will now refresh automatically in the background without affecting the student-facing APIs.
 
 ---

@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import crypto from "crypto";
 import { generateOpportunityEmbedding } from "../services/embedding.js";
 
+import { sendAdminAlert } from "../services/adminAlertService.js";
+
 dotenv.config();
 
 const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
@@ -25,12 +27,13 @@ export const scraperWorker = new Worker(
     // MOCK extraction logic (In a real scenario, you'd use Axios/Puppeteer here)
     // Simulating delay for network request
     await new Promise((resolve) => setTimeout(resolve, 500));
-    
+
     // Simulate finding a new opportunity based on the job data
-    const title = `Mock Opportunity from ${domain} - ${Date.now()}`;
+    const title = `Mock Opportunity from ${domain}`;
     const organization = `Mock Org ${domain}`;
+    
     const dedupeHash = crypto
-      .createHash("md5")
+      .createHash("sha256")
       .update(`${domain}:${title}:${organization}`)
       .digest("hex");
 
@@ -44,7 +47,7 @@ export const scraperWorker = new Worker(
       opportunityType: type,
       deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
       location: "Online",
-      dedupeHash,
+      dedupe_hash: dedupeHash,
       createdAt: new Date().toISOString(),
       embedding: null as number[] | null,
     };
@@ -55,7 +58,7 @@ export const scraperWorker = new Worker(
     // Upsert into MongoDB for idempotency
     const db = mongoClient.db(dbName);
     const result = await db.collection("opportunities").updateOne(
-      { dedupeHash: opportunity.dedupeHash },
+      { dedupe_hash: opportunity.dedupe_hash },
       { $set: opportunity },
       { upsert: true }
     );
@@ -66,7 +69,7 @@ export const scraperWorker = new Worker(
       console.log(`[ScraperWorker] Updated existing opportunity: ${title}`);
     }
 
-    return { status: "success", dedupeHash: opportunity.dedupeHash };
+    return { status: "success", dedupe_hash: opportunity.dedupe_hash };
   },
   {
     connection: connection as any,
@@ -84,11 +87,12 @@ scraperWorker.on("completed", (job) => {
 
 scraperWorker.on("failed", (job, err) => {
   console.error(`[ScraperWorker] Job ${job?.id} failed with error: ${err.message}`);
-  
+
   // Alerting mechanism: Check if this was the final attempt
   if (job && job.opts.attempts && job.attemptsMade === job.opts.attempts) {
     console.error(`[ALERT] Scraper Job ${job.id} for domain ${job.data.domain} failed ${job.attemptsMade} times in a row! Maintenance required.`);
-    // TODO: Publish to emailQueue to alert admin
+
+    sendAdminAlert("ScraperWorker", job, err);
   }
 });
 

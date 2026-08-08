@@ -11,7 +11,7 @@ services:
         value: production
       - key: FRONTEND_URL
         value: https://yuvahub.vercel.app # Update with your actual Vercel URL
-      - key: MONGO_URI
+      - key: MONGODB_URI
         sync: false # Set this securely in the Render dashboard
       - key: GEMINI_API_KEY
         sync: false # Set this securely in the Render dashboard
@@ -25,5 +25,5 @@ services:
     buildCommand: npm install && npm run build
     startCommand: npm run scrape
     envVars:
-      - key: MONGO_URI
+      - key: MONGODB_URI
         sync: false # Set this securely in the Render dashboard

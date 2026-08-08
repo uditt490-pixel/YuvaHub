@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Copy, Check, Loader2, FileText, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import ReactMarkdown from 'react-markdown';
 
 interface ApplyAssistModalProps {
   isOpen: boolean;
@@ -12,6 +13,57 @@ interface ApplyAssistModalProps {
 
 export default function ApplyAssistModal({ isOpen, onClose, content, isLoading, opportunityTitle }: ApplyAssistModalProps) {
   const [copied, setCopied] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousFocus = document.activeElement as HTMLElement;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        ) as NodeListOf<HTMLElement>;
+
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    if (modalRef.current) {
+      const focusable = modalRef.current.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') as NodeListOf<HTMLElement>;
+      if (focusable.length > 0) {
+        focusable[0].focus();
+      }
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previousFocus?.focus();
+    };
+  }, [isOpen, onClose]);
 
   const handleCopy = () => {
     if (content) {
@@ -33,6 +85,10 @@ export default function ApplyAssistModal({ isOpen, onClose, content, isLoading, 
             className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
           />
           <motion.div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="apply-assist-title"
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -45,15 +101,16 @@ export default function ApplyAssistModal({ isOpen, onClose, content, isLoading, 
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 leading-none mb-1 text-lg">Apply Assist</h3>
+                  <h3 id="apply-assist-title" className="font-bold text-gray-900 leading-none mb-1 text-lg">Apply Assist</h3>
                   <p className="text-xs font-medium text-gray-500">AI-generated draft for {opportunityTitle}</p>
                 </div>
               </div>
               <button 
                 onClick={onClose} 
+                aria-label="Close apply assist dialog"
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
 
@@ -84,8 +141,10 @@ export default function ApplyAssistModal({ isOpen, onClose, content, isLoading, 
                       )}
                     </button>
                   </div>
-                  <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed font-serif">
-                    {content}
+                  <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 text-sm text-gray-800 leading-relaxed font-serif">
+                    <div className="prose prose-sm prose-blue max-w-none">
+                      <ReactMarkdown>{content}</ReactMarkdown>
+                    </div>
                   </div>
                   <div className="mt-6 flex items-start gap-3 p-4 bg-amber-50 rounded-lg border border-amber-100 italic text-xs text-amber-800">
                     <span className="font-bold shrink-0">Note:</span>

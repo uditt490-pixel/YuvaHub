@@ -136,7 +136,18 @@ Open your browser and navigate to `http://localhost:5173`.
 - **Manually Run Scrapers:** `npm run scrape`
 - **Check Database Connectivity:** `npm run test-mongo`
 
-### 7. Optional Docker & Redis Setup
+### 7. Running Tests
+YuvaHub separates unit/integration tests from end-to-end (e2e) tests:
+- **Unit & Integration Tests (Vitest):** Runs standard backend and controller validation tests:
+  ```bash
+  npm test
+  ```
+- **End-to-End Tests (Playwright):** Runs browser automation and frontend flow tests:
+  ```bash
+  npm run test:e2e
+  ```
+
+### 8. Optional Docker & Redis Setup
 Running Docker is **optional** for local development. `npm run dev` works out-of-the-box without Docker by running background tasks in local fallback mode.
 
 If you wish to test BullMQ queues or Meilisearch indexing locally with Redis, ensure Docker Desktop is running and start the containers:
@@ -148,18 +159,32 @@ docker compose up -d
 
 ## Environment Variables Guide
 
-Provide these keys in your `.env` file to fully enable application databases and AI APIs:
+Copy the reviewed template:
 
-| Variable Name | Description | Source / Link |
-| :--- | :--- | :--- |
-| `MONGODB_URI` | Connection URI for the MongoDB Atlas Cluster. | MongoDB Atlas Dashboard |
-| `MONGODB_DB_NAME` | Target database collection name. | `yuvahub` |
-| `GEMINI_API_KEY` | Authentication key for Google Gemini model access. | [Google AI Studio](https://aistudio.google.com/) |
-| `APP_URL` | Base host URL of the local or deployed server. | `http://localhost:3000` |
-| `FRONTEND_URL` | Allowed client origin to enforce CORS security policy. | `http://localhost:5173` (or Vercel URL) |
-| `VITE_EMAILJS_SERVICE_ID` | EmailJS service connection ID. | [EmailJS Dashboard](https://www.emailjs.com/) |
-| `VITE_EMAILJS_TEMPLATE_ID`| EmailJS template container ID. | [EmailJS Dashboard](https://www.emailjs.com/) |
-| `VITE_EMAILJS_PUBLIC_KEY` | Public client key for direct frontend transmission. | [EmailJS Dashboard](https://www.emailjs.com/) |
+```bash
+cp .env.example .env
+```
+
+The template classifies variables as required, conditional, optional,
+development-only, public, or secret. Values prefixed with `VITE_` are bundled
+into browser assets and must never contain server credentials.
+
+Startup validation currently requires:
+
+```text
+MONGODB_URI
+JWT_SECRET
+GEMINI_API_KEY
+```
+
+`REDIS_URL` is additionally required when Redis is explicitly enabled.
+
+See the complete guide for supported integrations, safe secret handling,
+split MongoDB connections, workers, Firebase, SMTP, Sentry, dynamic scraper
+URLs, and deployment guidance:
+
+- [Environment variables guide](./docs/ENVIRONMENT_VARIABLES.md)
+- [Environment template](./.env.example)
 
 ---
 

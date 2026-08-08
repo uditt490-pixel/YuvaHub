@@ -5,6 +5,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { UserProfile } from '../../types';
 import { ErrorState } from '../ui/states';
 import { useAppContext } from '../../context/AppContext';
+import ResumeVersionManager from './ResumeVersionManager';
 
 export default function Profile() {
   const { user, profile, setProfile } = useAppContext();
@@ -225,27 +226,29 @@ export default function Profile() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-6">
+    <div className="max-w-5xl mx-auto space-y-8 font-sans pb-12">
+      {/* Header */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-6 md:p-8 rounded-2xl shadow-xs border border-[#e8ded1]">
+        <div className="flex items-center gap-5">
           {formData.avatarUrl ? (
             <img 
               src={formData.avatarUrl.includes("cloudinary.com") ? formData.avatarUrl.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_200,h_200/") : formData.avatarUrl} 
               alt={`${formData.name || 'User'}'s profile picture`} 
-              className="w-20 h-20 rounded-full object-cover border-2 border-blue-500 shadow-sm"
+              className="w-20 h-20 rounded-2xl object-cover border-2 border-[#b56b37] shadow-sm"
+              referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-3xl font-bold">
-              {formData.name?.charAt(0) || user?.displayName?.charAt(0) || 'U'}
+            <div className="w-20 h-20 rounded-2xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center text-2xl font-serif font-bold shadow-xs">
+              {formData.name?.charAt(0) || user?.displayName?.charAt(0) || user?.email?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-1">
+            <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] mb-1">
               {formData.name || 'Your Profile'}
             </h2>
-            <p className="text-gray-500 font-medium">Manage your identity and parameters.</p>
-            <div className="mt-2 flex items-center gap-3">
-              <label className="cursor-pointer text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200 transition-colors font-medium">
+            <p className="text-xs text-[#603620] font-medium">Manage your identity and academic parameters.</p>
+            <div className="mt-3 flex items-center gap-3">
+              <label className="cursor-pointer text-xs font-extrabold uppercase tracking-wider bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] px-3.5 py-1.5 rounded-xl border border-[#e8ded1] transition-all cursor-pointer">
                 Upload Avatar
                 <input 
                   type="file" 
@@ -254,15 +257,18 @@ export default function Profile() {
                   onChange={(e) => handleFileUpload(e, 'avatar')} 
                 />
               </label>
-              {uploadingType === 'avatar' && <span className="text-xs text-gray-500 animate-pulse">Uploading...</span>}
+              {uploadingType === 'avatar' && <span className="text-xs text-[#b56b37] font-bold animate-pulse">Uploading...</span>}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
-           <ShieldCheck className="w-8 h-8 text-blue-600" />
+        
+        <div className="flex items-center gap-4 bg-[#fcf9f2] border border-[#e8ded1] rounded-2xl p-4 shrink-0">
+           <div className="w-10 h-10 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center">
+             <ShieldCheck className="w-5 h-5" />
+           </div>
            <div>
-             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Profile Strength</div>
-             <div className="font-bold text-2xl text-blue-600 leading-none mt-1">{calculateStrength()}%</div>
+             <div className="text-[10px] font-extrabold text-[#603620] uppercase tracking-wider">Profile Strength</div>
+             <div className="font-serif font-bold text-2xl text-[#b56b37] leading-none mt-0.5">{calculateStrength()}%</div>
            </div>
         </div>
       </header>
@@ -270,98 +276,76 @@ export default function Profile() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           {saveError ? <ErrorState title="Profile not saved" description={saveError} /> : null}
-          <form onSubmit={handleSave} className="space-y-8 bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+          <form onSubmit={handleSave} className="space-y-8 bg-white p-6 md:p-8 rounded-2xl shadow-xs border border-[#e8ded1]">
             {/* Identity */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Core Identity</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-4">
+              <h3 className="text-lg font-serif font-bold text-[#231f20] border-b border-[#e8ded1] pb-3">Core Identity</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                   <label className="text-sm font-semibold text-gray-700">Full Name</label>
-                   <input readOnly disabled value={formData.name} className="clean-input p-3 bg-gray-50 text-gray-500 cursor-not-allowed" />
+                   <label className="text-xs font-bold text-[#603620]">Full Name</label>
+                   <input readOnly disabled value={formData.name} className="w-full bg-[#f6efe2]/50 border border-[#e8ded1] rounded-xl p-3 text-xs text-[#8c7569] cursor-not-allowed" />
                 </div>
                 <div className="space-y-1">
-                   <label className="text-sm font-semibold text-gray-700">Email Address</label>
-                   <input readOnly disabled value={formData.email} className="clean-input p-3 bg-gray-50 text-gray-500 cursor-not-allowed" />
+                   <label className="text-xs font-bold text-[#603620]">Email Address</label>
+                   <input readOnly disabled value={formData.email} className="w-full bg-[#f6efe2]/50 border border-[#e8ded1] rounded-xl p-3 text-xs text-[#8c7569] cursor-not-allowed" />
                 </div>
-                <div className="space-y-1">
-                   <label className="text-sm font-semibold text-gray-700">Phone (Optional)</label>
-                   <input type="tel" placeholder="Phone" className="clean-input p-3" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                <div className="space-y-1 md:col-span-2">
+                   <label className="text-xs font-bold text-[#603620]">Phone (Optional)</label>
+                   <input type="tel" placeholder="Phone" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
                 </div>
               </div>
             </div>
 
             {/* Academic */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Academic Parameters</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-4">
+              <h3 className="text-lg font-serif font-bold text-[#231f20] border-b border-[#e8ded1] pb-3">Academic Parameters</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">College / University</label>
-                  <input type="text" placeholder="College Name" className="clean-input p-3" value={formData.college} onChange={e => setFormData({...formData, college: e.target.value})} />
+                  <label className="text-xs font-bold text-[#603620]">College / University</label>
+                  <input type="text" placeholder="College Name" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.college} onChange={e => setFormData({...formData, college: e.target.value})} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-semibold text-gray-700">Current Year</label>
-                  <select className="clean-input w-full p-3" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})}>
+                  <label className="text-xs font-bold text-[#603620]">Current Year</label>
+                  <select className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})}>
                     <option value="">Select Year</option>
                     {['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', 'Postgrad'].map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1 md:col-span-2">
-                  <label className="text-sm font-semibold text-gray-700">Field of Study</label>
-                  <input type="text" placeholder="e.g. Computer Science and Engineering" className="clean-input p-3" value={formData.field} onChange={e => setFormData({...formData, field: e.target.value})} />
+                  <label className="text-xs font-bold text-[#603620]">Field of Study</label>
+                  <input type="text" placeholder="e.g. Computer Science and Engineering" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.field} onChange={e => setFormData({...formData, field: e.target.value})} />
                 </div>
               </div>
             </div>
 
             {/* Location */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Location</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <input type="text" placeholder="City" className="clean-input p-3" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-                <input type="text" placeholder="State" className="clean-input p-3" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
-                <input type="text" placeholder="Country" className="clean-input p-3" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} />
+            <div className="space-y-4">
+              <h3 className="text-lg font-serif font-bold text-[#231f20] border-b border-[#e8ded1] pb-3">Location</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="text" placeholder="City" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                <input type="text" placeholder="State" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} />
+                <input type="text" placeholder="Country" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.country} onChange={e => setFormData({...formData, country: e.target.value})} />
               </div>
             </div>
 
             {/* Links & Skills */}
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Loadout (Links & Skills)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <input type="url" placeholder="GitHub URL" className="clean-input p-3" value={formData.githubUrl} onChange={e => setFormData({...formData, githubUrl: e.target.value})} />
-                <input type="url" placeholder="LinkedIn URL" className="clean-input p-3" value={formData.linkedinUrl} onChange={e => setFormData({...formData, linkedinUrl: e.target.value})} />
-                <input type="url" placeholder="Portfolio URL" className="clean-input p-3 md:col-span-2" value={formData.portfolioUrl} onChange={e => setFormData({...formData, portfolioUrl: e.target.value})} />
+            <div className="space-y-4">
+              <h3 className="text-lg font-serif font-bold text-[#231f20] border-b border-[#e8ded1] pb-3">Loadout (Links & Skills)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="url" placeholder="GitHub URL" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.githubUrl} onChange={e => setFormData({...formData, githubUrl: e.target.value})} />
+                <input type="url" placeholder="LinkedIn URL" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37]" value={formData.linkedinUrl} onChange={e => setFormData({...formData, linkedinUrl: e.target.value})} />
+                <input type="url" placeholder="Portfolio URL" className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37] md:col-span-2" value={formData.portfolioUrl} onChange={e => setFormData({...formData, portfolioUrl: e.target.value})} />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 block">Resume (PDF, PNG, JPEG)</label>
-                  <div className="flex items-center gap-3">
-                    <label className="cursor-pointer text-sm font-semibold bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-3 rounded-lg border border-gray-300 transition-colors flex-1 text-center">
-                      {formData.resumeUrl ? "Change Resume" : "Upload Resume"}
-                      <input 
-                        type="file" 
-                        accept=".pdf, image/png, image/jpeg" 
-                        className="hidden" 
-                        onChange={(e) => handleFileUpload(e, 'resume')} 
-                      />
-                    </label>
-                    {uploadingType === 'resume' && <span className="text-xs text-gray-500 animate-pulse">Uploading...</span>}
-                  </div>
-                  {formData.resumeUrl && (
-                    <a 
-                      href={formData.resumeUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1"
-                    >
-                      View Uploaded Resume <ExternalLink className="w-3.5 h-3.5 inline-block ml-0.5" />
-                    </a>
-                  )}
-                </div>
+              <div className="pt-2 border-t border-[#e8ded1]">
+                <ResumeVersionManager />
+              </div>
 
+              <div className="pt-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 block">Cover Letter (PDF, PNG, JPEG)</label>
+                  <label className="text-xs font-bold text-[#603620] block">Cover Letter (PDF, PNG, JPEG)</label>
                   <div className="flex items-center gap-3">
-                    <label className="cursor-pointer text-sm font-semibold bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-3 rounded-lg border border-gray-300 transition-colors flex-1 text-center">
+                    <label className="cursor-pointer text-xs font-extrabold uppercase tracking-wider bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] px-4 py-3 rounded-xl border border-[#e8ded1] transition-all text-center flex-1">
                       {formData.coverLetterUrl ? "Change Cover Letter" : "Upload Cover Letter"}
                       <input 
                         type="file" 
@@ -370,14 +354,14 @@ export default function Profile() {
                         onChange={(e) => handleFileUpload(e, 'cover_letter')} 
                       />
                     </label>
-                    {uploadingType === 'cover_letter' && <span className="text-xs text-gray-500 animate-pulse">Uploading...</span>}
+                    {uploadingType === 'cover_letter' && <span className="text-xs text-[#b56b37] font-bold animate-pulse">Uploading...</span>}
                   </div>
                   {formData.coverLetterUrl && (
                     <a 
                       href={formData.coverLetterUrl} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1"
+                      className="text-xs font-bold text-[#b56b37] hover:underline flex items-center gap-1 mt-1"
                     >
                       View Uploaded Cover Letter <ExternalLink className="w-3.5 h-3.5 inline-block ml-0.5" />
                     </a>
@@ -385,60 +369,77 @@ export default function Profile() {
                 </div>
               </div>
               
-              <div>
-                <label className="text-sm font-semibold text-gray-700 mb-2 block">Technical Skills</label>
-                <div className="flex gap-3">
-                  <input type="text" placeholder="e.g. React, Python, Marketing" className="clean-input p-3 flex-1" value={skillInput} onChange={e => setSkillInput(e.target.value)} onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      if (skillInput.trim()) {
-                        setFormData({...formData, skills: [...(formData.skills||[]), skillInput.trim()]});
-                        setSkillInput('');
+              <div className="pt-2">
+                <label className="text-xs font-bold text-[#603620] mb-2 block">Technical Skills</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="e.g. React, Python, Marketing" 
+                    className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37] flex-1" 
+                    value={skillInput} 
+                    onChange={e => setSkillInput(e.target.value)} 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (skillInput.trim()) {
+                          setFormData({...formData, skills: [...(formData.skills||[]), skillInput.trim()]});
+                          setSkillInput('');
+                        }
                       }
-                    }
-                  }} />
-                  <button type="button" onClick={() => { if(skillInput.trim()) { setFormData({...formData, skills: [...(formData.skills||[]), skillInput.trim()]}); setSkillInput(''); } }} className="clean-btn px-6 py-3">Add Note</button>
+                    }} 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => { if(skillInput.trim()) { setFormData({...formData, skills: [...(formData.skills||[]), skillInput.trim()]}); setSkillInput(''); } }} 
+                    className="bg-[#b56b37] hover:bg-[#603620] text-white px-5 py-3 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    Add
+                  </button>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-4">
+                <div className="flex flex-wrap gap-2 mt-3">
                   {formData.skills?.map(s => (
-                    <span key={s} className="px-3 py-1 font-medium text-sm bg-blue-50 text-blue-700 rounded-full flex items-center gap-2 border border-blue-100">
+                    <span key={s} className="px-3 py-1 font-bold text-xs bg-[#f6efe2] text-[#603620] rounded-full flex items-center gap-2 border border-[#e8ded1]">
                       {s}
-                      <button type="button" onClick={() => setFormData({...formData, skills: formData.skills?.filter(x => x !== s)})} className="hover:text-blue-900 bg-blue-200 rounded-full w-4 h-4 flex items-center justify-center leading-none">&times;</button>
+                      <button type="button" onClick={() => setFormData({...formData, skills: formData.skills?.filter(x => x !== s)})} className="hover:text-red-600 bg-white border border-[#e8ded1] rounded-full w-4 h-4 flex items-center justify-center leading-none text-xs">&times;</button>
                     </span>
                   ))}
                 </div>
               </div>
               
-              <div className="space-y-1">
-                 <label className="text-sm font-semibold text-gray-700">Bio <span className="text-gray-400 font-normal">(Max 200 chars)</span></label>
-                 <textarea placeholder="Write a short summary..." maxLength={200} rows={3} className="clean-input p-3 w-full resize-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} />
+              <div className="space-y-1 pt-2">
+                 <label className="text-xs font-bold text-[#603620]">Bio <span className="text-[#8c7569] font-normal">(Max 200 chars)</span></label>
+                 <textarea placeholder="Write a short summary..." maxLength={200} rows={3} className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none focus:border-[#b56b37] resize-none" value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100">
-              <button type="submit" disabled={loading} className="clean-btn w-full px-8 py-3.5 flex justify-center items-center shadow-md">
-                {loading ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Save Profile Changes'}
+            <div className="pt-4 border-t border-[#e8ded1]">
+              <button 
+                type="submit" 
+                disabled={loading} 
+                className="bg-[#b56b37] hover:bg-[#603620] text-white w-full px-8 py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-wider flex justify-center items-center shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Save Profile Changes'}
               </button>
             </div>
           </form>
         </div>
 
         <div className="lg:col-span-1">
-          <div className="clean-card p-6 sticky top-24">
-             <h3 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-2">Activity Log</h3>
-             <p className="text-xs font-semibold uppercase text-gray-500 mb-4 tracking-wider">My Applications</p>
-             <div className="space-y-4">
-               {DUMMY_APPS.map(app => (
-                 <div key={app.title} className="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 transition-colors">
-                    <h4 className="font-semibold text-gray-900 truncate mb-2">{app.title}</h4>
-                    <div className="flex justify-between items-center mt-3">
-                      <span className={`text-xs font-bold px-2 py-1 rounded ${app.status==='Applied' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{app.status}</span>
-                      <span className="text-xs font-medium text-gray-500 flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {app.date}</span>
-                    </div>
-                 </div>
-               ))}
+          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 sticky top-24 shadow-xs space-y-4">
+             <h3 className="text-lg font-serif font-bold text-[#231f20] border-b border-[#e8ded1] pb-3">Activity Log</h3>
+             <p className="text-[10px] font-extrabold uppercase text-[#603620] tracking-wider">My Applications</p>
+             <div className="space-y-3">
+                {DUMMY_APPS.map(app => (
+                  <div key={app.title} className="p-4 bg-[#fcf9f2] rounded-xl border border-[#e8ded1]">
+                     <h4 className="font-serif font-bold text-xs text-[#231f20] truncate mb-2">{app.title}</h4>
+                     <div className="flex justify-between items-center mt-2">
+                       <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-md uppercase border ${app.status==='Applied' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>{app.status}</span>
+                       <span className="text-[10px] font-bold text-[#8c7569] flex items-center gap-1"><Calendar className="w-3 h-3" /> {app.date}</span>
+                     </div>
+                  </div>
+                ))}
              </div>
-             <button className="w-full mt-6 flex items-center justify-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">View All Activity <ExternalLink className="w-4 h-4" /></button>
+             <button className="w-full mt-4 flex items-center justify-center gap-2 text-xs font-extrabold text-[#b56b37] hover:text-[#603620] uppercase tracking-wider transition-colors cursor-pointer">View All Activity <ExternalLink className="w-3.5 h-3.5" /></button>
           </div>
         </div>
       </div>

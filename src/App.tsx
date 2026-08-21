@@ -66,6 +66,7 @@ const FocusRoom = lazy(() => import('./pages/FocusRoom').then(m => ({ default: m
 const ExperiencesHub = lazy(() => import('./components/tabs/ExperiencesHub'));
 const PollStudio = lazy(() => import('./components/tabs/PollStudio'));
 const WatchlistManager = lazy(() => import('./components/tabs/WatchlistManager'));
+const ZeroTrustSecurityHub = lazy(() => import('./pages/Enterprise/ZeroTrustSecurityHub').then(m => ({ default: m.ZeroTrustSecurityHub })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
@@ -372,6 +373,8 @@ function App() {
       case 'about': return <AboutTab />;
       case 'help': return gettingStartedStep ? <GettingStartedDetail stepId={gettingStartedStep as any} /> : <HelpCenterPage />;
       case 'mock_interview': return <MockInterviewRoom />;
+      case 'zero_trust_security':
+      case 'zero_trust': return <ZeroTrustSecurityHub />;
       case 'watchlist_manager': return <WatchlistManager />;
       case 'faq': return <FAQ />;
       default: return <Dashboard />;

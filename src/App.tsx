@@ -66,6 +66,7 @@ const FocusRoom = lazy(() => import('./pages/FocusRoom').then(m => ({ default: m
 const ExperiencesHub = lazy(() => import('./components/tabs/ExperiencesHub'));
 const PollStudio = lazy(() => import('./components/tabs/PollStudio'));
 const WatchlistManager = lazy(() => import('./components/tabs/WatchlistManager'));
+const CareerTelemetryHub = lazy(() => import('./pages/Enterprise/CareerTelemetryHub').then(m => ({ default: m.CareerTelemetryHub })));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
@@ -372,6 +373,8 @@ function App() {
       case 'about': return <AboutTab />;
       case 'help': return gettingStartedStep ? <GettingStartedDetail stepId={gettingStartedStep as any} /> : <HelpCenterPage />;
       case 'mock_interview': return <MockInterviewRoom />;
+      case 'career_telemetry':
+      case 'student_career_telemetry': return <CareerTelemetryHub />;
       case 'watchlist_manager': return <WatchlistManager />;
       case 'faq': return <FAQ />;
       default: return <Dashboard />;

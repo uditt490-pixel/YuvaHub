@@ -69,8 +69,8 @@ Make sure the following are installed before you begin:
 Verify your versions before proceeding:
 
 ```bash
-node -v   # should print v18.x.x or higher
-npm -v    # should print v9.x.x or higher
+node --version
+npm --version
 ```
 
 ## Environment Variables

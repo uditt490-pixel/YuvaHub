@@ -1,7 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
   LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic, Trophy,
-  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Calendar
+  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Calendar, Activity
 } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
@@ -72,6 +72,7 @@ const StudyGroupRooms = lazy(() => import('./components/tabs/StudyGroupRooms'));
 const CodeReviewExchange = lazy(() => import('./components/tabs/CodeReviewExchange'));
 const DeadlineCalendar = lazy(() => import('./components/tabs/DeadlineCalendar'));
 const DirectMessages = lazy(() => import('./components/tabs/DirectMessages'));
+const BioAiClinicalTelemetryHub = lazy(() => import('./pages/Enterprise/BioAiClinicalTelemetryHub'));
 const LoadingFallback = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
     <div className="flex items-center gap-3 animate-pulse">
@@ -173,6 +174,8 @@ const getSeoPropsForTab = (tab: string) => {
       return { title: "Community Polls | YuvaHub", description: "Participate in student polls and surveys." };
     case 'code_review':
       return { title: "Peer Code Review Exchange | YuvaHub", description: "Submit your code for review by peers and earn karma by reviewing others." };
+    case 'bio_ai_telemetry':
+      return { title: "Bio-AI Clinical Telemetry Command Station | YuvaHub Enterprise", description: "Continuous real-time multiparameter ICU/CCU telemetry, Bio-AI deterioration biomarkers, and automated emergency triage." };
     default:
       return {
         title: "YuvaHub | Find Student Hackathons, Scholarships & Mentorships",
@@ -279,6 +282,7 @@ function App() {
     {
       title: "AI & Career Studios",
       items: [
+        { id: 'bio_ai_telemetry', label: 'Clinical Telemetry Hub', icon: Activity, badge: 'AI' },
         { id: 'skill_gap', label: 'Skill Gap Analyzer', icon: Target },
         { id: 'ai_assistant', label: 'AI Assistant', icon: Brain },
         { id: 'career_match', label: 'Career Match Studio', icon: TrendingUp },
@@ -352,6 +356,7 @@ function App() {
         </Suspense>
       );
       case 'career_match': return <CareerMatchStudio />;
+      case 'bio_ai_telemetry': return <BioAiClinicalTelemetryHub />;
       case 'career_goals': return <CareerGoalTracker />;
       case 'hackathon_studio': return <HackathonStudio />;
       case 'developer_api': return <DeveloperApiPortal />;

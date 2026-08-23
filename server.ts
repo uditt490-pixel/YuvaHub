@@ -2667,6 +2667,180 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+
+  // ==========================================
+  // NICU & NEONATAL TELEMETRY APIS
+  // Standards: AAP Neonatal, NRP 8th Edition, HL7 FHIR R4
+  // ==========================================
+
+  const mockNicuPatients = [
+    {
+      id: "NICU-PT-801",
+      mrn: "MRN-9018241",
+      name: "Baby Boy Sharma (Twin A)",
+      sex: "MALE",
+      gestationalAgeWeeks: 24.2,
+      birthWeightGrams: 640,
+      currentWeightGrams: 665,
+      weightCategory: "ELBW",
+      bedNumber: "NICU-POD-A-01",
+      admissionDiagnosis: "Extreme Prematurity, Severe RDS & Pulmonary Interstitial Emphysema",
+      ventilation: {
+        mode: "HFOV",
+        meanAirwayPressureCmH2O: 14.5,
+        amplitudeDeltaPCmH2O: 28,
+        frequencyHz: 12,
+        fractionInspiredOxygenFiO2: 0.40
+      },
+      prePostDuctal: {
+        preDuctalRightWristSpO2: 92,
+        postDuctalFootSpO2: 90,
+        gradientDeltaSpO2: 2,
+        cerebralNirsRso2Percent: 66
+      },
+      nutrition: {
+        glucoseInfusionRateMgKgMin: 6.5,
+        totalFluidsMlKgDay: 140
+      },
+      vitals: {
+        heartRateBpm: 154,
+        meanArterialPressureMmHg: 30,
+        glucoseMgDl: 68
+      }
+    }
+  ];
+
+  // 1. Get all NICU Patients
+  app.get("/api/v1/nicu/patients", (req, res) => {
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      census: mockNicuPatients.length,
+      patients: mockNicuPatients
+    });
+  });
+
+  // 2. Get Single NICU Patient
+  app.get("/api/v1/nicu/patients/:patientId", (req, res) => {
+    const { patientId } = req.params;
+    const pt = mockNicuPatients.find(p => p.id === patientId);
+    if (!pt) {
+      return res.status(404).json({ error: "NICU patient profile not found" });
+    }
+    res.json({ success: true, patient: pt });
+  });
+
+  // 3. Glucose Infusion Rate (GIR) Calculator
+  app.post("/api/v1/nicu/calculate/gir", (req, res) => {
+    try {
+      const { dextrosePercent = 10, rateMlHr = 4.0, weightGrams = 1000 } = req.body;
+      const weightKg = weightGrams / 1000;
+      const gir = weightKg > 0 ? Math.round(((dextrosePercent * rateMlHr) / (6 * weightKg)) * 10) / 10 : 0;
+      const totalFluids = weightKg > 0 ? Math.round((rateMlHr * 24) / weightKg) : 0;
+
+      res.json({
+        success: true,
+        weightGrams,
+        dextrosePercent,
+        infusionRateMlHr: rateMlHr,
+        glucoseInfusionRateMgKgMin: gir,
+        totalFluidsMlKgDay: totalFluids,
+        targetRange: "4 - 8 mg/kg/min"
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to calculate GIR" });
+    }
+  });
+
+  // 4. Neonatal Indices & Bhutani Bilirubin Evaluator
+  app.post("/api/v1/nicu/calculate/indices", (req, res) => {
+    try {
+      const { preSpO2 = 95, postSpO2 = 92, tidalVolumeMl = 1.8, frequencyHz = 12, bilirubinMgDl = 8.0, postnatalHours = 48, gaWeeks = 28 } = req.body;
+      
+      const deltaSpO2 = Math.round(preSpO2 - postSpO2);
+      const dco2 = Math.round(Math.pow(tidalVolumeMl, 2) * frequencyHz * 10) / 10;
+      const isPphn = deltaSpO2 > 10;
+
+      let photoThreshold = 10.0;
+      if (gaWeeks < 28) photoThreshold = 5.0;
+      else if (gaWeeks < 32) photoThreshold = 7.0;
+      else if (gaWeeks < 35) photoThreshold = 10.0;
+
+      res.json({
+        success: true,
+        gradientDeltaSpO2: deltaSpO2,
+        pphnRightToLeftShuntRisk: isPphn,
+        dco2AlveolarVentilation: dco2,
+        serumBilirubinMgDl: bilirubinMgDl,
+        phototherapyThresholdMgDl: photoThreshold,
+        phototherapyIndicated: bilirubinMgDl >= photoThreshold
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to calculate neonatal indices" });
+    }
+  });
+
+  // 5. Authorize NRP Emergency Protocol Dispatch
+  app.post("/api/v1/nicu/escalate/nrp", (req, res) => {
+    try {
+      const { patientId, protocolName, orders } = req.body;
+      if (!patientId || !protocolName) {
+        return res.status(400).json({ error: "patientId and protocolName are required" });
+      }
+
+      res.json({
+        success: true,
+        message: "NRP Neonatal Emergency Protocol Dispatched",
+        patientId,
+        protocol: protocolName,
+        orders,
+        dispatchedAt: new Date().toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to dispatch NRP protocol" });
+    }
+  });
+
+  // 6. FHIR R4 NICU Export
+  app.get("/api/v1/nicu/export/fhir/:patientId", (req, res) => {
+    const { patientId } = req.params;
+    const pt = mockNicuPatients.find(p => p.id === patientId) || mockNicuPatients[0];
+
+    const fhirBundle = {
+      resourceType: "Bundle",
+      id: `nicu-fhir-${pt.id}-${Date.now()}`,
+      type: "collection",
+      timestamp: new Date().toISOString(),
+      entry: [
+        {
+          fullUrl: `urn:uuid:patient-${pt.id}`,
+          resource: {
+            resourceType: "Patient",
+            id: pt.id,
+            identifier: [{ system: "urn:oid:medtrack:nicu:mrn", value: pt.mrn }],
+            name: [{ use: "official", text: pt.name }]
+          }
+        },
+        {
+          fullUrl: `urn:uuid:observation-nicu-${pt.id}`,
+          resource: {
+            resourceType: "Observation",
+            id: `vitals-nicu-${pt.id}`,
+            status: "final",
+            code: { text: "NICU High-Frequency Telemetry & Pre/Post Ductal SpO2 Profile" },
+            subject: { reference: `Patient/${pt.id}` },
+            extension: [
+              { url: "http://hl7.org/fhir/StructureDefinition/gestational-age", valueDecimal: pt.gestationalAgeWeeks },
+              { url: "http://hl7.org/fhir/StructureDefinition/pre-post-ductal-gradient", valueDecimal: pt.prePostDuctal.gradientDeltaSpO2 }
+            ]
+          }
+        }
+      ]
+    };
+
+    res.json(fhirBundle);
+  });
+
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {

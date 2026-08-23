@@ -2667,6 +2667,216 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+
+  // ==========================================
+  // PRECISION ONCOLOGY & GENOMIC DECISION APIS
+  // Standards: NCCN, ESMO, AMP/ASCO/CAP, CPIC, HL7 FHIR R4
+  // ==========================================
+
+  const mockOncologyPatients = [
+    {
+      id: "ONC-PT-401",
+      mrn: "MRN-3394812",
+      name: "Vikram Malhotra",
+      ageYears: 62,
+      gender: "MALE",
+      primarySite: "NON_SMALL_CELL_LUNG",
+      histologySubtype: "Lung Adenocarcinoma (EGFR-driven)",
+      clinicalTnmStage: "cT3N2M1b (Stage IVB)",
+      ecogPerformanceStatus: 1,
+      currentRegimenName: "Osimertinib 80mg Daily",
+      molecularProfile: {
+        tumorMutationBurdenMb: 7.8,
+        tmbClassification: "TMB_INTERMEDIATE",
+        msiStatus: "MSS",
+        hrdScore: 18,
+        mutations: [
+          { geneSymbol: "EGFR", hgvsp: "p.Leu858Arg (L858R)", vaf: 38.4, tier: "TIER_I" },
+          { geneSymbol: "EGFR", hgvsp: "p.Cys797Ser (C797S)", vaf: 14.2, tier: "TIER_I", resistance: true }
+        ]
+      },
+      liquidBiopsy: { plasmaCtDnaHgeMl: 420, meanVafPercent: 12.8, mrdStatus: "MRD_POSITIVE" },
+      pharmacogenomics: { dpydStatus: "NORMAL_METABOLIZER", ugt1a1Status: "*1/*1 (Normal)" }
+    },
+    {
+      id: "ONC-PT-402",
+      mrn: "MRN-4482019",
+      name: "Sunita Deshmukh",
+      ageYears: 54,
+      gender: "FEMALE",
+      primarySite: "BREAST",
+      histologySubtype: "Invasive Ductal Carcinoma (BRCA1-mutant)",
+      clinicalTnmStage: "pT2N1aM0 (Stage IIB)",
+      ecogPerformanceStatus: 0,
+      currentRegimenName: "Olaparib 300mg BID Maintenance",
+      molecularProfile: {
+        tumorMutationBurdenMb: 14.5,
+        tmbClassification: "TMB_HIGH",
+        msiStatus: "MSS",
+        hrdScore: 68,
+        mutations: [
+          { geneSymbol: "BRCA1", hgvsp: "p.Glu23fs", vaf: 48.0, tier: "TIER_I" },
+          { geneSymbol: "PIK3CA", hgvsp: "p.His1047Arg", vaf: 22.5, tier: "TIER_I" }
+        ]
+      },
+      liquidBiopsy: { plasmaCtDnaHgeMl: 0, meanVafPercent: 0, mrdStatus: "MRD_NEGATIVE" },
+      pharmacogenomics: { dpydStatus: "INTERMEDIATE_METABOLIZER", ugt1a1Status: "*1/*1 (Normal)" }
+    }
+  ];
+
+  // 1. Get all Oncology Patients
+  app.get("/api/v1/oncology/patients", (req, res) => {
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      census: mockOncologyPatients.length,
+      patients: mockOncologyPatients
+    });
+  });
+
+  // 2. Get Single Oncology Patient
+  app.get("/api/v1/oncology/patients/:patientId", (req, res) => {
+    const { patientId } = req.params;
+    const pt = mockOncologyPatients.find(p => p.id === patientId);
+    if (!pt) {
+      return res.status(404).json({ error: "Patient genomic profile not found" });
+    }
+    res.json({ success: true, patient: pt });
+  });
+
+  // 3. Somatic Biomarker & Immunogenicity Evaluation
+  app.post("/api/v1/oncology/calculate/biomarkers", (req, res) => {
+    try {
+      const { tmbMutMb = 0, msiStatus = "MSS", hrdScore = 0, mutations = [] } = req.body;
+      
+      let tmbClass = "TMB_LOW";
+      if (tmbMutMb >= 10.0) tmbClass = "TMB_HIGH";
+      else if (tmbMutMb >= 6.0) tmbClass = "TMB_INTERMEDIATE";
+
+      const hrdPositive = hrdScore >= 42 || mutations.some((m: any) => m.geneSymbol === "BRCA1" || m.geneSymbol === "BRCA2");
+      const ioEligible = tmbClass === "TMB_HIGH" || msiStatus === "MSI_HIGH";
+
+      res.json({
+        success: true,
+        tmbMutMb,
+        tmbClassification: tmbClass,
+        msiStatus,
+        hrdScore,
+        hrdStatus: hrdPositive ? "HRD_POSITIVE" : "HRD_NEGATIVE",
+        immuneCheckpointInhibitorEligible: ioEligible,
+        parpInhibitorEligible: hrdPositive
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to evaluate genomic biomarkers" });
+    }
+  });
+
+  // 4. Pharmacogenomics & Chemotherapy Dosing Safety
+  app.post("/api/v1/oncology/calculate/pharmacogenomics", (req, res) => {
+    try {
+      const { heightCm = 170, weightKg = 70, gfr = 80, targetAuc = 5, dpydVariant = "NONE", ugt1a1Variant = "*1/*1" } = req.body;
+      
+      const bsa = Math.round(Math.sqrt((heightCm * weightKg) / 3600) * 100) / 100;
+      const carboplatinDoseMg = Math.round(targetAuc * (Math.min(125, gfr) + 25));
+
+      let dpydRisk = "LOW";
+      let dpydAdjustment = 0;
+      if (dpydVariant.includes("*2A") || dpydVariant.includes("*13")) {
+        dpydRisk = "SEVERE_FATAL_RISK";
+        dpydAdjustment = 100; // Contraindicated
+      } else if (dpydVariant.includes("c.2846") || dpydVariant.includes("HapB3")) {
+        dpydRisk = "MODERATE";
+        dpydAdjustment = 50;
+      }
+
+      let ugt1a1Risk = "STANDARD";
+      let irinotecanAdjustment = 0;
+      if (ugt1a1Variant.includes("*28/*28")) {
+        ugt1a1Risk = "HIGH_SEVERE_TOXICITY";
+        irinotecanAdjustment = 30;
+      } else if (ugt1a1Variant.includes("*1/*28")) {
+        ugt1a1Risk = "ELEVATED_NEUTROPENIA_RISK";
+        irinotecanAdjustment = 15;
+      }
+
+      const standard5fuInfusionMg = Math.round(2400 * bsa);
+      const safe5fuMg = dpydAdjustment === 100 ? 0 : Math.round(standard5fuInfusionMg * (1 - dpydAdjustment / 100));
+
+      res.json({
+        success: true,
+        bodySurfaceAreaM2: bsa,
+        carboplatinDoseMg,
+        dpydToxicityRisk: dpydRisk,
+        fluoropyrimidineDoseAdjustmentPercent: dpydAdjustment,
+        safe5fuInfusionDoseMg: safe5fuMg,
+        ugt1a1ToxicityRisk: ugt1a1Risk,
+        irinotecanDoseAdjustmentPercent: irinotecanAdjustment
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to calculate pharmacogenomics dosing" });
+    }
+  });
+
+  // 5. Authorize Therapy Escalation
+  app.post("/api/v1/oncology/escalate/therapy", (req, res) => {
+    try {
+      const { patientId, line, regimen, rationale } = req.body;
+      if (!patientId || !line || !regimen) {
+        return res.status(400).json({ error: "patientId, line, and regimen are required" });
+      }
+
+      res.json({
+        success: true,
+        message: "Biomarker-Directed Therapy Escalation Authorized",
+        patientId,
+        escalatedLine: line,
+        regimen,
+        authorizedAt: new Date().toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to escalate oncology therapy" });
+    }
+  });
+
+  // 6. FHIR R4 Genomics Export
+  app.get("/api/v1/oncology/export/fhir/:patientId", (req, res) => {
+    const { patientId } = req.params;
+    const pt = mockOncologyPatients.find(p => p.id === patientId) || mockOncologyPatients[0];
+
+    const fhirBundle = {
+      resourceType: "Bundle",
+      id: `oncology-fhir-${pt.id}-${Date.now()}`,
+      type: "collection",
+      timestamp: new Date().toISOString(),
+      entry: [
+        {
+          fullUrl: `urn:uuid:patient-${pt.id}`,
+          resource: {
+            resourceType: "Patient",
+            id: pt.id,
+            identifier: [{ system: "urn:oid:medtrack:oncology:mrn", value: pt.mrn }],
+            name: [{ use: "official", text: pt.name }]
+          }
+        },
+        {
+          fullUrl: `urn:uuid:diagnosticreport-genomics-${pt.id}`,
+          resource: {
+            resourceType: "DiagnosticReport",
+            status: "final",
+            code: { text: "Next-Generation Somatic Sequencing & Liquid Biopsy Profile" },
+            subject: { reference: `Patient/${pt.id}` },
+            extension: [
+              { url: "http://hl7.org/fhir/StructureDefinition/tumor-mutation-burden", valueDecimal: pt.molecularProfile.tumorMutationBurdenMb },
+              { url: "http://hl7.org/fhir/StructureDefinition/msi-status", valueString: pt.molecularProfile.msiStatus }
+            ]
+          }
+        }
+      ]
+    };
+
+    res.json(fhirBundle);
+  });
+
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {

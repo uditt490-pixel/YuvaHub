@@ -1201,3 +1201,269 @@ export async function bookAlumniMentorshipSession(slotId: string, studentId?: st
   const json = await response.json();
   return json.data?.slot || json.slot;
 }
+
+// ─── Community Resource Vault ────────────────────────────────────────────────
+export async function submitResource(data: any) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/resources`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to submit resource");
+  }
+  return await response.json();
+}
+
+export async function fetchResources(params: Record<string, any> = {}) {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== "all") {
+      if (Array.isArray(v)) {
+        v.forEach(val => searchParams.append(k, val));
+      } else {
+        searchParams.append(k, String(v));
+      }
+    }
+  });
+  const response = await fetchWithRetry(`${API_BASE_URL}/resources?${searchParams.toString()}`, {
+    method: 'GET',
+  });
+  if (!response.ok) throw new Error("Failed to fetch resources");
+  return await response.json();
+}
+
+export async function fetchSavedResources(params: Record<string, any> = {}) {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null) {
+      searchParams.append(k, String(v));
+    }
+  });
+  const response = await fetchWithRetry(`${API_BASE_URL}/resources/saved?${searchParams.toString()}`, {
+    method: 'GET',
+  });
+  if (!response.ok) throw new Error("Failed to fetch saved resources");
+  return await response.json();
+}
+
+export async function voteResource(id: string, direction: 'up' | 'down') {
+  const response = await fetchWithRetry(`${API_BASE_URL}/resources/${id}/vote`, {
+    method: 'POST',
+    body: JSON.stringify({ direction }),
+  });
+  if (!response.ok) throw new Error("Failed to vote");
+  return await response.json();
+}
+
+export async function saveResource(id: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/resources/${id}/save`, {
+    method: 'POST',
+  });
+  if (!response.ok) throw new Error("Failed to save resource");
+  return await response.json();
+}
+
+export async function flagResource(id: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/resources/${id}/flag`, {
+    method: 'POST',
+  });
+  if (!response.ok) throw new Error("Failed to flag resource");
+  return await response.json();
+}
+
+// ─── Study Group Rooms ─────────────────────────────────────────────────────────
+export async function createStudyGroup(data: { name: string; topic: string; tags: string[]; maxCapacity: number; resourceUrl?: string }) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/study-groups`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to create study group");
+  }
+  return await response.json();
+}
+
+export async function fetchStudyGroups(tag?: string, topic?: string) {
+  const params = new URLSearchParams();
+  if (tag) params.append('tag', tag);
+  if (topic) params.append('topic', topic);
+  const url = `${API_BASE_URL}/study-groups${params.toString() ? '?' + params.toString() : ''}`;
+  
+  const response = await fetchWithRetry(url, { method: 'GET' });
+  if (!response.ok) throw new Error("Failed to fetch study groups");
+  return await response.json();
+}
+
+export async function joinStudyGroup(roomId: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/study-groups/${roomId}/join`, {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to join study group");
+  }
+  return await response.json();
+}
+
+export async function leaveStudyGroup(roomId: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/study-groups/${roomId}/leave`, {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to leave study group");
+  }
+  return await response.json();
+}
+
+// ─── Code Review Exchange ───────────────────────────────────────────────────
+
+export async function createReviewRequest(data: { title: string; description: string; language: string; prUrl?: string; codeSnippet?: string; tags: string[]; requesterName?: string }) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/code-reviews`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to create review request");
+  }
+  return await response.json();
+}
+
+export async function fetchReviewRequests(filters?: { status?: string; language?: string; tag?: string }, page = 1, limit = 10) {
+  const params = new URLSearchParams();
+  if (filters?.status) params.set('status', filters.status);
+  if (filters?.language) params.set('language', filters.language);
+  if (filters?.tag) params.set('tag', filters.tag);
+  params.set('page', page.toString());
+  params.set('limit', limit.toString());
+
+  const response = await fetchWithRetry(`${API_BASE_URL}/code-reviews?${params.toString()}`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch review requests");
+  }
+  return await response.json();
+}
+
+export async function claimReview(requestId: string, reviewerName?: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/code-reviews/${requestId}/claim`, {
+    method: 'POST',
+    body: JSON.stringify({ reviewerName }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to claim review");
+  }
+  return await response.json();
+}
+
+export async function submitReviewFeedback(requestId: string, data: { correctnessScore: number; readabilityScore: number; bestPracticesScore: number; comments: string; suggestedChanges?: string }) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/code-reviews/${requestId}/feedback`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to submit feedback");
+  }
+  return await response.json();
+}
+
+export async function fetchMyReviews() {
+  const response = await fetchWithRetry(`${API_BASE_URL}/code-reviews/mine`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch my reviews");
+  }
+  return await response.json();
+}
+
+export async function fetchCalendarEvents() {
+  const response = await fetchWithRetry(`${API_BASE_URL}/calendar/events`, {
+    method: 'GET',
+  });
+  if (!response.ok) throw new Error("Failed to fetch calendar events");
+  return await response.json();
+}
+
+export async function setDeadlineReminder(data: { opportunityId: string; opportunityTitle: string; deadlineDate: string | Date; reminderOffsets?: number[]; channels?: string[] }) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/calendar/reminders`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to set deadline reminder");
+  return await response.json();
+}
+
+export async function deleteDeadlineReminder(id: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/calendar/reminders/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error("Failed to delete reminder");
+  return await response.json();
+}
+
+export async function downloadCalendarICS(oppIds: string[]) {
+  const response = await fetch(`${API_BASE_URL}/calendar/export.ics?oppIds=${oppIds.join(',')}`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+  });
+  if (!response.ok) throw new Error("Failed to export ICS");
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'deadlines.ics';
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+// ─── Direct Messages API Methods ─────────────────────────────────────────────
+
+export async function fetchConversations(page: number = 1, limit: number = 20) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/dm/conversations?page=${page}&limit=${limit}`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch conversations");
+  }
+  return await response.json();
+}
+
+export async function fetchMessages(recipientId: string, page: number = 1, limit: number = 50) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/dm/conversations/${recipientId}?page=${page}&limit=${limit}`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch messages");
+  }
+  return await response.json();
+}
+
+export async function sendDirectMessage(recipientId: string, content: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/dm/conversations/${recipientId}`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || "Failed to send message");
+  }
+  return await response.json();
+}
+
+export async function markConversationRead(recipientId: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/dm/conversations/${recipientId}/read`, {
+    method: 'PATCH',
+  });
+  if (!response.ok) {
+    throw new Error("Failed to mark conversation as read");
+  }
+  return await response.json();
+}

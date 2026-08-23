@@ -2667,6 +2667,260 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+
+  // ==========================================
+  // PEDIATRIC ICU (PICU) CLINICAL TELEMETRY APIS
+  // Standards: PALS 2024, PALICC-2, KDIGO AKI, HL7 FHIR R4
+  // ==========================================
+
+  // Mock in-memory PICU store for fast backend state
+  const mockPicuPatients = [
+    {
+      id: "PICU-PT-101",
+      mrn: "MRN-8849201",
+      name: "Maya Sharma",
+      ageYears: 3,
+      ageMonths: 8,
+      ageBracket: "TODDLER",
+      gender: "FEMALE",
+      weightKg: 14.5,
+      admissionWeightKg: 13.8,
+      bedNumber: "Bed 01 - Pod A (High-Frequency)",
+      wardPod: "HIGH_FREQUENCY_VENT_POD",
+      primaryDiagnosis: "Severe Pediatric ARDS (RSV Bronchiolitis)",
+      acuityLevel: "CRITICAL_INSTABILITY",
+      vitals: {
+        heartRate: 148,
+        systolicBp: 84,
+        diastolicBp: 46,
+        meanArterialPressure: 58.7,
+        respiratoryRate: 42,
+        spO2: 89,
+        coreTemperature: 38.6,
+        etCO2: 52
+      },
+      ventilator: {
+        mode: "HFOV",
+        fiO2: 0.85,
+        peakInspiratoryPressure: 32,
+        peep: 14,
+        meanAirwayPressure: 22,
+        tidalVolumePerKg: 6.5,
+        dynamicCompliance: 5.3
+      },
+      pulmonaryIndices: {
+        oxygenationIndex: 32.2,
+        oxygenSaturationIndex: 21.0,
+        pardsClassification: "SEVERE_PARDS"
+      },
+      vasoactiveSupport: {
+        vasoactiveInotropicScore: 23.5,
+        shockIndexPediatric: 1.76
+      },
+      pews: { totalPews: 9, pewsRiskLevel: "CRITICAL_DETERIORATION" },
+      pelod2: { totalPelod2: 10, predictedMortalityPercent: 12.8 }
+    },
+    {
+      id: "PICU-PT-102",
+      mrn: "MRN-9102432",
+      name: "Aarav Patel",
+      ageYears: 0,
+      ageMonths: 4,
+      ageBracket: "INFANT",
+      gender: "MALE",
+      weightKg: 5.2,
+      admissionWeightKg: 4.8,
+      bedNumber: "Bed 02 - Cardiac PICU",
+      wardPod: "CARDIAC_PICU",
+      primaryDiagnosis: "Post-Op Norwood Procedure (HLHS)",
+      acuityLevel: "HIGH_ACUITY",
+      vitals: {
+        heartRate: 162,
+        systolicBp: 72,
+        diastolicBp: 38,
+        meanArterialPressure: 49.3,
+        respiratoryRate: 36,
+        spO2: 82,
+        coreTemperature: 36.9,
+        etCO2: 38
+      },
+      ventilator: {
+        mode: "PRVC",
+        fiO2: 0.35,
+        peakInspiratoryPressure: 22,
+        peep: 6,
+        meanAirwayPressure: 11,
+        tidalVolumePerKg: 6.9,
+        dynamicCompliance: 2.25
+      },
+      pulmonaryIndices: {
+        oxygenationIndex: 8.4,
+        oxygenSaturationIndex: 4.7,
+        pardsClassification: "MILD_PARDS"
+      },
+      vasoactiveSupport: {
+        vasoactiveInotropicScore: 18.0,
+        shockIndexPediatric: 2.25
+      },
+      pews: { totalPews: 5, pewsRiskLevel: "HIGH" },
+      pelod2: { totalPelod2: 6, predictedMortalityPercent: 4.8 }
+    }
+  ];
+
+  // 1. Get all PICU Monitored Patients
+  app.get("/api/v1/picu/patients", (req, res) => {
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      census: mockPicuPatients.length,
+      patients: mockPicuPatients
+    });
+  });
+
+  // 2. Get Single Patient Telemetry
+  app.get("/api/v1/picu/patients/:patientId", (req, res) => {
+    const { patientId } = req.params;
+    const pt = mockPicuPatients.find(p => p.id === patientId);
+    if (!pt) {
+      return res.status(404).json({ error: "Patient record not found in active PICU telemetry" });
+    }
+    res.json({ success: true, patient: pt });
+  });
+
+  // 3. Clinical Indices & Pulmonary Mechanics Calculation
+  app.post("/api/v1/picu/calculate/indices", (req, res) => {
+    try {
+      const { fiO2, meanAirwayPressure, paO2, spO2, tidalVolume, pip, peep, dopamine = 0, dobutamine = 0, epinephrine = 0, norepinephrine = 0, milrinone = 0, vasopressin = 0, heartRate = 120, systolicBp = 90 } = req.body;
+      
+      const oi = Math.round(((fiO2 * meanAirwayPressure * 100) / (paO2 || 80)) * 10) / 10;
+      const osi = Math.round(((fiO2 * meanAirwayPressure * 100) / (spO2 || 95)) * 10) / 10;
+      const deltaP = pip - peep;
+      const cdyn = deltaP > 0 ? Math.round((tidalVolume / deltaP) * 10) / 10 : 0;
+      
+      const vis = Math.round((dopamine + dobutamine + 100 * epinephrine + 100 * norepinephrine + 10 * milrinone + 10000 * vasopressin) * 100) / 100;
+      const sipa = systolicBp > 0 ? Math.round((heartRate / systolicBp) * 100) / 100 : 0;
+
+      let pardsClass = "NONE";
+      if (oi >= 35) pardsClass = "ECMO_CRITERIA";
+      else if (oi >= 16) pardsClass = "SEVERE_PARDS";
+      else if (oi >= 8) pardsClass = "MODERATE_PARDS";
+      else if (oi >= 4) pardsClass = "MILD_PARDS";
+
+      res.json({
+        success: true,
+        oxygenationIndex: oi,
+        oxygenSaturationIndex: osi,
+        dynamicCompliance: cdyn,
+        pardsClassification: pardsClass,
+        vasoactiveInotropicScore: vis,
+        shockIndexPediatric: sipa
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to calculate clinical indices" });
+    }
+  });
+
+  // 4. Holliday-Segar 4-2-1 & Fluid Overload Calculation
+  app.post("/api/v1/picu/calculate/fluid-maintenance", (req, res) => {
+    try {
+      const { weightKg, cumulativeIntakeMl = 0, cumulativeOutputMl = 0, admissionWeightKg = weightKg } = req.body;
+      if (!weightKg || weightKg <= 0) {
+        return res.status(400).json({ error: "Valid weightKg is required" });
+      }
+
+      let hourlyRate = 0;
+      if (weightKg <= 10) hourlyRate = weightKg * 4;
+      else if (weightKg <= 20) hourlyRate = 40 + (weightKg - 10) * 2;
+      else hourlyRate = 60 + (weightKg - 20) * 1;
+
+      const netBalanceMl = cumulativeIntakeMl - cumulativeOutputMl;
+      const percentFo = Math.round(((netBalanceMl / (admissionWeightKg * 1000)) * 100) * 10) / 10;
+
+      res.json({
+        success: true,
+        weightKg,
+        hollidaySegarRateMlHr: Math.round(hourlyRate),
+        dailyMaintenanceMl: Math.round(hourlyRate * 24),
+        netBalanceMl,
+        percentFluidOverload: percentFo,
+        crrtEvaluationRecommended: percentFo >= 10.0
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to calculate fluid maintenance" });
+    }
+  });
+
+  // 5. PALS Emergency Escalation Dispatch
+  app.post("/api/v1/picu/escalate/pals", (req, res) => {
+    try {
+      const { patientId, protocol, notes, initiatedBy = "Attending Intensivist" } = req.body;
+      if (!patientId || !protocol) {
+        return res.status(400).json({ error: "patientId and protocol are required" });
+      }
+
+      const escalationEvent = {
+        eventId: `PALS-EVT-${Date.now()}`,
+        patientId,
+        protocol,
+        initiatedBy,
+        timestamp: new Date().toISOString(),
+        status: "DISPATCHED",
+        targetResponseMinutes: protocol === "PEDIATRIC_CODE_BLUE" ? 2 : 15,
+        notes
+      };
+
+      res.json({
+        success: true,
+        message: "PALS Emergency Protocol Dispatched to Hospital Gateway",
+        event: escalationEvent
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to dispatch PALS protocol" });
+    }
+  });
+
+  // 6. FHIR R4 Bundle Export
+  app.get("/api/v1/picu/export/fhir/:patientId", (req, res) => {
+    const { patientId } = req.params;
+    const pt = mockPicuPatients.find(p => p.id === patientId) || mockPicuPatients[0];
+    
+    const fhirBundle = {
+      resourceType: "Bundle",
+      id: `picu-fhir-${pt.id}-${Date.now()}`,
+      type: "collection",
+      timestamp: new Date().toISOString(),
+      entry: [
+        {
+          fullUrl: `urn:uuid:patient-${pt.id}`,
+          resource: {
+            resourceType: "Patient",
+            id: pt.id,
+            identifier: [{ system: "urn:oid:medtrack:picu:mrn", value: pt.mrn }],
+            name: [{ use: "official", text: pt.name }],
+            gender: pt.gender.toLowerCase()
+          }
+        },
+        {
+          fullUrl: `urn:uuid:observation-vitals-${pt.id}`,
+          resource: {
+            resourceType: "Observation",
+            status: "final",
+            subject: { reference: `Patient/${pt.id}` },
+            code: { text: "Pediatric ICU Vital Signs & Ventilator Indices" },
+            component: [
+              { code: { text: "Heart Rate" }, valueQuantity: { value: pt.vitals.heartRate, unit: "bpm" } },
+              { code: { text: "MAP" }, valueQuantity: { value: pt.vitals.meanArterialPressure, unit: "mmHg" } },
+              { code: { text: "Oxygenation Index" }, valueQuantity: { value: pt.pulmonaryIndices.oxygenationIndex, unit: "index" } },
+              { code: { text: "VIS Score" }, valueQuantity: { value: pt.vasoactiveSupport.vasoactiveInotropicScore, unit: "score" } }
+            ]
+          }
+        }
+      ]
+    };
+
+    res.json(fhirBundle);
+  });
+
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
-  LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic, Trophy,
+  LayoutDashboard, HeartPulse, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic, Trophy,
   Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Calendar
 } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
@@ -72,6 +72,8 @@ const StudyGroupRooms = lazy(() => import('./components/tabs/StudyGroupRooms'));
 const CodeReviewExchange = lazy(() => import('./components/tabs/CodeReviewExchange'));
 const DeadlineCalendar = lazy(() => import('./components/tabs/DeadlineCalendar'));
 const DirectMessages = lazy(() => import('./components/tabs/DirectMessages'));
+const PicuCriticalCareHub = lazy(() => import('./pages/Enterprise/PicuCriticalCareHub'));
+
 const LoadingFallback = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
     <div className="flex items-center gap-3 animate-pulse">
@@ -167,6 +169,11 @@ const getSeoPropsForTab = (tab: string) => {
       return { title: "AI Assistant | YuvaHub", description: "Interact with our intelligent career assistant for optimization and guidance." };
     case 'focus_room':
       return { title: "Global Focus Room | YuvaHub", description: "Join the global Pomodoro focus room and study with other students." };
+        case 'picu_telemetry':
+      return {
+        title: "PICU Telemetry & Critical Care Command Station | MedTrack YuvaHub",
+        description: "Pediatric ICU clinical telemetry, ventilator mechanics, PALS protocols, and decision support command center."
+      };
     case 'faq':
       return { title: "Help Center & FAQ | YuvaHub", description: "Find answers to common questions, troubleshoot issues, and learn how to use YuvaHub effectively." };
     case 'poll_studio':
@@ -267,6 +274,8 @@ function App() {
       title: "Core Platform",
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'picu_telemetry', label: 'PICU Telemetry Hub', icon: HeartPulse, badge: 'PALS' },
+
         { id: 'opportunities', label: 'Opportunities', icon: Globe },
         { id: 'application_tracker', label: 'Application Tracker', icon: Briefcase },
         { id: 'watchlist_manager', label: 'Watchlists & Alerts', icon: Sparkles, badge: 'NEW' },
@@ -331,6 +340,7 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
+      case 'picu_telemetry': return <PicuCriticalCareHub />;
       case 'opportunities': return <Opportunities />;
       case 'application_tracker': return <ApplicationTracker />;
       case 'deadline_calendar': return <DeadlineCalendar />;
@@ -394,7 +404,12 @@ function App() {
       case 'help': return gettingStartedStep ? <GettingStartedDetail stepId={gettingStartedStep as any} /> : <HelpCenterPage />;
       case 'mock_interview': return <MockInterviewRoom />;
       case 'watchlist_manager': return <WatchlistManager />;
-      case 'faq': return <FAQ />;
+          case 'picu_telemetry':
+      return {
+        title: "PICU Telemetry & Critical Care Command Station | MedTrack YuvaHub",
+        description: "Pediatric ICU clinical telemetry, ventilator mechanics, PALS protocols, and decision support command center."
+      };
+    case 'faq': return <FAQ />;
       default: return <Dashboard />;
     }
   };

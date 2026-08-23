@@ -2667,6 +2667,186 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+
+  // ==========================================
+  // CRRT & NEPHROLOGY TELEMETRY APIS
+  // Standards: KDIGO AKI, ADQI, HL7 FHIR R4
+  // ==========================================
+
+  const mockCrrtPatients = [
+    {
+      id: "CRRT-PT-701",
+      mrn: "MRN-1904821",
+      name: "Harish Vardhan",
+      ageYears: 64,
+      gender: "MALE",
+      weightKg: 84.0,
+      admissionDiagnosis: "Septic Shock with Multi-Organ Failure & AKI Stage 3",
+      kdigoStage: "STAGE_3",
+      modality: "CVVHDF",
+      anticoagulation: "REGIONAL_CITRATE",
+      hydraulics: {
+        accessPressureMmHg: -110,
+        filterPrePressureMmHg: 185,
+        returnPressureMmHg: 95,
+        effluentPressureMmHg: 15,
+        transmembranePressureMmHg: 125,
+        filterPressureDropMmHg: 90,
+        filtrationFractionPercent: 18.5,
+        bloodFlowRateMlMin: 180,
+        filterLifeHours: 28.5,
+        healthStatus: "OPTIMAL"
+      },
+      prescription: {
+        preFilterReplacementMlHr: 1000,
+        postFilterReplacementMlHr: 400,
+        dialysateFlowMlHr: 800,
+        netUltrafiltrationMlHr: 150,
+        deliveredDoseMlKgHr: 28.0
+      },
+      citrateTelemetry: {
+        totalToIonizedCalciumRatio: 2.08,
+        citrateToxicityRisk: "NONE"
+      },
+      metabolics: {
+        potassiumMmolL: 4.4,
+        serumCreatinineMgDl: 4.8,
+        percentFluidOverload: 8.1
+      }
+    }
+  ];
+
+  // 1. Get all CRRT Patients
+  app.get("/api/v1/crrt/patients", (req, res) => {
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      census: mockCrrtPatients.length,
+      patients: mockCrrtPatients
+    });
+  });
+
+  // 2. Get Single CRRT Patient
+  app.get("/api/v1/crrt/patients/:patientId", (req, res) => {
+    const { patientId } = req.params;
+    const pt = mockCrrtPatients.find(p => p.id === patientId);
+    if (!pt) {
+      return res.status(404).json({ error: "CRRT patient profile not found" });
+    }
+    res.json({ success: true, patient: pt });
+  });
+
+  // 3. Circuit Hydraulics & KDIGO Dose Calculator
+  app.post("/api/v1/crrt/calculate/hydraulics", (req, res) => {
+    try {
+      const { pPre = 180, pRet = 90, pEff = 15, qBlood = 180, qRepPre = 1000, qRepPost = 400, qDialysate = 800, qNetUf = 150, weightKg = 75, hct = 0.30 } = req.body;
+      
+      const tmp = Math.round(((pPre + pRet) / 2) - pEff);
+      const deltaP = Math.round(pPre - pRet);
+      const totalEffluent = qRepPre + qRepPost + qDialysate + qNetUf;
+      const deliveredDose = weightKg > 0 ? Math.round((totalEffluent / weightKg) * 10) / 10 : 0;
+      
+      const plasmaFlow = qBlood * (1 - hct) * 60;
+      const ff = plasmaFlow > 0 ? Math.round(((qRepPost + qNetUf) / plasmaFlow) * 1000) / 10 : 0;
+
+      let health = "OPTIMAL";
+      if (tmp > 300 || deltaP > 200) health = "CLOTTED_CHANGE_NOW";
+      else if (tmp > 250 || deltaP > 150) health = "IMMINENT_CLOTTING";
+      else if (tmp > 150 || deltaP > 100) health = "MODERATE_FOULING";
+
+      res.json({
+        success: true,
+        transmembranePressureMmHg: tmp,
+        filterPressureDropMmHg: deltaP,
+        filtrationFractionPercent: ff,
+        deliveredDoseMlKgHr: deliveredDose,
+        totalEffluentFlowMlHr: totalEffluent,
+        healthStatus: health
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to calculate CRRT hydraulics" });
+    }
+  });
+
+  // 4. Regional Citrate Anticoagulation (RCA) Lock Risk Calculator
+  app.post("/api/v1/crrt/calculate/citrate", (req, res) => {
+    try {
+      const { totalCaMmolL = 2.4, systemicIcaMmolL = 1.15 } = req.body;
+      const ratio = systemicIcaMmolL > 0 ? Math.round((totalCaMmolL / systemicIcaMmolL) * 100) / 100 : 0;
+      const isLockRisk = ratio > 2.5;
+
+      res.json({
+        success: true,
+        totalCalciumMmolL: totalCaMmolL,
+        systemicIonizedCalciumMmolL: systemicIcaMmolL,
+        totalToIonizedCalciumRatio: ratio,
+        citrateToxicityRisk: isLockRisk ? "SEVERE_CITRATE_LOCK" : "NONE",
+        clinicalGuidance: isLockRisk ? "Reduce ACD-A infusion rate and increase dialysate flow immediately." : "Citrate metabolism normal."
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to calculate citrate metrics" });
+    }
+  });
+
+  // 5. Authorize Emergency Renal Protocol Dispatch
+  app.post("/api/v1/crrt/escalate/protocol", (req, res) => {
+    try {
+      const { patientId, protocolName, instructions } = req.body;
+      if (!patientId || !protocolName) {
+        return res.status(400).json({ error: "patientId and protocolName are required" });
+      }
+
+      res.json({
+        success: true,
+        message: "Critical Care Nephrology Emergency Protocol Dispatched",
+        patientId,
+        protocol: protocolName,
+        orderInstructions: instructions,
+        dispatchedAt: new Date().toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ error: "Failed to dispatch CRRT emergency protocol" });
+    }
+  });
+
+  // 6. FHIR R4 DeviceMetric Export
+  app.get("/api/v1/crrt/export/fhir/:patientId", (req, res) => {
+    const { patientId } = req.params;
+    const pt = mockCrrtPatients.find(p => p.id === patientId) || mockCrrtPatients[0];
+
+    const fhirBundle = {
+      resourceType: "Bundle",
+      id: `crrt-fhir-${pt.id}-${Date.now()}`,
+      type: "collection",
+      timestamp: new Date().toISOString(),
+      entry: [
+        {
+          fullUrl: `urn:uuid:patient-${pt.id}`,
+          resource: {
+            resourceType: "Patient",
+            id: pt.id,
+            identifier: [{ system: "urn:oid:medtrack:crrt:mrn", value: pt.mrn }],
+            name: [{ use: "official", text: pt.name }]
+          }
+        },
+        {
+          fullUrl: `urn:uuid:devicetric-crrt-${pt.id}`,
+          resource: {
+            resourceType: "DeviceMetric",
+            id: `metric-crrt-${pt.id}`,
+            operationalStatus: "on",
+            extension: [
+              { url: "http://hl7.org/fhir/StructureDefinition/tmp-pressure", valueDecimal: pt.hydraulics.transmembranePressureMmHg },
+              { url: "http://hl7.org/fhir/StructureDefinition/effluent-dose", valueDecimal: pt.prescription.deliveredDoseMlKgHr }
+            ]
+          }
+        }
+      ]
+    };
+
+    res.json(fhirBundle);
+  });
+
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {

@@ -2667,6 +2667,275 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+  // =========================================================================
+  // CARDIOVASCULAR HEMODYNAMICS, ECMO & MECHANICAL CIRCULATORY SUPPORT APIS
+  // Standards: AHA/ACC Shock, SCAI Classification, ELSO Guidelines, HL7 FHIR R4
+  // =========================================================================
+
+  app.get("/api/v1/cardiovascular/patients", (req, res) => {
+    try {
+      const mockPatients = [
+        {
+          id: "cardio-bed-01",
+          mrn: "MRN-CTICU-9401",
+          name: "Arthur Vance",
+          age: 61,
+          sex: "MALE",
+          bedNumber: "CTICU-01",
+          bodySurfaceAreaM2: 2.05,
+          weightKg: 86,
+          heightCm: 178,
+          primaryDiagnosis: "Acute Anterior STEMI with Post-Infarction Cardiogenic Shock (ECPELLA Unloaded)",
+          shockEtiology: "ACUTE_MYOCARDIAL_INFARCTION",
+          scaiStage: "STAGE_D_DETERIORATING",
+          mcsDevice: "ECPELLA",
+          cannulation: "PERIPHERAL_FEMORAL_FEMORAL",
+          hoursOnSupport: 38,
+          dayInIcu: 2,
+          attendingCardiologist: "Dr. Alistair Sterling, MD, FACC",
+          primaryPerfusionist: "Sarah Jenkins, CCP",
+          hemodynamics: {
+            heartRateBpm: 104,
+            rhythmStatus: "SINUS",
+            systolicBloodPressureMmHg: 92,
+            diastolicBloodPressureMmHg: 68,
+            meanArterialPressureMmHg: 76,
+            pulsePressureMmHg: 24,
+            centralVenousPressureMmHg: 12,
+            pulmonaryArterySystolicMmHg: 38,
+            pulmonaryArteryDiastolicMmHg: 20,
+            pulmonaryArteryMeanMmHg: 26,
+            pulmonaryCapillaryWedgePressureMmHg: 16,
+            cardiacOutputLpm: 4.8,
+            cardiacIndexLpmM2: 2.34,
+            strokeVolumeMl: 46.1,
+            strokeVolumeIndexMlM2: 22.5,
+            systemicVascularResistanceDynes: 1067,
+            pulmonaryVascularResistanceWoodUnits: 2.08,
+            cardiacPowerOutputWatts: 0.81,
+            cardiacPowerIndexWattsM2: 0.40,
+            pulmonaryArteryPulsatilityIndex: 1.50,
+            leftVentricularStrokeWorkIndex: 18.4,
+            rightVentricularStrokeWorkIndex: 4.3,
+            transpulmonaryGradientMmHg: 10,
+            diastolicPulmonaryGradientMmHg: 4,
+            shockIndex: 1.13,
+            modifiedShockIndex: 1.37
+          },
+          ecmoTelemetry: {
+            pumpSpeedRpm: 3850,
+            bloodFlowLpm: 3.6,
+            sweepGasFlowLpm: 4.0,
+            sweepGasFiO2Percent: 100,
+            preMembranePressureP1MmHg: 210,
+            postMembranePressureP2MmHg: 175,
+            transmembranePressureGradientMmHg: 35,
+            venousDrainagePressureP3MmHg: -55,
+            arterialBloodTemperatureCelsius: 36.8,
+            venousOxygenSaturationSvO2Percent: 68,
+            postOxygenatorPO2MmHg: 380,
+            postOxygenatorPCO2MmHg: 38,
+            rightRadialNativeSpO2Percent: 96,
+            lowerExtremityEcmoSpO2Percent: 99,
+            harlequinDeltaSpO2Percent: 3,
+            distalPerfusionCatheterFlowMlMin: 180
+          },
+          microaxialTelemetry: {
+            impellaPLevel: "P-7",
+            impellaFlowLpm: 3.1,
+            motorCurrentMilliamps: 720,
+            purgePressureMmHg: 440,
+            purgeFlowRateMlHr: 12.5,
+            opticalPlacementSignalStatus: "CORRECT_AORTIC_VALVE",
+            iabpAugmentationRatio: "STANDBY",
+            iabpAugmentedDiastolicMmHg: 0
+          },
+          vasoactiveSupport: {
+            epinephrineMcgKgMin: 0.04,
+            norepinephrineMcgKgMin: 0.08,
+            vasopressinUnitsMin: 0.03,
+            dobutamineMcgKgMin: 2.5,
+            milrinoneMcgKgMin: 0.0,
+            dopamineMcgKgMin: 0.0,
+            angiotensinIINgKgMin: 0.0,
+            vasoactiveInotropicScore: 314.5
+          },
+          anticoagulationLabs: {
+            activatedClottingTimeSeconds: 198,
+            antiXaActivityIuMl: 0.45,
+            unfractionatedHeparinUnitsHr: 1100,
+            bivalirudinMgKgHr: 0,
+            fibrinogenMgDl: 240,
+            freePlasmaHemoglobinMgDl: 18,
+            lactateMmolL: 2.8,
+            arterialPh: 7.34,
+            arterialBaseExcessMeqL: -3.2,
+            serumCreatinineMgDl: 1.4,
+            plateletCountKUl: 165
+          },
+          alerts: [],
+          lastUpdated: new Date().toISOString()
+        }
+      ];
+
+      res.json({
+        success: true,
+        count: mockPatients.length,
+        data: mockPatients
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/v1/cardiovascular/patients/:patientId", (req, res) => {
+    try {
+      const { patientId } = req.params;
+      res.json({
+        success: true,
+        data: {
+          id: patientId,
+          status: "MONITORING_ACTIVE",
+          timestamp: new Date().toISOString()
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/cardiovascular/calculate/hemodynamics", (req, res) => {
+    try {
+      const { sbp = 100, dbp = 60, hr = 80, co = 5.0, cvp = 8, pas = 25, pad = 10, pcwp = 12, heightCm = 175, weightKg = 75 } = req.body;
+      
+      const bsa = Number(Math.sqrt((heightCm * weightKg) / 3600).toFixed(2));
+      const map = Math.round((sbp + 2 * dbp) / 3);
+      const pp = Math.max(0, sbp - dbp);
+      const ci = bsa > 0 ? Number((co / bsa).toFixed(2)) : 0;
+      const sv = hr > 0 ? Number(((co / hr) * 1000).toFixed(1)) : 0;
+      const svi = bsa > 0 ? Number((sv / bsa).toFixed(1)) : 0;
+      const cpo = Number(((map * co) / 451).toFixed(2));
+      const cpi = bsa > 0 ? Number((cpo / bsa).toFixed(2)) : 0;
+      const svr = co > 0 ? Math.round((80 * Math.max(0, map - cvp)) / co) : 0;
+      const mpap = Math.round((pas + 2 * pad) / 3);
+      const pvr = co > 0 ? Number((Math.max(0, mpap - pcwp) / co).toFixed(2)) : 0;
+      const papi = cvp > 0 ? Number((Math.max(0, pas - pad) / cvp).toFixed(2)) : 0;
+      const lvswi = Number((0.0136 * svi * Math.max(0, map - pcwp)).toFixed(1));
+      const rvswi = Number((0.0136 * svi * Math.max(0, mpap - cvp)).toFixed(1));
+      const tpg = Math.max(0, mpap - pcwp);
+      const dpg = pad - pcwp;
+      const si = sbp > 0 ? Number((hr / sbp).toFixed(2)) : 0;
+
+      res.json({
+        success: true,
+        calculations: {
+          bsaM2: bsa,
+          meanArterialPressureMmHg: map,
+          pulsePressureMmHg: pp,
+          cardiacIndexLpmM2: ci,
+          strokeVolumeMl: sv,
+          strokeVolumeIndexMlM2: svi,
+          cardiacPowerOutputWatts: cpo,
+          cardiacPowerIndexWattsM2: cpi,
+          systemicVascularResistanceDynes: svr,
+          pulmonaryArteryMeanMmHg: mpap,
+          pulmonaryVascularResistanceWoodUnits: pvr,
+          pulmonaryArteryPulsatilityIndex: papi,
+          leftVentricularStrokeWorkIndex: lvswi,
+          rightVentricularStrokeWorkIndex: rvswi,
+          transpulmonaryGradientMmHg: tpg,
+          diastolicPulmonaryGradientMmHg: dpg,
+          shockIndex: si,
+          cpoRiskCategory: cpo < 0.6 ? "CRITICAL_HYPOPERFUSION" : cpo < 0.8 ? "BORDERLINE" : "NORMAL",
+          papiRvStatus: papi < 0.9 ? "RIGHT_VENTRICULAR_FAILURE" : "COMPENSATED"
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/cardiovascular/calculate/vis", (req, res) => {
+    try {
+      const {
+        dopamineMcgKgMin = 0,
+        dobutamineMcgKgMin = 0,
+        epinephrineMcgKgMin = 0,
+        norepinephrineMcgKgMin = 0,
+        milrinoneMcgKgMin = 0,
+        vasopressinUnitsMin = 0
+      } = req.body;
+
+      const vis = dopamineMcgKgMin + dobutamineMcgKgMin + 100 * epinephrineMcgKgMin + 100 * norepinephrineMcgKgMin + 10 * milrinoneMcgKgMin + 10000 * vasopressinUnitsMin;
+
+      res.json({
+        success: true,
+        vasoactiveInotropicScore: Number(vis.toFixed(1)),
+        intensity: vis > 30 ? "HIGH_INOTROPIC_BURDEN" : vis > 15 ? "MODERATE" : "LOW"
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/cardiovascular/calculate/ecmo-indices", (req, res) => {
+    try {
+      const { p1PreMmHg = 200, p2PostMmHg = 160, lowerSpO2 = 98, rightRadialSpO2 = 95 } = req.body;
+      const tmp = Math.max(0, p1PreMmHg - p2PostMmHg);
+      const harlequinDelta = Math.max(0, lowerSpO2 - rightRadialSpO2);
+
+      res.json({
+        success: true,
+        transmembranePressureGradientMmHg: tmp,
+        isThrombosisRisk: tmp >= 50,
+        harlequinDeltaSpO2Percent: harlequinDelta,
+        isDifferentialHypoxemia: harlequinDelta >= 10 && rightRadialSpO2 < 90
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/cardiovascular/escalate/cardiac-protocol", (req, res) => {
+    try {
+      const { patientId, protocolName, notes } = req.body;
+      res.json({
+        success: true,
+        dispatchId: `stat-cardio-${Date.now()}`,
+        patientId,
+        protocol: protocolName,
+        status: "BROADCAST_ACTIVE",
+        dispatchedAt: new Date().toISOString(),
+        acknowledgedBy: "CTICU_RAPID_RESPONSE_TEAM"
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/v1/cardiovascular/export/fhir/:patientId", (req, res) => {
+    try {
+      const { patientId } = req.params;
+      res.json({
+        resourceType: "Bundle",
+        id: `cardio-fhir-${patientId}-${Date.now()}`,
+        type: "collection",
+        entry: [
+          {
+            fullUrl: `urn:uuid:patient-${patientId}`,
+            resource: {
+              resourceType: "Patient",
+              id: patientId,
+              gender: "male"
+            }
+          }
+        ]
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {

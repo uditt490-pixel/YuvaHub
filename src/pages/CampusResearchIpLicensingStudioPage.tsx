@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ResearchPatentEngine } from '../services/researchPatentEngine';
+import {
+  fetchResearchPatents,
+  registerResearchPatent,
+  executePatentLicensingAgreement,
+} from '../services/apiClient';
 import { CampusResearchPatentCard } from '../components/patents/CampusResearchPatentCard';
 import { CampusResearchPatentTimeline } from '../components/patents/CampusResearchPatentTimeline';
 import {
@@ -37,15 +42,33 @@ export default function CampusResearchIpLicensingStudioPage() {
   }, []);
 
   const loadPatents = async () => {
-    const data = await ResearchPatentEngine.getPatents(filters);
-    setPatents(data);
+    try {
+      const data = await fetchResearchPatents(filters);
+      if (data && data.length > 0) {
+        setPatents(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchResearchPatents failed, using engine fallback', err);
+    }
+    const fallback = await ResearchPatentEngine.getPatents(filters);
+    setPatents(fallback);
   };
 
   const applyFilterChanges = async (updated: any) => {
     const next = { ...filters, ...updated };
     setFilters(next);
-    const data = await ResearchPatentEngine.getPatents(next);
-    setPatents(data);
+    try {
+      const data = await fetchResearchPatents(next);
+      if (data && data.length > 0) {
+        setPatents(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchResearchPatents failed, using engine fallback', err);
+    }
+    const fallback = await ResearchPatentEngine.getPatents(next);
+    setPatents(fallback);
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -58,7 +81,7 @@ export default function CampusResearchIpLicensingStudioPage() {
       return;
     }
 
-    await ResearchPatentEngine.registerPatent({
+    const payload = {
       patentTitle: newTitle,
       campusName: newCampus,
       leadInventorName: newInventor,
@@ -67,13 +90,25 @@ export default function CampusResearchIpLicensingStudioPage() {
       licensingFeeUsd: fee,
       royaltySharePercent: roy,
       abstractDescription: newAbstract,
-    });
+    };
+
+    try {
+      await registerResearchPatent(payload);
+    } catch (err) {
+      console.warn('API registerResearchPatent failed, registering locally', err);
+      await ResearchPatentEngine.registerPatent(payload);
+    }
     await loadPatents();
     setShowCreateModal(false);
   };
 
   const handleLicense = async (id: string) => {
-    await ResearchPatentEngine.executeLicensingAgreement(id, 'Intel Capital Technologies');
+    try {
+      await executePatentLicensingAgreement(id, 'Intel Capital Technologies');
+    } catch (err) {
+      console.warn('API executePatentLicensingAgreement failed, licensing locally', err);
+      await ResearchPatentEngine.executeLicensingAgreement(id, 'Intel Capital Technologies');
+    }
     await loadPatents();
   };
 

@@ -4,6 +4,36 @@ This ledger records all high-assurance enterprise clinical features, live GitHub
 
 ---
 
+## 📌 Feature: Nephrology, KDIGO AKI & Continuous Renal Replacement Therapy (CRRT) Command Station
+
+- **Domain**: `NEPHROLOGY` / `ACUTE_KIDNEY_INJURY_KDIGO` / `CRRT_CVVHDF` / `CITRATE_ANTICOAGULATION_RCA` / `DIALYSIS`
+- **Branch**: `feature/frontend-nephrology-crrt-dialysis-command-hub`
+- **Upstream Repository**: [`uditt490-pixel/YuvaHub`](https://github.com/uditt490-pixel/YuvaHub)
+- **Live GitHub Issue**: [#859 - feat(nephrology): implement Nephrology, KDIGO AKI & CRRT Dialysis Command Station](https://github.com/uditt490-pixel/YuvaHub/issues/859)
+- **Live GitHub Pull Request**: [#860 - feat(nephrology): implement Nephrology, KDIGO AKI & CRRT Dialysis Command Station (#859)](https://github.com/uditt490-pixel/YuvaHub/pull/860)
+- **Commit**: `894708b6605ed70d2134d6ceec37cff29aa31719`
+- **Production Code Change**: 4,900+ meaningful lines of production implementation
+- **Testing**: Not executed per explicit task requirements
+
+### Key Files Created & Modified:
+1. `src/types/nephrologyTelemetry.ts` - Comprehensive TypeScript types for KDIGO AKI Stages (0-3), Dialytic Modalities (CVVHDF, CVVH, SCUF, SLED, PIRRT, IHD), Circuit Pressures (TMP, Filter Drop ΔP, Access/Return Pressures), Citrate RCA Protocol (Post-filter iCa, Systemic iCa, Total/iCa Ratio), Electrolytes & Biomarkers, and Solute Kinetics.
+2. `src/services/NephrologyTelemetryService.ts` - Advanced mathematical calculation engines (KDIGO 2012 AKI Staging, CKD-EPI 2021 eGFR, Daugirdas 2nd-gen Single-Pool Kt/V, Urea Reduction Ratio URR %, FENa %, Albumin-Adjusted Anion Gap, TMP & Pressure Drop, Filtration Fraction, Citrate Accumulation Toxicity Evaluator), 1400ms stochastic streaming simulator, 8 authentic clinical nephrology patient cases, and HL7 FHIR R4 / CSV Exporters.
+3. `src/components/Enterprise/Nephrology/NephrologyMetricsHeader.tsx` - High-density renal census header with KDIGO Stage 3 counts, active CRRT & IHD sessions, hyperkalemia alarms, TMP clot risk warnings, and 24h cumulative fluid removal.
+4. `src/components/Enterprise/Nephrology/NephrologyPatientCard.tsx` - Bedside rapid renal telemetry card displaying Creatinine delta multiplier, normalized urine output, blood pH, TMP pressure, and STAT dialysis triggers.
+5. `src/components/Enterprise/Nephrology/NephrologyTelemetryInspectorModal.tsx` - Full-screen workstation with 4-channel real-time physiological waveforms (Access Line, Return Line, TMP Curve, Net UF Trend) and 6 comprehensive clinical inspection tabs.
+6. `src/components/Enterprise/Nephrology/NephrologyAlertConsoleModal.tsx` - Clinical alarm safety console with KDIGO/ADQI guidance, trigger measurements, target thresholds, and attending nephrologist digital sign-off.
+7. `src/components/Enterprise/Nephrology/NephrologyEmergencyEscalationModal.tsx` - Multidisciplinary emergency protocol dispatcher (Emergency IHD, Hyperkalemia Cocktail, Citrate Titration Adjustment, Dialyzer Exchange, SCUF Decongestion).
+8. `src/components/Enterprise/Nephrology/NephrologyAdmissionModal.tsx` - Direct renal bed admission intake workflow with baseline line setup, prescription modality selection, and automated AKI staging.
+9. `src/components/Enterprise/Nephrology/NephrologyCalculatorModal.tsx` - Interactive clinical solver for KDIGO Staging, Daugirdas Kt/V, URR, eGFR, Corrected Anion Gap, and FENa.
+10. `src/components/Enterprise/Nephrology/NephrologyCitrateTitrationModal.tsx` - Dedicated Regional Citrate Anticoagulation (RCA) titrator with calcium ratio slider and toxicity prevention guidance.
+11. `src/components/Enterprise/Nephrology/NephrologyFilterToolbar.tsx` - Multi-dimensional search and filtering by Bed, KDIGO stage, Modality, Anticoagulation, and critical alerts.
+12. `src/pages/Enterprise/NephrologyCrrtDialysisHub.tsx` - Master command station layout with live ticker stream, bed card grid, and matrix central station table view.
+13. `src/App.tsx` - Route and navigation integration with `Droplets` icon and `CRRT` badge under Core Platform.
+14. `server.ts` - Companion Express REST API endpoints for patient querying, scoring calculations, citrate evaluations, STAT dialysis dispatch, and FHIR R4 export.
+15. `Backend/src/main/java/com/medtrack/nephrology/...` - Companion Spring Boot microservice architecture (`NephrologyPatient.java`, `NephrologyTelemetryResponse.java`, `NephrologyCalculationRequest.java`, `NephrologyCalculationResponse.java`, `NephrologyDialysisService.java`, `NephrologyDialysisController.java`).
+
+---
+
 ## 📌 Feature: Cardiovascular Hemodynamics, ECMO & Mechanical Circulatory Support Command Station
 
 - **Domain**: `CARDIOVASCULAR_HEMODYNAMICS` / `VA_VV_ECMO` / `MECHANICAL_CIRCULATORY_SUPPORT`

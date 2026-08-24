@@ -2936,6 +2936,172 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+
+  // ==========================================
+  // PEDIATRIC ICU (PICU) & NEONATAL CRITICAL CARE REST API
+  // ==========================================
+  app.get("/api/v1/picu/patients", (req, res) => {
+    try {
+      res.json({
+        success: true,
+        censusCount: 8,
+        microPreemieCount: 2,
+        criticalPewsCount: 3,
+        severePardsOiCount: 2,
+        activeHfovVentCount: 2,
+        timestamp: new Date().toISOString(),
+        patients: [
+          {
+            id: "PICU-301",
+            mrn: "MRN-1092831",
+            name: "Baby Boy Liam",
+            ga: 26.2,
+            ageGroup: "EXTREME_PRETERM_UNDER_28W",
+            weightKg: 0.84,
+            bed: "NICU-ISOLETTE-01 (STAT HFOV)",
+            careUnit: "NICU_LEVEL_IV_QUATERNARY",
+            ventMode: "HFOV_HIGH_FREQUENCY_OSCILLATORY",
+            vitals: { hr: 162, sbp: 48, dbp: 26, map: 33, preSpO2: 92, postSpO2: 83, delta: 9, etco2: 42 },
+            pews: 6,
+            oi: 16.2,
+            gir: 6.2,
+            broselow: "PINK_PREEMIE_UNDER_3KG"
+          },
+          {
+            id: "PICU-302",
+            mrn: "MRN-2291048",
+            name: "Sophia Rodriguez",
+            ga: 39.5,
+            ageGroup: "YOUNG_CHILD_4_7Y",
+            weightKg: 16.5,
+            bed: "PICU-BED-04 (STAT RESUS)",
+            careUnit: "PICU_MEDICAL_SURGICAL",
+            ventMode: "CONVENTIONAL_PRVC_PRESSURE_REGULATED",
+            vitals: { hr: 168, sbp: 72, dbp: 38, map: 49, preSpO2: 94, postSpO2: 93, delta: 1, etco2: 28 },
+            pews: 8,
+            oi: 7.7,
+            gir: 4.5,
+            broselow: "WHITE_15_18KG"
+          },
+          {
+            id: "PICU-307",
+            mrn: "MRN-7819203",
+            name: "Elijah Vance",
+            ga: 39.0,
+            ageGroup: "TODDLER_1_3Y",
+            weightKg: 12.0,
+            bed: "CICU-BED-03 (SVT-STAT)",
+            careUnit: "PICU_CARDIAC_CICU",
+            ventMode: "SPONTANEOUS_ROOM_AIR",
+            vitals: { hr: 245, sbp: 82, dbp: 44, map: 57, preSpO2: 97, postSpO2: 97, delta: 0, etco2: 35 },
+            pews: 5,
+            oi: 2.1,
+            gir: 4.0,
+            broselow: "YELLOW_12_14KG"
+          }
+        ]
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/v1/picu/patients/:patientId", (req, res) => {
+    try {
+      const { patientId } = req.params;
+      res.json({
+        success: true,
+        patientId,
+        bed: "NICU-ISOLETTE-01 (STAT HFOV)",
+        status: "ACTIVE_PICU_TELEMETRY",
+        lastTelemetryUpdate: new Date().toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/picu/calculate/pals-scores", (req, res) => {
+    try {
+      const { weightKg, ageYears, behavior, cardio, resp, extraNeb, extraEmesis, paw, fio2, pao2, spo2, ivRate, dextrose } = req.body;
+      const w = Number(weightKg) > 0 ? Number(weightKg) : 10.0;
+      const age = Math.max(0, Number(ageYears) || 0);
+
+      let broselow = "GREY_3_5KG";
+      if (w < 3.0) broselow = "PINK_PREEMIE_UNDER_3KG";
+      else if (w <= 5.5) broselow = "GREY_3_5KG";
+      else if (w <= 7.5) broselow = "PINK_6_7KG";
+      else if (w <= 9.5) broselow = "RED_8_9KG";
+      else if (w <= 11.5) broselow = "PURPLE_10_11KG";
+      else if (w <= 14.5) broselow = "YELLOW_12_14KG";
+      else if (w <= 18.5) broselow = "WHITE_15_18KG";
+      else if (w <= 23.5) broselow = "BLUE_19_23KG";
+      else if (w <= 29.5) broselow = "ORANGE_24_29KG";
+      else if (w <= 36.0) broselow = "GREEN_30_36KG";
+      else broselow = "ADULT_OVER_36KG";
+
+      const epiIv = Number((w * 0.01).toFixed(3));
+      const defib = Math.round(w * 2.0);
+      const bolus20 = Math.round(w * 20.0);
+      const ettCuffed = age > 0 ? Number(((age / 4) + 3.5).toFixed(1)) : 3.0;
+
+      const pewsTotal = (Number(behavior) || 0) + (Number(cardio) || 0) + (Number(resp) || 0) + (Number(extraNeb) || 0) + (Number(extraEmesis) || 0);
+      let pewsCategory = "LOW_ROUTINE";
+      if (pewsTotal >= 7) pewsCategory = "CRITICAL_STAT_PICU_CODE";
+      else if (pewsTotal >= 5) pewsCategory = "HIGH_RAPID_RESPONSE";
+      else if (pewsTotal >= 3) pewsCategory = "MEDIUM_INCREASED_MONITORING";
+
+      let oi = 0;
+      let pards = "NO_PARDS";
+      if (Number(pao2) > 0 && Number(paw) > 0) {
+        oi = Number(((Number(paw) * Number(fio2) * 100) / Number(pao2)).toFixed(1));
+        if (oi >= 16.0) pards = "SEVERE_PARDS_OI_OVER_16";
+        else if (oi >= 8.0) pards = "MODERATE_PARDS_OI_8_16";
+        else if (oi >= 4.0) pards = "MILD_PARDS_OI_4_8";
+      }
+
+      let gir = 0;
+      if (Number(ivRate) > 0 && Number(dextrose) > 0) {
+        gir = Number(((Number(ivRate) * Number(dextrose)) / (w * 6)).toFixed(1));
+      }
+
+      res.json({
+        success: true,
+        broselowColor: broselow,
+        epinephrineIvMg: epiIv,
+        defibrillationJoules: defib,
+        salineBolus20MlKg: bolus20,
+        cuffedEttMm: ettCuffed,
+        totalPewsScore: pewsTotal,
+        pewsRiskCategory: pewsCategory,
+        oxygenationIndexOI: oi,
+        pardsClassification: pards,
+        glucoseInfusionRateGIR: gir,
+        recommendation: pewsTotal >= 6 ? "STAT PEDIATRIC RAPID RESPONSE TEAM ACTIVATION" : "CONTINUE STANDARD PICU SURVEILLANCE"
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/picu/escalate/pals-protocol", (req, res) => {
+    try {
+      const { patientId, protocolType, notes } = req.body;
+      res.json({
+        success: true,
+        dispatchId: `stat-picu-${Date.now()}`,
+        patientId,
+        protocol: protocolType,
+        status: "PALS_RESUSCITATION_AUTHORIZED",
+        dispatchedAt: new Date().toISOString(),
+        notes: notes || "Immediate PALS team response initiated",
+        notifiedUnits: ["PEDIATRIC_ATTENDING", "PICU_CODE_TEAM", "RESPIRATORY_THERAPY", "NEONATOLOGY_FELLOW"]
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {

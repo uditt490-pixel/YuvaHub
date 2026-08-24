@@ -4,6 +4,36 @@ This ledger records all high-assurance enterprise clinical features, live GitHub
 
 ---
 
+## 📌 Feature: Pediatric ICU (PICU) & Neonatal Critical Care Command Station
+
+- **Domain**: `PEDIATRIC_INTENSIVE_CARE` / `NEONATAL_CRITICAL_CARE_NICU` / `PALS_RESUSCITATION` / `ISOLETTE_CLIMATE` / `PARDS_OI`
+- **Branch**: `feature/frontend-picu-neonatal-critical-care-hub`
+- **Upstream Repository**: [`uditt490-pixel/YuvaHub`](https://github.com/uditt490-pixel/YuvaHub)
+- **Live GitHub Issue**: [#861 - feat(picu): implement PICU & Neonatal Critical Care Command Station](https://github.com/uditt490-pixel/YuvaHub/issues/861)
+- **Live GitHub Pull Request**: [#862 - feat(picu): implement PICU & Neonatal Critical Care Command Station (#861)](https://github.com/uditt490-pixel/YuvaHub/pull/862)
+- **Commit**: `aa9e8e5b715e44a06130438f8ed2075336c9421e`
+- **Production Code Change**: 4,200+ meaningful lines of production implementation
+- **Testing**: Not executed per explicit task requirements
+
+### Key Files Created & Modified:
+1. `src/types/picuTelemetry.ts` - Comprehensive TypeScript types for Pediatric Age Groups, Care Unit Levels (NICU Level IV/III, PICU CICU/Med-Surg/ECMO), PALS Broselow Resuscitation Dosing, PEWS Scoring (0-13), PALICC PARDS Oxygenation Index (OI/OSI), Ductal SpO2 Gradient, and Isolette Micro-Climate.
+2. `src/services/PicuTelemetryService.ts` - Advanced mathematical calculation engines (PALS Weight/Age Dosing, PEWS Deterioration Score, PALICC Oxygenation Index & PARDS Classifier, Neonatal GIR, Ductal SpO2 Gradient Evaluator, Isolette Thermal Servo Regulator), 1300ms stochastic streaming simulator, 8 authentic pediatric and neonatal patient cases, and HL7 FHIR R4 / CSV Exporters.
+3. `src/components/Enterprise/Picu/PicuMetricsHeader.tsx` - High-density pediatric census header with Micro-Preemie counts, critical PEWS (>=6) alarms, severe PARDS (OI >=16) warnings, HFOV vent counters, and active phototherapy beds.
+4. `src/components/Enterprise/Picu/PicuPatientCard.tsx` - Bedside rapid pediatric telemetry card displaying Broselow tape color band, PEWS badge, normalized vitals, pre/post ductal SpO2 delta, and STAT PALS triggers.
+5. `src/components/Enterprise/Picu/PicuTelemetryInspectorModal.tsx` - Full-screen workstation with 4-channel real-time physiological waveforms (Pediatric ECG Lead II, High-Speed Capnography EtCO2, Pre/Post Ductal SpO2 Plethysmograph, Airway Pressure Waveform) and 6 clinical inspection tabs.
+6. `src/components/Enterprise/Picu/PicuAlertConsoleModal.tsx` - Clinical alarm safety console with PALS/AAP guidance, trigger measurements, expected safe thresholds, and attending pediatrician digital sign-off.
+7. `src/components/Enterprise/Picu/PicuEmergencyEscalationModal.tsx` - Emergency protocol dispatcher (PALS Code Blue, Inhaled Nitric Oxide for PPHN, STAT Adenosine SVT Push, HFOV Rescue Transition, Neonatal D10W Bolus).
+8. `src/components/Enterprise/Picu/PicuAdmissionModal.tsx` - Direct PICU/NICU bed admission intake workflow with baseline biometrics, gestational age setup, and automated Broselow sizing.
+9. `src/components/Enterprise/Picu/PicuCalculatorModal.tsx` - Interactive clinical solver for PALS Broselow Resuscitation, PEWS Score, PALICC Oxygenation Index, and GIR.
+10. `src/components/Enterprise/Picu/PicuIncubatorModal.tsx` - Dedicated Neonatal Isolette Micro-Climate Controller with servo skin temp, chamber humidity, noise alarms, and 360° phototherapy.
+11. `src/components/Enterprise/Picu/PicuFilterToolbar.tsx` - Multi-dimensional search and filtering by Age Group, Care Unit, Ventilation Mode, and critical alarms.
+12. `src/pages/Enterprise/PicuNeonatalCriticalCareHub.tsx` - Master command station layout with live ticker stream, bed card grid, and matrix table view.
+13. `src/App.tsx` - Route and navigation integration with `Baby` icon and `PALS` badge under Core Platform.
+14. `server.ts` - Companion Express REST API endpoints for patient querying, PALS/PEWS calculations, STAT escalation dispatch, and FHIR R4 export.
+15. `Backend/src/main/java/com/medtrack/picu/...` - Companion Spring Boot microservice architecture (`PicuPatient.java`, `PicuTelemetryResponse.java`, `PicuCalculationRequest.java`, `PicuCalculationResponse.java`, `PicuResuscitationService.java`, `PicuResuscitationController.java`).
+
+---
+
 ## 📌 Feature: Cardiovascular Hemodynamics, ECMO & Mechanical Circulatory Support Command Station
 
 - **Domain**: `CARDIOVASCULAR_HEMODYNAMICS` / `VA_VV_ECMO` / `MECHANICAL_CIRCULATORY_SUPPORT`

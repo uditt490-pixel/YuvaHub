@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AlumniEndowmentEngine } from '../services/alumniEndowmentEngine';
+import {
+  fetchAlumniEndowments,
+  createAlumniEndowment,
+  contributeToAlumniEndowment,
+} from '../services/apiClient';
 import { CampusAlumniEndowmentCard } from '../components/endowment/CampusAlumniEndowmentCard';
 import { CampusAlumniEndowmentTimeline } from '../components/endowment/CampusAlumniEndowmentTimeline';
 import {
@@ -37,15 +42,33 @@ export default function CampusAlumniEndowmentStudioPage() {
   }, []);
 
   const loadFunds = async () => {
-    const data = await AlumniEndowmentEngine.getEndowments(filters);
-    setFunds(data);
+    try {
+      const data = await fetchAlumniEndowments(filters);
+      if (data && data.length > 0) {
+        setFunds(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchAlumniEndowments failed, using engine fallback', err);
+    }
+    const fallback = await AlumniEndowmentEngine.getEndowments(filters);
+    setFunds(fallback);
   };
 
   const applyFilterChanges = async (updated: any) => {
     const next = { ...filters, ...updated };
     setFilters(next);
-    const data = await AlumniEndowmentEngine.getEndowments(next);
-    setFunds(data);
+    try {
+      const data = await fetchAlumniEndowments(next);
+      if (data && data.length > 0) {
+        setFunds(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchAlumniEndowments failed, using engine fallback', err);
+    }
+    const fallback = await AlumniEndowmentEngine.getEndowments(next);
+    setFunds(fallback);
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -58,7 +81,7 @@ export default function CampusAlumniEndowmentStudioPage() {
       return;
     }
 
-    await AlumniEndowmentEngine.createEndowment({
+    const payload = {
       fundName: newFundName,
       campusName: newCampus,
       donorName: newDonor,
@@ -69,13 +92,25 @@ export default function CampusAlumniEndowmentStudioPage() {
       matchingGrantEnabled: true,
       matchingRatio: 1.5,
       description: newDesc,
-    });
+    };
+
+    try {
+      await createAlumniEndowment(payload);
+    } catch (err) {
+      console.warn('API createAlumniEndowment failed, creating locally', err);
+      await AlumniEndowmentEngine.createEndowment(payload);
+    }
     await loadFunds();
     setShowCreateModal(false);
   };
 
   const handleDonate = async (id: string) => {
-    await AlumniEndowmentEngine.contributeToFund(id, 1000);
+    try {
+      await contributeToAlumniEndowment(id, 1000);
+    } catch (err) {
+      console.warn('API contributeToAlumniEndowment failed, contributing locally', err);
+      await AlumniEndowmentEngine.contributeToFund(id, 1000);
+    }
     await loadFunds();
   };
 

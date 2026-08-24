@@ -114,4 +114,11 @@ export class AlumniEndowmentEngine {
 
     return fund;
   }
+
+  public static resetInMemoryEndowments(funds?: IAlumniEndowmentFund[]) {
+    inMemoryEndowments.length = 0;
+    if (funds) {
+      inMemoryEndowments.push(...funds);
+    }
+  }
 }

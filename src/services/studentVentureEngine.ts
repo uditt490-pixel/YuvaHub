@@ -103,4 +103,11 @@ export class StudentVentureEngine {
 
     return venture;
   }
+
+  public static resetInMemoryVentures(ventures?: IStudentVentureFund[]) {
+    inMemoryVentures.length = 0;
+    if (ventures) {
+      inMemoryVentures.push(...ventures);
+    }
+  }
 }

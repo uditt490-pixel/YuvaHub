@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { StudentVentureEngine } from '../services/studentVentureEngine';
+import {
+  fetchStudentVentures,
+  registerStudentVenture,
+  commitStudentVentureInvestment,
+} from '../services/apiClient';
 import { CampusStudentVentureCard } from '../components/venture/CampusStudentVentureCard';
 import { CampusStudentVentureTimeline } from '../components/venture/CampusStudentVentureTimeline';
 import {
@@ -36,15 +41,33 @@ export default function CampusStudentVentureStudioPage() {
   }, []);
 
   const loadVentures = async () => {
-    const data = await StudentVentureEngine.getVentures(filters);
-    setVentures(data);
+    try {
+      const data = await fetchStudentVentures(filters);
+      if (data && data.length > 0) {
+        setVentures(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchStudentVentures failed, using engine fallback', err);
+    }
+    const fallback = await StudentVentureEngine.getVentures(filters);
+    setVentures(fallback);
   };
 
   const applyFilterChanges = async (updated: any) => {
     const next = { ...filters, ...updated };
     setFilters(next);
-    const data = await StudentVentureEngine.getVentures(next);
-    setVentures(data);
+    try {
+      const data = await fetchStudentVentures(next);
+      if (data && data.length > 0) {
+        setVentures(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchStudentVentures failed, using engine fallback', err);
+    }
+    const fallback = await StudentVentureEngine.getVentures(next);
+    setVentures(fallback);
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -56,7 +79,7 @@ export default function CampusStudentVentureStudioPage() {
       return;
     }
 
-    await StudentVentureEngine.registerVenture({
+    const payload = {
       startupName: newName,
       campusName: newCampus,
       studentFounderName: newFounder,
@@ -64,13 +87,25 @@ export default function CampusStudentVentureStudioPage() {
       fundingStage: newStage,
       targetInvestmentUsd: target,
       executiveSummary: newSummary,
-    });
+    };
+
+    try {
+      await registerStudentVenture(payload);
+    } catch (err) {
+      console.warn('API registerStudentVenture failed, registering locally', err);
+      await StudentVentureEngine.registerVenture(payload);
+    }
     await loadVentures();
     setShowCreateModal(false);
   };
 
   const handleInvest = async (id: string) => {
-    await StudentVentureEngine.commitInvestment(id, 5000);
+    try {
+      await commitStudentVentureInvestment(id, 5000);
+    } catch (err) {
+      console.warn('API commitStudentVentureInvestment failed, committing locally', err);
+      await StudentVentureEngine.commitInvestment(id, 5000);
+    }
     await loadVentures();
   };
 

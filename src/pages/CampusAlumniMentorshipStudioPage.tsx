@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AlumniMentorshipEngine } from '../services/alumniMentorshipEngine';
+import {
+  fetchAlumniMentorshipSlots,
+  registerAlumniMentorshipSlot,
+  bookAlumniMentorshipSession,
+} from '../services/apiClient';
 import { CampusAlumniMentorshipCard } from '../components/mentorship/CampusAlumniMentorshipCard';
 import { CampusAlumniMentorshipTimeline } from '../components/mentorship/CampusAlumniMentorshipTimeline';
 import {
@@ -36,20 +41,38 @@ export default function CampusAlumniMentorshipStudioPage() {
   }, []);
 
   const loadSlots = async () => {
-    const data = await AlumniMentorshipEngine.getSlots(filters);
-    setSlots(data);
+    try {
+      const data = await fetchAlumniMentorshipSlots(filters);
+      if (data && data.length > 0) {
+        setSlots(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchAlumniMentorshipSlots failed, using engine fallback', err);
+    }
+    const fallback = await AlumniMentorshipEngine.getSlots(filters);
+    setSlots(fallback);
   };
 
   const applyFilterChanges = async (updated: any) => {
     const next = { ...filters, ...updated };
     setFilters(next);
-    const data = await AlumniMentorshipEngine.getSlots(next);
-    setSlots(data);
+    try {
+      const data = await fetchAlumniMentorshipSlots(next);
+      if (data && data.length > 0) {
+        setSlots(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchAlumniMentorshipSlots failed, using engine fallback', err);
+    }
+    const fallback = await AlumniMentorshipEngine.getSlots(next);
+    setSlots(fallback);
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await AlumniMentorshipEngine.registerSlot({
+    const payload = {
       mentorName: newMentor,
       mentorAlumniBatchYear: newBatch,
       mentorCurrentCompany: newCompany,
@@ -58,13 +81,24 @@ export default function CampusAlumniMentorshipStudioPage() {
       expertiseArea: newArea,
       availableSessionsCount: 3,
       sessionTopics: newTopics,
-    });
+    };
+    try {
+      await registerAlumniMentorshipSlot(payload);
+    } catch (err) {
+      console.warn('API registerAlumniMentorshipSlot failed, registering locally', err);
+      await AlumniMentorshipEngine.registerSlot(payload);
+    }
     await loadSlots();
     setShowCreateModal(false);
   };
 
   const handleBook = async (id: string) => {
-    await AlumniMentorshipEngine.bookSession(id, 'STU-9920', 'Rohan Mehta');
+    try {
+      await bookAlumniMentorshipSession(id, 'STU-9920', 'Rohan Mehta');
+    } catch (err) {
+      console.warn('API bookAlumniMentorshipSession failed, booking locally', err);
+      await AlumniMentorshipEngine.bookSession(id, 'STU-9920', 'Rohan Mehta');
+    }
     await loadSlots();
   };
 

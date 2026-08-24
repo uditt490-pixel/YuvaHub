@@ -64,7 +64,7 @@ export const registerAlumniMentorshipSlot = async (req: Request, res: Response) 
 };
 
 export const bookAlumniMentorshipSession = async (req: Request, res: Response) => {
-  const slotId = req.params.slotId || (req.body.slotId as string);
+  const slotId = (req.params.slotId as string) || (req.body.slotId as string);
   const studentId =
     (req.user?.uid as string) || (req.body.studentId as string) || "STU-DEMO";
   const studentName =

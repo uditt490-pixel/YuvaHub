@@ -103,4 +103,11 @@ export class StudentMentalWellnessEngine {
     }
     return null;
   }
+
+  public static resetInMemoryCheckIns(checkIns?: IMentalWellnessCheckIn[]) {
+    inMemoryCheckIns.length = 0;
+    if (checkIns) {
+      inMemoryCheckIns.push(...checkIns);
+    }
+  }
 }

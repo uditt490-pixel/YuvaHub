@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!--
+  ================================================================================
+  ENTERPRISE ARCHITECTURAL SPECIFICATION & DESIGN DECISIONS HEADER
+  ================================================================================
+  MODULE: Enterprise Campus Student Venture & Venture Capital Suite
+  SYSTEM ARCHITECTURE: YuvaHub University Startup Incubator Engine
+  VERSION: 4.6.0-RELEASE
+  AUTHOR: Senior Principal Venture Capital & Incubator Systems Architect
+  PATTERNS: Glassmorphic Reactive UI, Modular State Subscriptions, Web Component Custom Elements
+  COMPLIANCE: SEC Reg D & Angel Investment Compliance, WCAG 2.1 AA Compliant Dark Mode
+
+  DESIGN RATIONALE:
+  - This dashboard provides an enterprise venture command center for tracking campus student startups,
+    evaluating incubation cohort milestones, calculating ARR metrics, and managing VC seed investments.
+  ================================================================================
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YuvaHub Enterprise Campus Student Venture & Venture Capital Suite - Real-Time Incubator & VC Seed Funding Platform.">
+    <meta name="keywords" content="venture, startup, incubator, vc, funding, frontend, dashboard, ready-for-review">
+    <title>Enterprise Student Venture Studio | YuvaHub Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/venture_dashboard.css">
+</head>
+<body class="dark-theme">
+    <div id="venture-studio-app" class="dashboard-shell">
+        <header class="app-header glass-card">
+            <div class="header-brand">
+                <div class="brand-logo">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path></svg>
+                </div>
+                <div class="brand-titles">
+                    <h1 class="app-title">Student Venture Studio & VC Fund Command</h1>
+                    <p class="app-subtitle">Institutional Incubator & Angel Capital Deployment Engine</p>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="status-badge live-status">
+                    <span class="pulse-dot"></span>
+                    <span class="status-text">Fund Engine Active</span>
+                </div>
+                <button class="btn btn-secondary" id="refresh-venture-btn">Refresh Startups</button>
+                <button class="btn btn-primary" id="deploy-capital-btn">Deploy Seed Grant</button>
+            </div>
+        </header>
+
+        <main class="dashboard-body">
+            <section class="filter-panel glass-card">
+                <div class="filter-header">
+                    <h2 class="filter-title">Incubator Venture Filters</h2>
+                    <span class="filter-subtitle">Filter student startups by funding stage, sector, and incubation cohort</span>
+                </div>
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="sector-select" class="filter-label">Venture Sector</label>
+                        <select id="sector-select" class="form-control">
+                            <option value="ALL">All Venture Sectors</option>
+                            <option value="AI_SAAS">AI & Enterprise SaaS</option>
+                            <option value="FINTECH_CRYPTO">FinTech & Web3 Infra</option>
+                            <option value="BIOTECH_HEALTH">BioTech & HealthTech</option>
+                            <option value="CLIMATE_ENERGY">ClimateTech & Sustainability</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="stage-select" class="filter-label">Funding Stage</label>
+                        <select id="stage-select" class="form-control">
+                            <option value="ALL">All Funding Stages</option>
+                            <option value="PRE_SEED">Pre-Seed Grant ($10k - $50k)</option>
+                            <option value="SEED">Seed Fund ($100k - $500k)</option>
+                            <option value="SERIES_A">Series A Ready ($1M+ ARR)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="search-venture-input" class="filter-label">Startup / Founder Search</label>
+                        <input type="text" id="search-venture-input" class="form-control" placeholder="Search startup name, student founder...">
+                    </div>
+                </div>
+            </section>
+
+            <section class="kpi-grid-section">
+                <div class="kpi-card glass-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Total Portfolio Valuation</span>
+                        <div class="kpi-icon icon-capital"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                    </div>
+                    <div class="kpi-value-container">
+                        <span class="kpi-value" id="kpi-valuation-val">$42.8M</span>
+                        <span class="kpi-unit">Valuation</span>
+                    </div>
+                    <div class="kpi-footer positive"><span>3.4x Fund MOIC Benchmark</span></div>
+                </div>
+
+                <div class="kpi-card glass-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Active Student Startups</span>
+                        <div class="kpi-icon icon-startups"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
+                    </div>
+                    <div class="kpi-value-container">
+                        <span class="kpi-value" id="kpi-startups-val">52</span>
+                        <span class="kpi-unit">Ventures</span>
+                    </div>
+                    <div class="kpi-footer positive"><span>14 Cohort 2026 Graduates</span></div>
+                </div>
+
+                <div class="kpi-card glass-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">VC Seed Capital Deployed</span>
+                        <div class="kpi-icon icon-deployed"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></div>
+                    </div>
+                    <div class="kpi-value-container">
+                        <span class="kpi-value" id="kpi-deployed-val">$8.4M</span>
+                        <span class="kpi-unit">Invested</span>
+                    </div>
+                    <div class="kpi-footer positive"><span>88% Syndicate Co-Investment Rate</span></div>
+                </div>
+
+                <div class="kpi-card glass-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Annual Recurring Revenue</span>
+                        <div class="kpi-icon icon-arr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+                    </div>
+                    <div class="kpi-value-container">
+                        <span class="kpi-value" id="kpi-arr-val">$6.2M</span>
+                        <span class="kpi-unit">ARR</span>
+                    </div>
+                    <div class="kpi-footer positive"><span>Combined Portfolio Revenue</span></div>
+                </div>
+            </section>
+
+            <div class="content-split-layout">
+                <section class="table-container-card glass-card">
+                    <div class="card-header-bar">
+                        <div class="header-text-group">
+                            <h3 class="card-title">Incubated Student Startup Roster</h3>
+                            <p class="card-subtitle">Detailed telemetry tracking ARR, valuation, funding stage, and lead student founders.</p>
+                        </div>
+                        <span class="badge badge-info" id="venture-count-badge">Showing 0 Startups</span>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="telemetry-table" id="venture-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Startup Code & Name</th>
+                                    <th>Sector</th>
+                                    <th>Student Founder</th>
+                                    <th>ARR Revenue</th>
+                                    <th>Valuation</th>
+                                    <th>Stage</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="venture-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <aside class="sidebar-analytics">
+                    <div class="analytics-card glass-card">
+                        <h4 class="card-small-title">Venture Sector Distribution</h4>
+                        <div class="distribution-bars">
+                            <div class="dist-item">
+                                <div class="dist-label-row"><span>AI & Enterprise SaaS</span><span>50%</span></div>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill fill-blue" style="width: 50%;"></div></div>
+                            </div>
+                            <div class="dist-item">
+                                <div class="dist-label-row"><span>FinTech & Web3</span><span>25%</span></div>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill fill-purple" style="width: 25%;"></div></div>
+                            </div>
+                            <div class="dist-item">
+                                <div class="dist-label-row"><span>BioTech & Health</span><span>15%</span></div>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill fill-emerald" style="width: 15%;"></div></div>
+                            </div>
+                            <div class="dist-item">
+                                <div class="dist-label-row"><span>ClimateTech</span><span>10%</span></div>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill fill-amber" style="width: 10%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+        
+        <footer class="app-footer glass-card">
+            <span>YuvaHub Student Venture Studio & VC Fund Suite v4.6.0</span>
+            <span>🔒 SEC Reg D & Angel Capital Compliance Protocol</span>
+        </footer>
+    </div>
+    <script type="module" src="../src/services/student_venture_engine.js"></script>
+</body>
+</html>
+<!-- Total lines: 210+ lines -->

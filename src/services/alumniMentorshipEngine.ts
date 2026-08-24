@@ -47,6 +47,15 @@ const inMemorySlots: IAlumniMentorshipSlot[] = [
 ];
 
 export class AlumniMentorshipEngine {
+  public static calculateCompatibilityPercent(
+    mentorCampus: string,
+    studentCampus?: string
+  ): number {
+    if (!studentCampus || studentCampus === 'All') return 90;
+    if (mentorCampus.toLowerCase() === studentCampus.toLowerCase()) return 98;
+    return 85;
+  }
+
   public static async registerSlot(payload: {
     mentorName: string;
     mentorAlumniBatchYear: number;
@@ -56,12 +65,18 @@ export class AlumniMentorshipEngine {
     expertiseArea: 'SOFTWARE_ENGINEERING' | 'PRODUCT_MANAGEMENT' | 'AI_RESEARCH' | 'VENTURE_CAPITAL';
     availableSessionsCount: number;
     sessionTopics: string;
+    matchingCompatibilityPercent?: number;
   }): Promise<IAlumniMentorshipSlot> {
+    const compatibility =
+      payload.matchingCompatibilityPercent !== undefined
+        ? payload.matchingCompatibilityPercent
+        : this.calculateCompatibilityPercent(payload.campusName);
+
     const slot: IAlumniMentorshipSlot = {
       ...payload,
       slotId: `SLOT-${Date.now()}`,
       sessionDurationMinutes: 45,
-      matchingCompatibilityPercent: 95,
+      matchingCompatibilityPercent: compatibility,
       status: 'OPEN',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -94,13 +109,23 @@ export class AlumniMentorshipEngine {
     studentName: string
   ): Promise<IAlumniMentorshipSlot | null> {
     const slot = inMemorySlots.find(item => item.slotId === slotId);
-    if (slot) {
+    if (slot && slot.status === 'OPEN' && slot.availableSessionsCount > 0) {
       slot.assignedStudentId = studentId;
       slot.assignedStudentName = studentName;
-      slot.status = 'BOOKED';
+      slot.availableSessionsCount = Math.max(0, slot.availableSessionsCount - 1);
+      if (slot.availableSessionsCount === 0) {
+        slot.status = 'BOOKED';
+      }
       slot.updatedAt = new Date();
       return slot;
     }
     return null;
+  }
+
+  public static resetInMemorySlots(slots?: IAlumniMentorshipSlot[]) {
+    inMemorySlots.length = 0;
+    if (slots) {
+      inMemorySlots.push(...slots);
+    }
   }
 }

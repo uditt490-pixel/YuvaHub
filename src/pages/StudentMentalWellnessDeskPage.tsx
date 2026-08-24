@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { StudentMentalWellnessEngine } from '../services/mentalWellnessEngine';
+import {
+  fetchMentalWellnessCheckIns,
+  createMentalWellnessCheckIn,
+  assignCounselorCheckIn,
+} from '../services/apiClient';
 import { StudentMentalWellnessCard } from '../components/wellness/StudentMentalWellnessCard';
 import { StudentMentalWellnessTimeline } from '../components/wellness/StudentMentalWellnessTimeline';
 import {
@@ -36,20 +41,38 @@ export default function StudentMentalWellnessDeskPage() {
   }, []);
 
   const loadCheckIns = async () => {
-    const data = await StudentMentalWellnessEngine.getCheckIns(filters);
-    setCheckIns(data);
+    try {
+      const data = await fetchMentalWellnessCheckIns(filters);
+      if (data && data.length > 0) {
+        setCheckIns(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchMentalWellnessCheckIns failed, using engine fallback', err);
+    }
+    const fallback = await StudentMentalWellnessEngine.getCheckIns(filters);
+    setCheckIns(fallback);
   };
 
   const applyFilterChanges = async (updated: any) => {
     const next = { ...filters, ...updated };
     setFilters(next);
-    const data = await StudentMentalWellnessEngine.getCheckIns(next);
-    setCheckIns(data);
+    try {
+      const data = await fetchMentalWellnessCheckIns(next);
+      if (data && data.length > 0) {
+        setCheckIns(data);
+        return;
+      }
+    } catch (err) {
+      console.warn('API fetchMentalWellnessCheckIns failed, using engine fallback', err);
+    }
+    const fallback = await StudentMentalWellnessEngine.getCheckIns(next);
+    setCheckIns(fallback);
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await StudentMentalWellnessEngine.createCheckIn({
+    const payload = {
       studentId: newStudentId,
       studentName: newStudentName,
       campusName: newCampus,
@@ -57,13 +80,25 @@ export default function StudentMentalWellnessDeskPage() {
       stressLevel: newStress,
       primaryStressor: newStressor,
       supportRequested: newSupport,
-    });
+    };
+
+    try {
+      await createMentalWellnessCheckIn(payload);
+    } catch (err) {
+      console.warn('API createMentalWellnessCheckIn failed, creating locally', err);
+      await StudentMentalWellnessEngine.createCheckIn(payload);
+    }
     await loadCheckIns();
     setShowCreateModal(false);
   };
 
   const handleAssignCounselor = async (id: string) => {
-    await StudentMentalWellnessEngine.assignCounselor(id, 'Dr. Ananya Verma (Clinical Psychologist)');
+    try {
+      await assignCounselorCheckIn(id, 'Dr. Ananya Verma (Clinical Psychologist)');
+    } catch (err) {
+      console.warn('API assignCounselorCheckIn failed, assigning locally', err);
+      await StudentMentalWellnessEngine.assignCounselor(id, 'Dr. Ananya Verma (Clinical Psychologist)');
+    }
     await loadCheckIns();
   };
 

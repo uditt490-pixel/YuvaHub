@@ -93,4 +93,11 @@ export class ResearchPatentEngine {
     }
     return null;
   }
+
+  public static resetInMemoryPatents(patents?: IResearchPatentIp[]) {
+    inMemoryPatents.length = 0;
+    if (patents) {
+      inMemoryPatents.push(...patents);
+    }
+  }
 }

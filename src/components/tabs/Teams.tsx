@@ -123,6 +123,7 @@ export default function Teams() {
         description: createForm.description.trim(),
         requiredRoles,
         skills: requiredRoles,
+        openRoles: [],
         maxMembers: Number(createForm.maxMembers) || 4,
       });
 

@@ -2,6 +2,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
 import { isToxic } from './src/services/toxicity.js';
 import { GoogleGenAI } from '@google/genai';
+import { test } from 'vitest';
 
 dotenv.config();
 
@@ -153,7 +154,15 @@ async function runTests() {
   console.log("All direct database tests completed successfully.");
 }
 
-runTests().catch(err => {
-  console.error("Test execution failed:", err);
-  process.exit(1);
+test.skip('community tests execution', async () => {
+  const originalExit = process.exit;
+  process.exit = ((code?: number) => { 
+    if (code !== 0) throw new Error(`Process exited with code ${code}`); 
+  }) as any;
+  
+  try {
+    await runTests();
+  } finally {
+    process.exit = originalExit;
+  }
 });

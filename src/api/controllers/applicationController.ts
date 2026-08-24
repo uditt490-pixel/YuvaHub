@@ -46,7 +46,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
 
   const result = await dbCommand.collection("applications").updateOne(
     { _id: new ObjectId(id as string), userId },
-    { 
+    {
       $set: { status, updatedAt: new Date() },
       $push: {
         auditLogs: {
@@ -67,7 +67,7 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
 
 export const getUserApplications = async (req: Request, res: Response) => {
   const userId = req.user?.uid;
-  
+
   if (!userId) {
     throw AppError.unauthorized("User must be logged in");
   }

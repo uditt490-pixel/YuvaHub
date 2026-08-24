@@ -82,6 +82,7 @@ const CodeReviewExchange = lazy(() => import('./components/tabs/CodeReviewExchan
 const DeadlineCalendar = lazy(() => import('./components/tabs/DeadlineCalendar'));
 const DirectMessages = lazy(() => import('./components/tabs/DirectMessages'));
 const CardiovascularCriticalCareHub = lazy(() => import('./pages/Enterprise/CardiovascularCriticalCareHub'));
+const NephrologyCrrtDialysisHub = lazy(() => import('./pages/Enterprise/NephrologyCrrtDialysisHub'));
 const DegreePlannerHub = lazy(() => import('./pages/DegreePlannerHub').then(m => ({ default: m.DegreePlannerHub })));
 const LoadingFallback = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
@@ -279,6 +280,7 @@ function App() {
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'cardiovascular_hub', label: 'Cardiovascular & ECMO Hub', icon: HeartPulse, badge: 'CTICU' },
+        { id: 'nephrology_hub', label: 'Nephrology & CRRT Hub', icon: Droplets, badge: 'CRRT' },
         { id: 'opportunities', label: 'Opportunities', icon: Globe },
         { id: 'application_tracker', label: 'Application Tracker', icon: Briefcase },
         { id: 'watchlist_manager', label: 'Watchlists & Alerts', icon: Sparkles, badge: 'NEW' },
@@ -349,6 +351,7 @@ function App() {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
       case 'cardiovascular_hub': return <CardiovascularCriticalCareHub />;
+      case 'nephrology_hub': return <NephrologyCrrtDialysisHub />;
       case 'opportunities': return <Opportunities />;
       case 'application_tracker': return <ApplicationTracker />;
       case 'deadline_calendar': return <DeadlineCalendar />;

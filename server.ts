@@ -2936,6 +2936,207 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+
+  // ==========================================
+  // NEPHROLOGY, KDIGO AKI & CRRT COMMAND STATION REST API
+  // ==========================================
+  app.get("/api/v1/nephrology/patients", (req, res) => {
+    try {
+      res.json({
+        success: true,
+        censusCount: 8,
+        kdigoStage3Count: 5,
+        activeCrrtCount: 4,
+        activeIhdCount: 2,
+        timestamp: new Date().toISOString(),
+        patients: [
+          {
+            id: "NEPH-7101",
+            mrn: "MRN-8492019",
+            name: "Ethan Vance",
+            age: 58,
+            bed: "ICU-BED-04 (CRRT-STAT)",
+            kdigoStage: "STAGE_3_FAILURE",
+            modality: "CVVHDF_CONTINUOUS_HEMODIAFILTRATION",
+            anticoagulation: "REGIONAL_CITRATE_RCA",
+            vitals: { hr: 104, sbp: 108, dbp: 62, map: 77, spO2: 95, rr: 20 },
+            circuit: { qb: 200, effluentDose: 28.5, qd: 1200, tmp: 275, deltaP: 75, ufrNet: 200 },
+            electrolytes: { cr: 4.82, bun: 88, k: 5.6, bicarb: 16.5, ph: 7.28, agCorr: 21.5 },
+            citrate: { postIca: 0.31, sysIca: 1.18, totalToIcaRatio: 1.90, isTox: false },
+            fluidBalance: { netBalance24h: -1800, overloadPercent: 6.7 }
+          },
+          {
+            id: "NEPH-7102",
+            mrn: "MRN-6104829",
+            name: "Evelyn Cross",
+            age: 72,
+            bed: "CCU-BED-08 (SCUF)",
+            kdigoStage: "STAGE_2_INJURY",
+            modality: "SCUF_SLOW_CONTINUOUS_ULTRAFILTRATION",
+            anticoagulation: "SYSTEMIC_UNFRACTIONATED_HEPARIN",
+            vitals: { hr: 88, sbp: 134, dbp: 78, map: 96, spO2: 92, rr: 24 },
+            circuit: { qb: 150, effluentDose: 0, qd: 0, tmp: 145, deltaP: 65, ufrNet: 250 },
+            electrolytes: { cr: 2.85, bun: 64, k: 4.8, bicarb: 21.0, ph: 7.34, agCorr: 19.2 },
+            citrate: { postIca: 1.15, sysIca: 1.15, totalToIcaRatio: 2.00, isTox: false },
+            fluidBalance: { netBalance24h: -2800, overloadPercent: 11.2 }
+          },
+          {
+            id: "NEPH-7103",
+            mrn: "MRN-9021488",
+            name: "Marcus Chen",
+            age: 33,
+            bed: "ICU-BED-02 (EMERGENT-HD)",
+            kdigoStage: "STAGE_3_FAILURE",
+            modality: "IHD_INTERMITTENT_HEMODIALYSIS",
+            anticoagulation: "SALINE_FLUSH_NO_ANTICOAGULATION",
+            vitals: { hr: 118, sbp: 92, dbp: 54, map: 66, spO2: 97, rr: 26 },
+            circuit: { qb: 350, effluentDose: 0, qd: 30000, tmp: 110, deltaP: 60, ufrNet: 500 },
+            electrolytes: { cr: 6.40, bun: 112, k: 6.85, bicarb: 12.0, ph: 7.15, agCorr: 25.5 },
+            citrate: { postIca: 1.22, sysIca: 1.22, totalToIcaRatio: 1.52, isTox: false },
+            fluidBalance: { netBalance24h: 2600, overloadPercent: 5.0 }
+          }
+        ]
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/v1/nephrology/patients/:patientId", (req, res) => {
+    try {
+      const { patientId } = req.params;
+      res.json({
+        success: true,
+        patientId,
+        bed: "ICU-BED-04 (CRRT-STAT)",
+        status: "ACTIVE_CIRCUIT_RUNNING",
+        lastTelemetryUpdate: new Date().toISOString()
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/nephrology/calculate/scores", (req, res) => {
+    try {
+      const { currentCr, baselineCr, uoNormalized, uoHours, age, isFemale, weightKg, preBun, postBun, sessionHours, ufLiters, na, cl, hco3, alb, urineNa, urineCr } = req.body;
+      const base = Number(baselineCr) > 0 ? Number(baselineCr) : 1.0;
+      const ratio = Number(currentCr) / base;
+      const uo = Number(uoNormalized) || 0;
+      const hours = Number(uoHours) || 0;
+
+      let kdigoStage = "STAGE_0_NORMAL";
+      let rationale = "Within baseline physiological parameters.";
+      if (ratio >= 3.0 || Number(currentCr) >= 4.0 || (uo < 0.3 && hours >= 24) || (uo === 0 && hours >= 12)) {
+        kdigoStage = "STAGE_3_FAILURE";
+        rationale = "Creatinine >= 3.0x baseline or persistent anuria/oliguria for >= 24h.";
+      } else if (ratio >= 2.0 || (uo < 0.5 && hours >= 12)) {
+        kdigoStage = "STAGE_2_INJURY";
+        rationale = "Creatinine 2.0-2.9x baseline or urine output < 0.5 mL/kg/hr for >= 12h.";
+      } else if (ratio >= 1.5 || (uo < 0.5 && hours >= 6)) {
+        kdigoStage = "STAGE_1_RISK";
+        rationale = "Creatinine 1.5-1.9x baseline or urine output < 0.5 mL/kg/hr for >= 6h.";
+      }
+
+      let ktv = 0;
+      let urr = 0;
+      if (Number(preBun) > 0 && Number(postBun) > 0) {
+        const R = Number(postBun) / Number(preBun);
+        const t = Number(sessionHours) || 4.0;
+        const uf = Number(ufLiters) || 0;
+        const w = Number(weightKg) || 70.0;
+        ktv = Number((-Math.log(Math.max(0.01, R - 0.008 * t)) + (4 - 3.5 * R) * (uf / w)).toFixed(2));
+        urr = Number((((Number(preBun) - Number(postBun)) / Number(preBun)) * 100).toFixed(1));
+      }
+
+      const standardAg = Number(na) - (Number(cl) + Number(hco3));
+      const albVal = Number(alb) > 0 ? Number(alb) : 4.0;
+      const correctedAg = Number((standardAg + 2.5 * (4.0 - albVal)).toFixed(1));
+
+      let fena = 0;
+      if (Number(na) > 0 && Number(urineCr) > 0) {
+        fena = Number((((Number(urineNa) * Number(currentCr)) / (Number(na) * Number(urineCr))) * 100).toFixed(2));
+      }
+
+      res.json({
+        success: true,
+        kdigoStage,
+        rationale,
+        daugirdasKtV: ktv,
+        ureaReductionRatio: urr,
+        standardAnionGap: standardAg,
+        correctedAnionGap: correctedAg,
+        fenaExcretion: fena,
+        recommendation: kdigoStage === "STAGE_3_FAILURE" ? "STAT RENAL REPLACEMENT THERAPY INDICATED" : "CONSERVATIVE MONITORING"
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/nephrology/calculate/citrate-rca", (req, res) => {
+    try {
+      const { postIca, sysIca, totalCa } = req.body;
+      const sys = Number(sysIca) > 0 ? Number(sysIca) : 1.0;
+      const total = Number(totalCa) || 2.2;
+      const ratio = Number((total / sys).toFixed(2));
+      const isToxicity = ratio >= 2.5;
+
+      res.json({
+        success: true,
+        postFilterIca: Number(postIca),
+        systemicIca: sys,
+        totalSerumCa: total,
+        totalToIonizedCaRatio: ratio,
+        isCitrateToxicitySuspected: isToxicity,
+        recommendation: isToxicity ? "CITRATE ACCUMULATION TOXICITY ALARM: Reduce ACD-A rate by 30% and optimize systemic CaCl2 compensation" : "Citrate kinetics optimal"
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/nephrology/escalate/dialysis-protocol", (req, res) => {
+    try {
+      const { patientId, protocolType, notes } = req.body;
+      res.json({
+        success: true,
+        dispatchId: `stat-neph-${Date.now()}`,
+        patientId,
+        protocol: protocolType,
+        status: "STAT_DIALYSIS_DISPATCHED",
+        dispatchedAt: new Date().toISOString(),
+        notes: notes || "Immediate nephrology team dispatch",
+        notifiedUnits: ["NEPHROLOGY_ATTENDING", "CRRT_NURSING", "DIALYSIS_WATER_TREATMENT", "CLINICAL_PHARMACY"]
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/v1/nephrology/export/fhir/:patientId", (req, res) => {
+    try {
+      const { patientId } = req.params;
+      res.json({
+        resourceType: "Bundle",
+        id: `neph-fhir-${patientId}-${Date.now()}`,
+        type: "collection",
+        entry: [
+          {
+            fullUrl: `urn:uuid:patient-${patientId}`,
+            resource: {
+              resourceType: "Patient",
+              id: patientId,
+              gender: "male"
+            }
+          }
+        ]
+      });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {

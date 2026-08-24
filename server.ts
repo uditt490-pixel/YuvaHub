@@ -2936,6 +2936,257 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+
+  // ==========================================
+  // EMERGENCY TRAUMA & MTP COMMAND STATION REST API
+  // ==========================================
+  app.get("/api/v1/trauma/patients", (req, res) => {
+    try {
+      res.json({
+        success: true,
+        censusCount: 8,
+        level1AlphaCount: 3,
+        activeMtpCount: 2,
+        activeReboaCount: 2,
+        timestamp: new Date().toISOString(),
+        patients: [
+          {
+            id: "TRM-9401",
+            mrn: "MRN-7839120",
+            name: "Marcus Vance",
+            age: 34,
+            triageLevel: "LEVEL_1_STAT_ALPHA",
+            traumaBay: "TB-01 (STAT RESUS)",
+            mechanism: "High-Speed MVC Rollover with Ejection (65 mph)",
+            shockClass: "CLASS_IV_SEVERE_EXSANGUINATING",
+            vitals: { hr: 138, sbp: 74, dbp: 42, map: 53, spO2: 91, rr: 28, etCO2: 24, tempC: 34.2 },
+            scores: { shockIndex: 1.86, rsig: 4.29, abcScore: 3, iss: 50, tash: 19, lethalTriadCount: 3 },
+            bloodLedger: { prbc: 8, ffp: 6, plt: 1, cryo: 1, caGrams: 1.0, isBalanced: false },
+            reboa: { status: "ACTIVE_OCCLUDED", zone: "ZONE_3_INFRARENAL", elapsedMinutes: 14.0 }
+          },
+          {
+            id: "TRM-9402",
+            mrn: "MRN-6192841",
+            name: "Devon Taylor",
+            age: 27,
+            triageLevel: "LEVEL_1_STAT_ALPHA",
+            traumaBay: "TB-02 (EMERGENT OR STAT)",
+            mechanism: "Penetrating Ballistic GSW to Left Anterior Chest",
+            shockClass: "CLASS_III_MODERATE_SHOCK",
+            vitals: { hr: 126, sbp: 88, dbp: 56, map: 67, spO2: 94, rr: 24, etCO2: 29, tempC: 35.8 },
+            scores: { shockIndex: 1.43, rsig: 9.07, abcScore: 4, iss: 26, tash: 11, lethalTriadCount: 0 },
+            bloodLedger: { prbc: 4, ffp: 4, plt: 1, cryo: 0, caGrams: 1.0, isBalanced: true },
+            reboa: { status: "NOT_INDICATED", zone: "NONE", elapsedMinutes: 0 }
+          },
+          {
+            id: "TRM-9403",
+            mrn: "MRN-5582910",
+            name: "Chloe Abernathy",
+            age: 19,
+            triageLevel: "LEVEL_1_STAT_ALPHA",
+            traumaBay: "TB-03 (NEURO-TRAUMA)",
+            mechanism: "Fall from 3rd Story Balcony (30ft)",
+            shockClass: "CLASS_II_MILD_SHOCK",
+            vitals: { hr: 58, sbp: 172, dbp: 94, map: 120, spO2: 98, rr: 14, etCO2: 33, tempC: 36.4 },
+            scores: { shockIndex: 0.34, rsig: 17.79, abcScore: 0, iss: 35, tash: 3, lethalTriadCount: 0 },
+            bloodLedger: { prbc: 0, ffp: 0, plt: 0, cryo: 0, caGrams: 0, isBalanced: true },
+            reboa: { status: "NOT_INDICATED", zone: "NONE", elapsedMinutes: 0 }
+          },
+          {
+            id: "TRM-9404",
+            mrn: "MRN-3301984",
+            name: "Sergeant Gabriel Price",
+            age: 38,
+            triageLevel: "LEVEL_1_STAT_ALPHA",
+            traumaBay: "TB-04 (BLAST RESUS)",
+            mechanism: "Industrial Blast with Bilateral Traumatic Amputations",
+            shockClass: "CLASS_IV_SEVERE_EXSANGUINATING",
+            vitals: { hr: 144, sbp: 68, dbp: 36, map: 47, spO2: 88, rr: 32, etCO2: 21, tempC: 33.6 },
+            scores: { shockIndex: 2.12, rsig: 2.36, abcScore: 3, iss: 50, tash: 24, lethalTriadCount: 3 },
+            bloodLedger: { prbc: 12, ffp: 10, plt: 2, cryo: 2, caGrams: 2.0, isBalanced: true },
+            reboa: { status: "ACTIVE_OCCLUDED", zone: "ZONE_1_THORACIC", elapsedMinutes: 6.0 }
+          }
+        ]
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/v1/trauma/patients/:patientId", (req, res) => {
+    try {
+      const { patientId } = req.params;
+      res.json({
+        success: true,
+        patientId,
+        traumaBay: "TB-01 (STAT RESUS)",
+        status: "ACTIVE_MONITORING",
+        lastTelemetryUpdate: new Date().toISOString()
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/trauma/calculate/trauma-scores", (req, res) => {
+    try {
+      const { age, hr, sbp, rr, gcs, isPenetrating, isFastPositive, tempC, ph, baseDeficit, inr, plateletsK } = req.body;
+      const sbpAdj = Number(sbp) > 0 ? Number(sbp) : 1;
+      const hrAdj = Number(hr) > 0 ? Number(hr) : 1;
+      const gcsVal = Number(gcs) || 15;
+
+      const shockIndex = Number((Number(hr) / sbpAdj).toFixed(2));
+      const ageAdjustedSi = Number(((Number(age) || 30) * shockIndex).toFixed(1));
+      const rsig = Number(((Number(sbp) / hrAdj) * gcsVal).toFixed(2));
+
+      let abcScore = 0;
+      if (isPenetrating) abcScore++;
+      if (Number(sbp) <= 90) abcScore++;
+      if (Number(hr) >= 120) abcScore++;
+      if (isFastPositive) abcScore++;
+
+      let lethalTriadCount = 0;
+      if (Number(tempC) < 35.0) lethalTriadCount++;
+      if (Number(ph) < 7.20 || Number(baseDeficit) > 6.0) lethalTriadCount++;
+      if (Number(inr) > 1.5 || Number(plateletsK) < 100.0) lethalTriadCount++;
+
+      let mortalityRisk = 10;
+      if (lethalTriadCount === 1) mortalityRisk = 25;
+      else if (lethalTriadCount === 2) mortalityRisk = 52;
+      else if (lethalTriadCount === 3) mortalityRisk = 88;
+
+      res.json({
+        success: true,
+        shockIndex,
+        ageAdjustedShockIndex: ageAdjustedSi,
+        reverseShockIndexTimesGcs: rsig,
+        abcScore,
+        mtpIndicated: abcScore >= 2 || shockIndex >= 1.3,
+        lethalTriad: {
+          count: lethalTriadCount,
+          mortalityRiskPercent: mortalityRisk,
+          hypothermia: Number(tempC) < 35.0,
+          acidosis: Number(ph) < 7.20 || Number(baseDeficit) > 6.0,
+          coagulopathy: Number(inr) > 1.5 || Number(plateletsK) < 100.0
+        }
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/trauma/calculate/mtp-ratio", (req, res) => {
+    try {
+      const { prbc, ffp, platelets, calciumGrams } = req.body;
+      const prbcUnits = Number(prbc) || 0;
+      const ffpUnits = Number(ffp) || 1;
+      const pltUnits = Number(platelets) || 1;
+      const caGrams = Number(calciumGrams) || 0;
+
+      const prbcToFfpRatio = Number((prbcUnits / ffpUnits).toFixed(2));
+      const prbcToPltRatio = Number((prbcUnits / pltUnits).toFixed(2));
+      const isBalanced = prbcUnits === 0 || (prbcToFfpRatio >= 0.8 && prbcToFfpRatio <= 1.5 && prbcToPltRatio >= 0.8 && prbcToPltRatio <= 2.0);
+      const expectedCa = Math.floor(prbcUnits / 4);
+      const calciumDeficit = Math.max(0, expectedCa - caGrams);
+
+      res.json({
+        success: true,
+        prbcToFfpRatio,
+        prbcToPltRatio,
+        isBalanced,
+        calciumDeficitGramsPending: calciumDeficit,
+        recommendation: isBalanced ? "Optimal Balanced 1:1:1 Hemostatic Transfusion" : "Warning: Ratio Imbalance Detected - Adjust Blood Products"
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/trauma/calculate/teg-rotem", (req, res) => {
+    try {
+      const { rTime, kTime, alphaAngle, ma, ly30 } = req.body;
+      const r = Number(rTime) || 7.0;
+      const k = Number(kTime) || 2.0;
+      const angle = Number(alphaAngle) || 60.0;
+      const maVal = Number(ma) || 55.0;
+      const lysis = Number(ly30) || 1.0;
+
+      let intervention = "NONE_NORMAL";
+      let interpretation = "Viscoelastic profile within target reference limits.";
+
+      if (lysis > 3.0) {
+        intervention = "ADMINISTER_TXA_HYPERFIBRINOLYSIS";
+        interpretation = "Primary Hyperfibrinolysis Detected (LY30 > 3%). Administer 1g IV Tranexamic Acid.";
+      } else if (r > 10.0 && maVal < 50.0) {
+        intervention = "COMBINED_COAGULOPATHY";
+        interpretation = "Combined Factor Deficiency + Severe Platelet Dysfunction.";
+      } else if (r > 10.0) {
+        intervention = "ADMINISTER_FFP_PCC";
+        interpretation = "Prolonged R-Time (>10 min): Enzymatic Clotting Factor Deficiency. Administer FFP/PCC.";
+      } else if (angle < 53.0 || k > 3.0) {
+        intervention = "ADMINISTER_CRYOPRECIPITATE";
+        interpretation = "Decreased Alpha Angle (<53 deg): Hypofibrinogenemia. Administer 2 pools Cryoprecipitate.";
+      } else if (maVal < 50.0) {
+        intervention = "ADMINISTER_PLATELETS";
+        interpretation = "Low Maximum Amplitude (MA < 50 mm): Platelet Dysfunction. Transfuse 1 Apheresis Platelet pack.";
+      }
+
+      res.json({
+        success: true,
+        rTime: r,
+        kTime: k,
+        alphaAngle: angle,
+        maximumAmplitude: maVal,
+        ly30: lysis,
+        recommendedIntervention: intervention,
+        interpretation
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post("/api/v1/trauma/escalate/trauma-protocol", (req, res) => {
+    try {
+      const { patientId, protocolType, notes } = req.body;
+      res.json({
+        success: true,
+        dispatchId: `stat-trauma-${Date.now()}`,
+        patientId,
+        protocol: protocolType,
+        status: "STAT_DISPATCHED",
+        dispatchedAt: new Date().toISOString(),
+        notes: notes || "Immediate trauma team notification",
+        notifiedUnits: ["TRAUMA_SURGERY", "ANESTHESIA", "BLOOD_BANK", "OR_SUITE_4", "INTERVENTIONAL_RADIOLOGY"]
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get("/api/v1/trauma/export/fhir/:patientId", (req, res) => {
+    try {
+      const { patientId } = req.params;
+      res.json({
+        resourceType: "Bundle",
+        id: `trauma-fhir-${patientId}-${Date.now()}`,
+        type: "collection",
+        entry: [
+          {
+            fullUrl: `urn:uuid:patient-${patientId}`,
+            resource: {
+              resourceType: "Patient",
+              id: patientId,
+              gender: "male"
+            }
+          }
+        ]
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // --- Vite / Static Files ---
 
   if (process.env.NODE_ENV !== "production") {

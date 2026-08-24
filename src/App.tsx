@@ -82,6 +82,7 @@ const CodeReviewExchange = lazy(() => import('./components/tabs/CodeReviewExchan
 const DeadlineCalendar = lazy(() => import('./components/tabs/DeadlineCalendar'));
 const DirectMessages = lazy(() => import('./components/tabs/DirectMessages'));
 const CardiovascularCriticalCareHub = lazy(() => import('./pages/Enterprise/CardiovascularCriticalCareHub'));
+const EmergencyTraumaResuscitationHub = lazy(() => import('./pages/Enterprise/EmergencyTraumaResuscitationHub'));
 const DegreePlannerHub = lazy(() => import('./pages/DegreePlannerHub').then(m => ({ default: m.DegreePlannerHub })));
 const LoadingFallback = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
@@ -112,6 +113,8 @@ const getSeoPropsForTab = (tab: string) => {
       };
     case 'teams':
       return { title: "Team Builder & Matcher | YuvaHub", description: "Find teammates and join teams for hackathons, projects, and opportunities." };
+    case 'trauma_hub':
+      return { title: "Emergency Trauma & MTP Hub | MedTrack", description: "Level 1 Trauma Command Station, Massive Transfusion Protocol (1:1:1), eFAST, and TEG/ROTEM Telemetry." };
     case 'opportunities':
       return {
         title: "Explore Opportunities | Internships, Jobs & Hackathons | YuvaHub",
@@ -279,6 +282,7 @@ function App() {
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'cardiovascular_hub', label: 'Cardiovascular & ECMO Hub', icon: HeartPulse, badge: 'CTICU' },
+        { id: 'trauma_hub', label: 'Emergency Trauma & MTP Hub', icon: ShieldAlert, badge: 'TRAUMA' },
         { id: 'opportunities', label: 'Opportunities', icon: Globe },
         { id: 'application_tracker', label: 'Application Tracker', icon: Briefcase },
         { id: 'watchlist_manager', label: 'Watchlists & Alerts', icon: Sparkles, badge: 'NEW' },
@@ -349,7 +353,10 @@ function App() {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
       case 'cardiovascular_hub': return <CardiovascularCriticalCareHub />;
-      case 'opportunities': return <Opportunities />;
+      case 'trauma_hub': return <EmergencyTraumaResuscitationHub />;
+      case 'trauma_hub':
+      return { title: "Emergency Trauma & MTP Hub | MedTrack", description: "Level 1 Trauma Command Station, Massive Transfusion Protocol (1:1:1), eFAST, and TEG/ROTEM Telemetry." };
+    case 'opportunities': return <Opportunities />;
       case 'application_tracker': return <ApplicationTracker />;
       case 'deadline_calendar': return <DeadlineCalendar />;
       case 'teams': return <Teams />;

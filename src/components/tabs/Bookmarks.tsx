@@ -3,7 +3,7 @@ import {
   Bookmark as BookmarkIcon, FolderPlus, Folder, Trash2, Tag, 
   Plus, Check, X, MoveRight, Layers, Sparkles, Filter
 } from 'lucide-react';
-import { fetchOpportunityById } from '../../services/apiClient';
+import { fetchOpportunityById, bulkGetOpportunityNotes } from '../../services/apiClient';
 import { AsyncState } from '../ui/states';
 import { useAppContext } from '../../context/AppContext';
 
@@ -20,6 +20,7 @@ export default function Bookmarks() {
   const [loading, setLoading] = useState(true);
   const [retrying, setRetrying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, any>>({});
 
   // Folder & Tag Management State
   const [folders, setFolders] = useState<BookmarkFolder[]>([
@@ -81,6 +82,18 @@ export default function Bookmarks() {
         profile.bookmarks.map((id) => fetchOpportunityById(id)),
       );
       setItems(results.filter(Boolean));
+
+      // Fetch notes for bookmarks
+      try {
+        const fetchedNotes = await bulkGetOpportunityNotes(profile.bookmarks);
+        const notesMap: Record<string, any> = {};
+        fetchedNotes.forEach((note: any) => {
+          notesMap[note.opportunityId] = note;
+        });
+        setNotes(notesMap);
+      } catch (e) {
+        console.warn("Could not fetch notes", e);
+      }
     } catch {
       setError('Unable to load your bookmarks. Please try again.');
     } finally {
@@ -355,6 +368,13 @@ export default function Bookmarks() {
                 </a>
                 <p className="text-xs text-gray-500 mb-2 font-medium">{item.organization || item.org || "Company not specified"}</p>
                 <p className="text-xs text-gray-700 line-clamp-2 mb-4 leading-relaxed">{item.description || "No description available."}</p>
+
+                {notes[itemId] && (notes[itemId].content || notes[itemId].isPinned) && (
+                  <div className={`mb-4 p-2 rounded border border-gray-100 ${notes[itemId].color ? `bg-${notes[itemId].color}-50 border-${notes[itemId].color}-200 text-${notes[itemId].color}-900` : 'bg-gray-50'}`}>
+                    {notes[itemId].isPinned && <span className="font-bold block text-[10px] mb-0.5">📌 Pinned</span>}
+                    {notes[itemId].content && <p className="text-[11px] line-clamp-2 italic">{notes[itemId].content}</p>}
+                  </div>
+                )}
 
                 {/* Card Footer */}
                 <div className="flex items-center justify-between gap-2 border-t border-gray-100 pt-4 mt-auto">

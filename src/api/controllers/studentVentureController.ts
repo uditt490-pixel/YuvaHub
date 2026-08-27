@@ -7,7 +7,7 @@ export const getStudentVentures = async (req: Request, res: Response) => {
   const campusName = (req.query.campusName as string) || undefined;
   const sectorDomain = (req.query.sectorDomain as string) || undefined;
   const fundingStage = (req.query.fundingStage as string) || undefined;
-  const search = (req.query.search as string) || undefined;
+  const search = (req.query.ventureId as string) || undefined;
 
   const ventures = await StudentVentureEngine.getVentures({
     campusName,
@@ -61,7 +61,9 @@ export const commitStudentVentureInvestment = async (
   req: Request,
   res: Response
 ) => {
-  const ventureId = (req.params.ventureId as string) || (req.body.ventureId as string);
+  const paramStartupId = req.params.ventureId;
+  const bodyStartupId = req.body.ventureId;
+  const ventureId = (Array.isArray(paramStartupId) ? paramStartupId[0] : paramStartupId) || (Array.isArray(bodyStartupId) ? bodyStartupId[0] : bodyStartupId);
   const investmentAmountUsd = Number(
     req.body.investmentAmountUsd || req.body.amountUsd || 1000
   );

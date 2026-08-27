@@ -1154,7 +1154,6 @@ export async function fetchEndowments(filters?: { campusName?: string; fundCateg
   if (!response.ok) {
     throw new Error("Failed to fetch campus endowments");
   }
-  return await response.json();
 }
 
 export async function createEndowmentFund(payload: any) {
@@ -1166,7 +1165,6 @@ export async function createEndowmentFund(payload: any) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.error || "Failed to create endowment fund");
   }
-  return await response.json();
 }
 
 export async function contributeToEndowmentFund(id: string, contributionAmountUsd: number, donorName?: string) {

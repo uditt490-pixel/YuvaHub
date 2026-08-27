@@ -57,7 +57,9 @@ export const createMentalWellnessCheckIn = async (req: Request, res: Response) =
 };
 
 export const assignCounselorCheckIn = async (req: Request, res: Response) => {
-  const checkInId = (req.params.checkInId as string) || (req.body.checkInId as string) || (req.body.studentId as string);
+  const paramRecordId = req.params.checkInId;
+  const bodyRecordId = req.body.checkInId;
+  const checkInId = (Array.isArray(paramRecordId) ? paramRecordId[0] : paramRecordId) || (Array.isArray(bodyRecordId) ? bodyRecordId[0] : bodyRecordId) || (req.body.studentId as string);
   const counselorName =
     req.body.counselorName || req.body.counselorAssigned || "Dr. Ananya Verma (Clinical Psychologist)";
 

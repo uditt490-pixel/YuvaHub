@@ -4,6 +4,7 @@ import { safeObjectId, parsePagination } from "../../lib/utils.js";
 import { AppError } from "../../lib/AppError.js";
 import { sendSuccess, sendPaginated, sendServiceUnavailable } from "../../lib/apiResponse.js";
 import { CodeReviewRequestSchema, CodeReviewFeedbackSchema } from "../../models/codeReviewSchema.js";
+import { recordActivity } from "./activityController.js";
 
 export const createReviewRequest = async (req: Request, res: Response) => {
   const user = req.user;
@@ -23,6 +24,14 @@ export const createReviewRequest = async (req: Request, res: Response) => {
   };
 
   const result = await dbCommand.collection("code_review_requests").insertOne(requestObj);
+  
+  await recordActivity({
+    userId: user.uid,
+    type: "code_review_requested",
+    entityId: result.insertedId.toString(),
+    metadata: { title: requestObj.title }
+  });
+
   sendSuccess(res, { reviewRequest: { ...requestObj, id: result.insertedId.toString() } });
 };
 
@@ -67,6 +76,13 @@ export const claimReview = async (req: Request, res: Response) => {
   );
 
   if (result.modifiedCount === 0) throw AppError.badRequest("Request no longer available");
+  
+  await recordActivity({
+    userId: user.uid,
+    type: "code_review_claimed",
+    entityId: requestId
+  });
+
   sendSuccess(res, { message: "Review claimed successfully" });
 };
 
@@ -111,6 +127,20 @@ export const submitFeedback = async (req: Request, res: Response) => {
     type: 'code_review_completed',
     timestamp: Date.now(),
     metadata: { requestId }
+  });
+
+  await recordActivity({
+    userId: user.uid,
+    type: "code_review_completed",
+    entityId: requestId
+  });
+
+  await recordActivity({
+    userId: user.uid,
+    type: "karma_earned",
+    entityId: requestId,
+    points: KARMA_REWARD,
+    metadata: { source: "code_review_completed" }
   });
 
   sendSuccess(res, { message: "Feedback submitted and Karma awarded" });

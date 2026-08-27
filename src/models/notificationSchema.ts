@@ -22,6 +22,11 @@ export const NotificationSchema = z.object({
   title: z.string().trim().min(1).max(180),
   message: z.string().trim().min(1).max(2000),
   targetId: z.string().trim().max(160).optional(),
+  /**
+   * Stable, process-independent key for deadline reminder deduplication.
+   * It is intentionally optional so legacy notifications remain valid.
+   */
+  dedupeKey: z.string().trim().min(1).max(400).optional(),
   read: z.boolean().default(false),
   createdAt: z.coerce.date().default(() => new Date()),
   expiresAt: z.coerce.date().default(defaultExpiry),

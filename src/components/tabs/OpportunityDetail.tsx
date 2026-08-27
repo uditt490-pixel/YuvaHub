@@ -11,6 +11,7 @@ import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import ShareCalendarActions from '../ui/ShareCalendarActions';
 import { ErrorState, LoadingState } from '../ui/states';
+import OpportunityNotePanel from '../ui/OpportunityNotePanel';
 import { useAppContext } from '../../context/AppContext';
 
 export default function OpportunityDetail() {
@@ -343,6 +344,13 @@ export default function OpportunityDetail() {
                 {opp.description || "Refer to the original portal post for detailed eligibility parameters and submission rules."}
               </p>
             </article>
+
+            {/* Private Note Panel */}
+            {isBookmarked && (
+              <div className="pt-4 border-t border-[#e8ded1] dark:border-slate-800">
+                <OpportunityNotePanel opportunityId={opp.id || opp._id} />
+              </div>
+            )}
 
             {/* Tagged Keywords */}
             {opp.tags && opp.tags.length > 0 && (

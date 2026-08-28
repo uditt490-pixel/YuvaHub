@@ -47,6 +47,15 @@ export const setupSocketEvents = () => {
       console.log(`[Socket] User ${socket.id} left post_${postId}`);
     });
 
+    socket.on("joinForumFeed", () => {
+      socket.join("forum_feed");
+      console.log(`[Socket] User ${socket.id} joined forum_feed`);
+    });
+
+    socket.on("leaveForumFeed", () => {
+      socket.leave("forum_feed");
+      console.log(`[Socket] User ${socket.id} left forum_feed`);
+    });
     socket.on("joinEventRoom", (eventId: string) => {
       socket.join(`event_${eventId}`);
       console.log(`[Socket] User ${socket.id} joined event_${eventId}`);

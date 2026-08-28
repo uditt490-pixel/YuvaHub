@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb";
 import { safeObjectId, normalizeParam, parsePagination } from "../../lib/utils.js";
 import escapeHtml from "escape-html";
 import { sendPaginated, sendSuccess, sendError, sendBadRequest } from "../../lib/apiResponse.js";
-
+import { getSocketIO } from "../socketInstance.js";
 const containsProfanity = (text: string): boolean => {
   const profanityRegex =
     /\b(badword|abuse|hate|spam|scam|idiot|stupid|bastard)\b/i;
@@ -134,34 +134,28 @@ export const createPost = async (req: Request, res: Response) => {
       ),
       authorUid: userUid,
       type: type || "Update",
-      tags: Array.isArray(tags) ? tags : ["General"],
-      upvotes: 0,
+      tags: Array.isArray(req.body.aiTags) && req.body.aiTags.length > 0 ? req.body.aiTags : (Array.isArray(tags) ? tags : ["General"]),      upvotes: 0,
       upvoted_by: [] as string[],
       repliesCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
+    let savedPost: any;
     if (dbCommand) {
       const result = await dbCommand.collection("posts").insertOne(post);
-      return sendSuccess(
-        res,
-        {
-          ...post,
-          _id: result.insertedId,
-          id: result.insertedId.toString(),
-        },
-        201,
-      );
+      savedPost = { ...post, _id: result.insertedId, id: result.insertedId.toString() };
+    } else {
+      savedPost = { ...post, _id: "post_" + Date.now(), id: "post_" + Date.now() };
     }
 
-    return sendSuccess(
-      res,
-      { ...post, _id: "post_" + Date.now(), id: "post_" + Date.now() },
-      201,
-    );
-};
+    const io = getSocketIO();
+    if (io) {
+      io.to("forum_feed").emit("forum:newPost", savedPost);
+    }
 
+    return sendSuccess(res, savedPost, 201);
+};
 export const deletePost = async (req: Request, res: Response) => {
     // Issue #285: route params can be `string | string[]` at runtime.
     // Normalize before any string operation or ObjectId construction.
@@ -244,9 +238,14 @@ export const createComment = async (req: Request, res: Response) => {
     };
 
     await dbCommand.collection("comments").insertOne(comment);
+
+    const io = getSocketIO();
+    if (io) {
+      io.to(`post_${postIdStr}`).emit("forum:newComment", comment);
+    }
+
     return sendSuccess(res, comment, 201);
 };
-
 export const editComment = async (req: Request, res: Response) => {
     // Issue #285: normalize both `:postId` and `:commentId` params.
     const postIdStr = normalizeParam(req.params.postId);

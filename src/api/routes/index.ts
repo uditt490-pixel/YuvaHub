@@ -30,7 +30,7 @@ import watchlistRoutes from "./watchlistRoutes.js";
 import reportRoutes from "./reportRoutes.js";
 import skillGapRoutes from "./skillGapRoutes.js";
 import careerGoalRoutes from "./careerGoalRoutes.js";
-import alumniMentorshipRoutes from "./alumniMentorshipRoutes.js";
+import plannerRoutes from "./plannerRoutes.js";import alumniMentorshipRoutes from "./alumniMentorshipRoutes.js";
 import activityRoutes from "./activityRoutes.js";
 import announcementRoutes from "./announcementRoutes.js";
 import opportunityNoteRoutes from "./opportunityNoteRoutes.js";
@@ -77,6 +77,7 @@ const routes = [
   reportRoutes,
   skillGapRoutes,
   careerGoalRoutes,
+  plannerRoutes,
   alumniMentorshipRoutes,
   activityRoutes,
   announcementRoutes,

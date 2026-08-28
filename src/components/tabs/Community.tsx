@@ -8,7 +8,7 @@ import { UserProfile } from '../../types';
 import { EmptyState, ErrorState, SkeletonCard } from '../ui/states';
 import { useAppContext } from '../../context/AppContext';
 import { ReportModal } from '../ui/ReportModal';
-
+import { useSocket } from '../../context/SocketContext';
 interface PostComment {
   _id?: string;
   id?: string;
@@ -35,8 +35,8 @@ interface Post {
 
 export default function Community() {
   const { user, profile, setActiveTab } = useAppContext();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [sortOption, setSortOption] = useState<'hot' | 'latest' | 'top' | 'trending'>('hot');
+  const { socket, isConnected } = useSocket();
+  const [posts, setPosts] = useState<Post[]>([]);  const [sortOption, setSortOption] = useState<'hot' | 'latest' | 'top' | 'trending'>('hot');
 
   // Optimistic Upvote & Downvote handler
   const handleVote = async (targetId: string, targetType: 'post' | 'comment' = 'post', voteType: 'upvote' | 'downvote') => {
@@ -158,6 +158,26 @@ export default function Community() {
     void fetchPosts(sortOption);
   }, [sortOption]);
 
+  // Real-time: join the forum feed room and prepend threads created by
+  // other connected clients. Reconnection is handled automatically by
+  // SocketContext (see reconnectionAttempts/reconnectionDelay there).
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.emit('joinForumFeed');
+
+    const handleNewPost = (incomingPost: Post) => {
+      const incomingId = incomingPost.id || incomingPost._id;
+      setPosts(prev => (prev.some(p => (p.id || p._id) === incomingId) ? prev : [incomingPost, ...prev]));
+    };
+
+    socket.on('forum:newPost', handleNewPost);
+
+    return () => {
+      socket.emit('leaveForumFeed');
+      socket.off('forum:newPost', handleNewPost);
+    };
+  }, [socket]);
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postTitle.trim() || !postContent.trim() || !user || posting) return;
@@ -201,8 +221,34 @@ export default function Community() {
     }
   };
 
-  const toggleComments = async (postId: string) => {
-    if (activeCommentPostId === postId) {
+  // Real-time: subscribe to the currently open thread's room so comments
+  // posted by other connected clients appear without a refresh.
+  useEffect(() => {
+    if (!socket || !activeCommentPostId) return;
+
+    socket.emit('joinForumPostRoom', activeCommentPostId);
+
+    const handleNewComment = (incomingComment: PostComment) => {
+      if (incomingComment.postId !== activeCommentPostId) return;
+      setCommentsMap(prev => {
+        const existing = prev[activeCommentPostId] || [];
+        if (existing.some(c => (c.id || c._id) === (incomingComment.id || incomingComment._id))) return prev;
+        return { ...prev, [activeCommentPostId]: [incomingComment, ...existing] };
+      });
+      setPosts(prev =>
+        prev.map(p => ((p.id || p._id) === activeCommentPostId ? { ...p, repliesCount: (p.repliesCount || 0) + 1 } : p))
+      );
+    };
+
+    socket.on('forum:newComment', handleNewComment);
+
+    return () => {
+      socket.emit('leaveForumPostRoom', activeCommentPostId);
+      socket.off('forum:newComment', handleNewComment);
+    };
+  }, [socket, activeCommentPostId]);
+
+  const toggleComments = async (postId: string) => {    if (activeCommentPostId === postId) {
       setActiveCommentPostId(null);
       return;
     }
@@ -293,10 +339,20 @@ export default function Community() {
             <MessageSquare className="w-3.5 h-3.5 text-[#f3e4bd]" />
             <span>Student Discussion Network</span>
           </div>
-          <h1 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
+          <h1 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight flex items-center gap-2">
             Community <span className="text-[#b56b37] italic">Forum</span>
-          </h1>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">
+            {socket && (
+              <span
+                className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                  isConnected
+                    ? 'text-emerald-600 border-emerald-300 bg-emerald-50'
+                    : 'text-amber-600 border-amber-300 bg-amber-50'
+                }`}
+              >
+                {isConnected ? 'Live' : 'Reconnecting…'}
+              </span>
+            )}
+          </h1>          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">
             Connect with ambitious peers, ask technical questions, share hackathon wins, and exchange study roadmaps.
           </p>
         </div>

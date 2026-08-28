@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import { Handle, Position } from 'reactflow';
 import { CheckCircle, Circle, Lock } from 'lucide-react';

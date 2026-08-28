@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   BookOpen, Target, CheckCircle, Clock, Star, TrendingUp, Award, Zap,

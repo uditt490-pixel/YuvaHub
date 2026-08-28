@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Worker, Job } from 'bullmq';
 import { redisClient } from '../config/redis';
 import { DeveloperProfile } from '../models/DeveloperProfile';

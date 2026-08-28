@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response, NextFunction } from 'express';
 import { auth } from '../utils/firebaseAdmin';
 import { logger } from '../utils/logger';

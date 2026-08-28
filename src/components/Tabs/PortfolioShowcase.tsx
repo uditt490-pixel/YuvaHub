@@ -20,8 +20,8 @@ interface Project {
 }
 
 const TECH_COLORS: Record<string, string> = {
-  React: '#61dafb', TypeScript: '#3178c6', Node.js: '#68a063', Python: '#3776ab',
-  'Tailwind CSS': '#06b6d4', Next.js: '#000000', PostgreSQL: '#336791', MongoDB: '#47a248',
+  React: '#61dafb', TypeScript: '#3178c6', 'Node.js': '#68a063', Python: '#3776ab',
+  'Tailwind CSS': '#06b6d4', 'Next.js': '#000000', PostgreSQL: '#336791', MongoDB: '#47a248',
   Docker: '#2496ed', AWS: '#ff9900', GraphQL: '#e10098', Firebase: '#ffca28',
   Swift: '#f05138', Kotlin: '#7f52ff', 'React Native': '#61dafb', Flutter: '#02569b',
   TensorFlow: '#ff6f00', PyTorch: '#ee4c2c', OpenCV: '#5c3ee8', LangChain: '#412991',

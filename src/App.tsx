@@ -1,7 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
   LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic, Trophy,
-  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket
+  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket, Compass
 } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
@@ -49,7 +49,7 @@ const CampusAlumniHub = lazy(() => import('./components/tabs/CampusAlumniHub'));
 const ResumeAtsStudio = lazy(() => import('./components/tabs/ResumeAtsStudio'));
 const SkillGapStudio = lazy(() => import('./components/tabs/SkillGapStudio'));
 const InterviewPrepStudio = lazy(() => import('./components/tabs/InterviewPrepStudio'));
-const PortfolioShowcase = lazy(() => import('./components/tabs/PortfolioShowcase'));
+const PortfolioShowcase = lazy(() => import('./components/Tabs/PortfolioShowcase'));
 const MentorshipNetwork = lazy(() => import('./components/tabs/MentorshipNetwork'));
 const AchievementCenter = lazy(() => import('./components/tabs/AchievementCenter'));
 
@@ -81,8 +81,12 @@ const CareerGoalTracker = lazy(() => import('./components/tabs/CareerGoalTracker
 const CampusAlumniMentorshipStudioPage = lazy(() => import('./pages/CampusAlumniMentorshipStudioPage'));
 const ActivityFeed = lazy(() => import('./components/tabs/ActivityFeed'));
 const Announcements = lazy(() => import('./components/tabs/Announcements'));
-const SavedSearchManager = lazy(() => import('./components/tabs/SavedSearchManager'));
-const MyRsvps = lazy(() => import('./components/tabs/MyRsvps').then(m => ({ default: m.MyRsvps })));
+const SavedSearchManager = lazy(() => import('./components/tabs/SavedSearchManager'));const MyRsvps = lazy(() => import('./components/tabs/MyRsvps').then(m => ({ default: m.MyRsvps })));
+const StudentMentalWellnessDeskPage = lazy(() => import('./pages/StudentMentalWellnessDeskPage'));
+const CareerPathSimulator = lazy(() => import('./components/Tabs/CareerPathSimulator'));
+const StudyGroupRooms = lazy(() => import('./components/Tabs/StudyGroupRooms'));
+const ResourceVault = lazy(() => import('./components/Tabs/ResourceVault'));
+const CampusResearchIpLicensingStudioPage = lazy(() => import('./pages/CampusResearchIpLicensingStudioPage'));
 
 const CardiovascularCriticalCareHub = lazy(() => import('./pages/Enterprise/CardiovascularCriticalCareHub').then(m => ({ default: m.CardiovascularCriticalCareHub })));
 const DeadlineCalendar = lazy(() => import('./components/tabs/DeadlineCalendar'));

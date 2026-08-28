@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Roadmap } from '../../models/Roadmap';

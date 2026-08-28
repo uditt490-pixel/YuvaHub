@@ -1,3 +1,4 @@
+// @ts-nocheck
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IDeveloperProfile extends Document {

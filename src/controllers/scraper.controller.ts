@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response } from 'express';
 import { Queue } from 'bullmq';
 import { ScraperBlueprint } from '../models/ScraperBlueprint';

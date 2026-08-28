@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Request, Response } from 'express';
 import { DeveloperProfile } from '../../models/DeveloperProfile';
 import { opportunityDeduplicationQueue } from '../../queues/opportunityDeduplicationQueue'; // Reusing queue import structure

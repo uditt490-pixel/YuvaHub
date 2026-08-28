@@ -1,9 +1,38 @@
 import { Router } from "express";
-import { adminHealth, adminMetrics, adminScrapers, adminScraperHealth, scraperStats, scraperLogs, triggerScraper, adminIncidents, adminDeleteUser, adminTelemetryStream, triggerNodeScraper, adminDlqStats, adminInspectDlq, adminReplayDlq, adminPurgeDlq } from "../controllers/adminController.js";
+import {
+    adminHealth,
+    adminMetrics,
+    adminScrapers,
+    adminScraperHealth,
+    scraperStats,
+    scraperLogs,
+    triggerScraper,
+    adminIncidents,
+    adminDeleteUser,
+    adminTelemetryStream,
+    triggerNodeScraper,
+    adminDlqStats,
+    adminInspectDlq,
+    adminReplayDlq,
+    adminPurgeDlq,
+    getPlatformStats,
+    getUsersList,
+    performModerationAction
+} from "../controllers/adminController.js";
 import { authMiddleware, adminOnly } from "../middlewares/auth.js";
+import { requireRole } from "../../middleware/roleAuth.js";
 
 const router = Router();
 
+// ── New Platform & Moderation Routes ─────────────────────────────────────
+// All routes in this section require 'admin' or 'moderator' role
+const protectAdmin = requireRole(['admin', 'moderator']);
+
+router.get('/stats', protectAdmin, getPlatformStats);
+router.get('/users', protectAdmin, getUsersList);
+router.post('/moderate', protectAdmin, performModerationAction);
+
+// ── Existing Admin Routes ────────────────────────────────────────────────
 router.get("/admin/health", adminHealth);
 router.get("/admin/metrics", authMiddleware, adminOnly, adminMetrics);
 router.get("/admin/scrapers", authMiddleware, adminOnly, adminScrapers);

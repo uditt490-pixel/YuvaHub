@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { MessageSquare, Search, PlusCircle, CheckCircle2, Filter } from 'lucide-react';
 import { MOCK_FORUM_THREADS, ForumThread } from '../../services/discussionForumEngine';
 import { ForumThreadCard } from './ForumThreadCard';
+import { ForumReplyThread } from './ForumReplyThread';
 
 export const CommunityDiscussionForumTab: React.FC = () => {
     const [threads, setThreads] = useState<ForumThread[]>(MOCK_FORUM_THREADS);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [categoryFilter, setCategoryFilter] = useState<string>('all');
     const [showOnlySolved, setShowOnlySolved] = useState<boolean>(false);
+    const [activeThread, setActiveThread] = useState<ForumThread | null>(null);
 
     const handleToggleUpvote = (id: string) => {
         setThreads(prev => prev.map(t => {
@@ -24,7 +26,7 @@ export const CommunityDiscussionForumTab: React.FC = () => {
     };
 
     const handleOpenThread = (thread: ForumThread) => {
-        alert(`Opening technical discussion thread: "${thread.title}"`);
+        setActiveThread(thread);
     };
 
     const filteredThreads = threads.filter(t => {
@@ -130,6 +132,14 @@ export const CommunityDiscussionForumTab: React.FC = () => {
                     />
                 ))}
             </div>
+
+            {/* Thread View Modal/Overlay */}
+            {activeThread && (
+                <ForumReplyThread 
+                    thread={activeThread} 
+                    onClose={() => setActiveThread(null)} 
+                />
+            )}
         </div>
     );
 };

@@ -3,6 +3,7 @@ import { User, MapPin, Briefcase, GraduationCap, Github, Linkedin, Globe, Award,
 import { SEO } from '../components/SEO';
 import LoadingScreen from '../components/ui/LoadingScreen';
 import { useAppContext } from '../context/AppContext';
+import TestimonialWall from '../components/ui/TestimonialWall';
 
 interface PublicProfileData {
   uid: string;
@@ -355,6 +356,9 @@ export default function PublicPortfolio() {
             
           </div>
         </div>
+
+        {/* Testimonial Wall */}
+        <TestimonialWall targetUid={profile.uid} />
 
       </main>
     </div>

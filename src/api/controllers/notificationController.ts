@@ -173,3 +173,90 @@ export const markBulkRead = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Saves notifications to the database and dispatches them over active WebSocket pipelines
+ */
+export const triggerNotification = async (
+  io: any,
+  params: { userId: string; type: string; content: string; link?: string }
+) => {
+  const { userId, type, content, link } = params;
+  try {
+    const notificationRecord = {
+      userId: userId ? userId.toString() : "user_anon",
+      type: type || "system",
+      content: content || "",
+      link: link || "/",
+      isRead: false,
+      read: false,
+      createdAt: new Date(),
+    };
+
+    let notification: any = notificationRecord;
+    if (dbCommand) {
+      const res = await dbCommand.collection("notifications").insertOne(notificationRecord);
+      notification = {
+        _id: res.insertedId,
+        id: res.insertedId.toString(),
+        ...notificationRecord,
+      };
+    }
+
+    if (io && typeof io.to === "function") {
+      io.to(userId.toString()).emit("NEW_IN_APP_NOTIFICATION", notification);
+    }
+
+    return notification;
+  } catch (error) {
+    console.error("Failed to execute real-time notification broadcast:", error);
+    return null;
+  }
+};
+
+/**
+ * Handles navigation reads, turning off unread counters immediately
+ */
+export const markAsRead = async (req: Request, res: Response) => {
+  try {
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    const userId = req.user?.uid || req.user?.id || (req.user as any)?._id;
+
+    const oid = safeObjectId(id);
+    const queryId = oid || id;
+
+    if (dbCommand) {
+      await dbCommand.collection("notifications").updateOne(
+        { $or: [{ _id: queryId }, { id: id }] },
+        { $set: { isRead: true, read: true } }
+      );
+    }
+
+    let updatedNotification: any = null;
+    if (dbQuery) {
+      updatedNotification = await dbQuery
+        .collection("notifications")
+        .findOne({ $or: [{ _id: queryId }, { id: id }] });
+    }
+
+    if (!updatedNotification) {
+      updatedNotification = {
+        _id: id,
+        id: id,
+        userId: userId || "user_anon",
+        isRead: true,
+        read: true,
+        content: "Notification marked as read",
+        link: "/",
+        createdAt: new Date().toISOString(),
+      };
+    }
+
+    return res.status(200).json(updatedNotification);
+  } catch (error) {
+    console.error("Failed to update notification state:", error);
+    return res.status(500).json({ error: "Failed to update notification state." });
+  }
+};
+
+

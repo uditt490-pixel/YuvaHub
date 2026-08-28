@@ -125,7 +125,7 @@ export function EventCheckInScanner({ eventId, onClose }: CheckInScannerProps) {
         const data = await res.json();
         setStatus({
           type: 'success',
-          message: `✓ Checked in! (${data.data?.attendeeCount}/${data.data?.totalRsvps})`,
+          message: `✓ Checked in: ${data.data?.attendeeName || 'Attendee'} (${data.data?.attendeeCount}/${data.data?.totalRsvps})`,
         });
         // Refresh stats
         const statsRes = await fetch(`/api/v1/events/${eventId}/checkin-stats`);

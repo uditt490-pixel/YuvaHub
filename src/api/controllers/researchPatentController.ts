@@ -61,7 +61,9 @@ export const executePatentLicensingAgreement = async (
   req: Request,
   res: Response
 ) => {
-  const patentId = (req.params.patentId as string) || (req.body.patentId as string);
+  const paramPatentId = req.params.patentId;
+  const bodyPatentId = req.body.patentId;
+  const patentId = (Array.isArray(paramPatentId) ? paramPatentId[0] : paramPatentId) || (Array.isArray(bodyPatentId) ? bodyPatentId[0] : bodyPatentId);
   const commercialPartnerName =
     req.body.commercialPartnerName || req.body.commercialPartner || "Intel Capital Technologies";
 

@@ -7,6 +7,7 @@ import { ErrorState } from '../ui/states';
 import { useAppContext } from '../../context/AppContext';
 import ResumeVersionManager from './ResumeVersionManager';
 import EndorsementHub from './EndorsementHub';
+import TestimonialInbox from '../ui/TestimonialInbox';
 
 export default function Profile() {
   const { user, profile, setProfile } = useAppContext();
@@ -445,6 +446,9 @@ export default function Profile() {
            
            {/* Endorsements Section */}
            <EndorsementHub />
+
+           {/* Testimonials Inbox Section */}
+           <TestimonialInbox />
         </div>
       </div>
     </div>

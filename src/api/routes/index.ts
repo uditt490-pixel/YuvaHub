@@ -13,6 +13,7 @@ import notificationRoutes from "./notificationRoutes.js";
 import applicationRoutes from "./applicationRoutes.js";
 import adminRoutes from "./adminRoutes.js";
 import communityRoutes from "./communityRoutes.js";
+import forumReplyRoutes from "./forumReplyRoutes.js";
 import teamRoutes from "./teamRoutes.js";
 import scholarshipRoutes from "./scholarshipRoutes.js";
 import mentorshipRoutes from "./mentorshipRoutes.js";
@@ -52,6 +53,7 @@ const routes = [
   applicationRoutes,
   adminRoutes,
   communityRoutes,
+  forumReplyRoutes,
   teamRoutes,
   scholarshipRoutes,
   mentorshipRoutes,

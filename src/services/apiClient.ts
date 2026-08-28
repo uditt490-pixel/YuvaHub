@@ -1154,7 +1154,7 @@ export async function fetchMentalWellnessCheckIns(filters?: { campusName?: strin
   if (!response.ok) {
     throw new Error("Failed to fetch mental wellness checkins");
   }
-  return await response.json();
+  return response.json();
 }
 
 export async function createMentalWellnessCheckIn(payload: any) {

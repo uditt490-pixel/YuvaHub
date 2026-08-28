@@ -36,7 +36,74 @@ interface Post {
 export default function Community() {
   const { user, profile, setActiveTab } = useAppContext();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [sortOption, setSortOption] = useState<'latest' | 'trending'>('latest');
+  const [sortOption, setSortOption] = useState<'hot' | 'latest' | 'top' | 'trending'>('hot');
+
+  // Optimistic Upvote & Downvote handler
+  const handleVote = async (targetId: string, targetType: 'post' | 'comment' = 'post', voteType: 'upvote' | 'downvote') => {
+    const userId = user?.uid || user?.id || 'user_anon';
+
+    if (targetType === 'post') {
+      setPosts((prevPosts) =>
+        prevPosts.map((p) => {
+          const currentId = p.id || p._id;
+          if (currentId === targetId) {
+            const upvotesArr = Array.isArray(p.upvoted_by) ? p.upvoted_by : [];
+            const downvotesArr = Array.isArray((p as any).downvoted_by) ? (p as any).downvoted_by : [];
+
+            const hasUpvoted = upvotesArr.includes(userId);
+            const hasDownvoted = downvotesArr.includes(userId);
+
+            let newUpvotes = [...upvotesArr];
+            let newDownvotes = [...downvotesArr];
+
+            if (voteType === 'upvote') {
+              if (hasUpvoted) {
+                newUpvotes = newUpvotes.filter((id) => id !== userId);
+              } else {
+                if (!newUpvotes.includes(userId)) newUpvotes.push(userId);
+                newDownvotes = newDownvotes.filter((id) => id !== userId);
+              }
+            } else if (voteType === 'downvote') {
+              if (hasDownvoted) {
+                newDownvotes = newDownvotes.filter((id) => id !== userId);
+              } else {
+                if (!newDownvotes.includes(userId)) newDownvotes.push(userId);
+                newUpvotes = newUpvotes.filter((id) => id !== userId);
+              }
+            }
+
+            const numericUp = typeof p.upvotes === 'number' ? p.upvotes : 0;
+            const diff = newUpvotes.length - upvotesArr.length;
+
+            return {
+              ...p,
+              upvotes: Math.max(0, numericUp + diff),
+              upvoted_by: newUpvotes,
+              downvoted_by: newDownvotes,
+            } as any;
+          }
+          return p;
+        })
+      );
+    }
+
+    try {
+      const res = await fetch('/api/v1/community/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetId, targetType, voteType }),
+      });
+      if (!res.ok) {
+        void fetchPosts(sortOption);
+      }
+    } catch (err) {
+      console.error('Error dispatching vote:', err);
+      void fetchPosts(sortOption);
+    }
+  };
+
+  const handleUpvote = (postId: string) => handleVote(postId, 'post', 'upvote');
+  const handleDownvote = (postId: string) => handleVote(postId, 'post', 'downvote');
 
   // Post Creator State
   const [postTitle, setPostTitle] = useState('');
@@ -131,31 +198,6 @@ export default function Community() {
       setPostError(err.message || 'Error publishing post');
     } finally {
       setPosting(false);
-    }
-  };
-
-  const handleUpvote = async (postId: string) => {
-    if (!user) return;
-    setPosts(prev => prev.map(p => {
-      if ((p.id || p._id) === postId) {
-        const hasUpvoted = p.upvoted_by?.includes(user.uid);
-        const newCount = hasUpvoted ? p.upvotes - 1 : p.upvotes + 1;
-        const newUpvotedBy = hasUpvoted 
-          ? (p.upvoted_by || []).filter(u => u !== user.uid)
-          : [...(p.upvoted_by || []), user.uid];
-        return { ...p, upvotes: newCount, upvoted_by: newUpvotedBy };
-      }
-      return p;
-    }));
-
-    try {
-      await fetch(`/api/v1/posts/${postId}/upvote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userUid: user.uid })
-      });
-    } catch (err) {
-      console.error('Error toggling upvote:', err);
     }
   };
 

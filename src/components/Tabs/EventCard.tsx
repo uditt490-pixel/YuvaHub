@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, Trophy, Users, CheckCircle2, ExternalLink, Video } from 'lucide-react';
 import { CommunityEvent, generateCalendarLink } from '../../services/eventDirectoryEngine';
+import { EventRsvpButton } from '../ui/EventRsvpButton';
 
 interface EventCardProps {
     event: CommunityEvent;
@@ -56,23 +57,14 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onToggleRegister })
 
             {/* Actions */}
             <div className="px-5 pb-5 pt-2 flex items-center gap-2">
-                <button
-                    type="button"
-                    onClick={() => onToggleRegister(event.id)}
-                    className={`flex-1 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                        event.isRegistered
-                            ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
-                            : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20'
-                    }`}
-                >
-                    {event.isRegistered ? (
-                        <>
-                            <CheckCircle2 className="w-4 h-4" /> Registered
-                        </>
-                    ) : (
-                        'Register Now'
-                    )}
-                </button>
+                <div className="flex-1">
+                    <EventRsvpButton
+                        eventId={event.id}
+                        initialStatus={event.isRegistered ? 'registered' : 'none'}
+                        initialRegisteredCount={event.registeredCount}
+                        maxCapacity={event.maxCapacity}
+                    />
+                </div>
 
                 <a
                     href={generateCalendarLink(event)}

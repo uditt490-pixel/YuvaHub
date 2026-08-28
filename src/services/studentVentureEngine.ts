@@ -46,20 +46,31 @@ export class StudentVentureEngine {
   public static async registerVenture(payload: {
     startupName: string;
     campusName: string;
-    studentFounderName: string;
+    studentFounderName?: string;
+    founderStudentName?: string;
     sectorDomain: 'FINTECH' | 'HEALTH_TECH' | 'ED_TECH' | 'SAAS' | 'HARDWARE';
     fundingStage: 'PRE_SEED' | 'SEED' | 'SERIES_A' | 'STUDENT_GRANT';
     targetInvestmentUsd: number;
     pitchDeckUrl?: string;
-    executiveSummary: string;
+    executiveSummary?: string;
+    pitchSummary?: string;
   }): Promise<IStudentVentureFund> {
+    const studentFounderName = payload.studentFounderName || payload.founderStudentName || 'Student Founder';
+    const executiveSummary = payload.executiveSummary || payload.pitchSummary || 'Campus Venture Startup Summary';
+
     const venture: IStudentVentureFund = {
-      ...payload,
+      startupName: payload.startupName,
+      campusName: payload.campusName,
+      studentFounderName,
+      sectorDomain: payload.sectorDomain,
+      fundingStage: payload.fundingStage,
+      targetInvestmentUsd: payload.targetInvestmentUsd,
       ventureId: `VENT-${Date.now()}`,
       committedInvestmentUsd: 0,
       investorCount: 0,
       investmentStatus: 'OPEN',
       pitchDeckUrl: payload.pitchDeckUrl || '#',
+      executiveSummary,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -104,10 +115,12 @@ export class StudentVentureEngine {
     return venture;
   }
 
-  public static resetInMemoryVentures(ventures?: IStudentVentureFund[]) {
-    inMemoryVentures.length = 0;
-    if (ventures) {
-      inMemoryVentures.push(...ventures);
-    }
+  public static async investInVenture(
+    ventureId: string,
+    investmentAmountUsd: number,
+    _investorName?: string
+  ): Promise<IStudentVentureFund | null> {
+    return this.commitInvestment(ventureId, investmentAmountUsd);
   }
 }
+

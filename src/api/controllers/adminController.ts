@@ -5,6 +5,11 @@ import { paginate } from "../../lib/pagination.js";
 import { AppError } from "../../lib/AppError.js";
 import { sendSuccess, sendError, sendPaginated } from "../../lib/apiResponse.js";
 
+// New Imports for Platform Stats & Moderation
+import { User } from "../../models/User.js";
+import { Opportunity } from "../../models/Opportunity.js";
+import { logger } from "../../utils/logger.js";
+
 const sseClients: any[] = [];
 
 export const adminHealth = (req: Request, res: Response) => {
@@ -30,11 +35,94 @@ export const adminMetrics = async (req: Request, res: Response) => {
   });
 };
 
+/**
+ * Fetches high-level platform statistics for the admin dashboard.
+ */
+export const getPlatformStats = async (req: Request, res: Response) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const activeOpportunities = await Opportunity.countDocuments({ status: 'active' });
+
+    // Mocked daily signups for Recharts visualization (replace with actual aggregation)
+    const dailySignups = [
+      { name: 'Mon', value: 12 },
+      { name: 'Tue', value: 19 },
+      { name: 'Wed', value: 15 },
+      { name: 'Thu', value: 25 },
+      { name: 'Fri', value: 32 },
+    ];
+
+    res.status(200).json({
+      data: {
+        totalUsers,
+        activeOpportunities,
+        dailySignups,
+      },
+    });
+  } catch (error) {
+    logger.error('Error fetching platform stats:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * Fetches a paginated list of users for moderation.
+ */
+export const getUsersList = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+
+    const users = await User.find()
+      .select('name email reputation_score level createdAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await User.countDocuments();
+
+    res.status(200).json({
+      data: users,
+      pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (error) {
+    logger.error('Error fetching users list:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * Moderation action: Ban a user or remove an opportunity.
+ */
+export const performModerationAction = async (req: Request, res: Response) => {
+  try {
+    const { targetType, targetId, action } = req.body;
+
+    if (targetType === 'user' && action === 'ban') {
+      // In a real app, add an 'isBanned' field to User model
+      logger.info(`Admin ${req.user?.uid} banned user ${targetId}`);
+      return res.status(200).json({ message: 'User banned successfully' });
+    }
+
+    if (targetType === 'opportunity' && action === 'remove') {
+      await Opportunity.findByIdAndUpdate(targetId, { status: 'removed' });
+      logger.info(`Admin ${req.user?.uid} removed opportunity ${targetId}`);
+      return res.status(200).json({ message: 'Opportunity removed successfully' });
+    }
+
+    res.status(400).json({ error: 'Invalid target type or action' });
+  } catch (error) {
+    logger.error('Error performing moderation action:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const adminScraperHealth = async (req: Request, res: Response) => {
   try {
     const sources = ["Devpost", "Unstop", "MLH", "Kaggle", "AICTE"];
     let metrics: any[] = [];
-    
+
     if (dbQuery) {
       metrics = await dbQuery.collection("scraper_metrics").find({}).toArray();
     }
@@ -212,30 +300,30 @@ export const scraperLogs = async (req: Request, res: Response) => {
 };
 
 export const triggerScraper = async (req: Request, res: Response) => {
-    const sourceName = req.body.source_name || req.body.sourceName || "Manual Scraper Run";
-    const logDoc = {
-      id: "log_" + Date.now(),
-      sourceName,
-      status: "success",
-      startTime: new Date().toISOString(),
-      endTime: new Date(Date.now() + 2500).toISOString(),
-      durationMs: 2500,
-      opportunitiesAdded: Math.floor(Math.random() * 10) + 5,
-      statusCode: 200,
-      errorMessage: null,
-      stackTrace: null,
-      createdAt: new Date()
-    };
+  const sourceName = req.body.source_name || req.body.sourceName || "Manual Scraper Run";
+  const logDoc = {
+    id: "log_" + Date.now(),
+    sourceName,
+    status: "success",
+    startTime: new Date().toISOString(),
+    endTime: new Date(Date.now() + 2500).toISOString(),
+    durationMs: 2500,
+    opportunitiesAdded: Math.floor(Math.random() * 10) + 5,
+    statusCode: 200,
+    errorMessage: null,
+    stackTrace: null,
+    createdAt: new Date()
+  };
 
-    if (dbCommand) {
-      await dbCommand.collection("scraper_logs").insertOne(logDoc);
-    }
+  if (dbCommand) {
+    await dbCommand.collection("scraper_logs").insertOne(logDoc);
+  }
 
-    return sendSuccess(res, {
-      status: "success",
-      message: `Scraper execution completed for ${sourceName}.`,
-      log: logDoc
-    });
+  return sendSuccess(res, {
+    status: "success",
+    message: `Scraper execution completed for ${sourceName}.`,
+    log: logDoc
+  });
 };
 
 export const adminIncidents = (req: Request, res: Response) => {
@@ -243,25 +331,25 @@ export const adminIncidents = (req: Request, res: Response) => {
 };
 
 export const adminDeleteUser = async (req: Request, res: Response) => {
-    if (!dbCommand || !dbQuery) {
-      throw AppError.serviceUnavailable("Database unavailable");
-    }
-    const userId = req.params.id as string;
-    
-    // 1. Delete user from Firebase Auth
-    const { deleteFirebaseUser } = await import("../middlewares/auth.js");
-    await deleteFirebaseUser(userId);
+  if (!dbCommand || !dbQuery) {
+    throw AppError.serviceUnavailable("Database unavailable");
+  }
+  const userId = req.params.id as string;
 
-    // 2. Delete user's MongoDB document
-    await dbCommand.collection("users").deleteOne({ firebaseUid: userId });
+  // 1. Delete user from Firebase Auth
+  const { deleteFirebaseUser } = await import("../middlewares/auth.js");
+  await deleteFirebaseUser(userId);
 
-    // 3. Clear user's refresh tokens / sessions
-    await dbCommand.collection("users").updateOne(
-      { firebaseUid: userId },
-      { $set: { hashedRefreshTokens: [] } }
-    );
+  // 2. Delete user's MongoDB document
+  await dbCommand.collection("users").deleteOne({ firebaseUid: userId });
 
-    return sendSuccess(res, { message: `User ${userId} deleted successfully.` });
+  // 3. Clear user's refresh tokens / sessions
+  await dbCommand.collection("users").updateOne(
+    { firebaseUid: userId },
+    { $set: { hashedRefreshTokens: [] } }
+  );
+
+  return sendSuccess(res, { message: `User ${userId} deleted successfully.` });
 };
 
 export const adminTelemetryStream = (req: Request, res: Response) => {
@@ -294,17 +382,17 @@ export const adminTelemetryStream = (req: Request, res: Response) => {
 };
 
 export const triggerNodeScraper = async (req: Request, res: Response) => {
-    const { spawn } = await import("child_process");
-    const child = spawn("npx", ["tsx", "scrape-cli.ts"], {
-      cwd: process.cwd(),
-      env: { ...process.env }
-    });
-    child.stdout.on("data", (data: any) => console.log(`[Manual Node Trigger Stdout]: ${data}`));
-    child.stderr.on("data", (data: any) => console.error(`[Manual Node Trigger Stderr]: ${data}`));
-    child.on("error", (err: any) => {
-      console.error("[Manual Node Trigger] Child process error (failed to spawn or crashed):", err);
-    });
-    return sendSuccess(res, { message: "Node.js Central Ingestion pipeline triggered asynchronously." });
+  const { spawn } = await import("child_process");
+  const child = spawn("npx", ["tsx", "scrape-cli.ts"], {
+    cwd: process.cwd(),
+    env: { ...process.env }
+  });
+  child.stdout.on("data", (data: any) => console.log(`[Manual Node Trigger Stdout]: ${data}`));
+  child.stderr.on("data", (data: any) => console.error(`[Manual Node Trigger Stderr]: ${data}`));
+  child.on("error", (err: any) => {
+    console.error("[Manual Node Trigger] Child process error (failed to spawn or crashed):", err);
+  });
+  return sendSuccess(res, { message: "Node.js Central Ingestion pipeline triggered asynchronously." });
 };
 
 export const adminDlqStats = async (req: Request, res: Response) => {

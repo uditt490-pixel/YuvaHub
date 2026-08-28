@@ -69,10 +69,13 @@ Peeking messages from a DLQ allows inspecting failure details without destroying
 - **Admin API**: `GET /api/admin/dlq/inspect/:queueName?limit=10`
 - **Programmatic**:
   ```ts
-  const messages = await eventBus.inspectDlq("notification_queue", 10);
-  // Returns: [{ payload: {...}, headers: { "x-death-reason": "...", "x-death-timestamp": "..." }, routingKey: "..." }]
-  ```
+const messages = await eventBus.inspectDlq("notification_queue", 10);
+// Returns: [{ payload: {...}, headers: { "x-death-reason": "...", "x-death-timestamp": "..." }, routingKey: "..." }]
 
+### C. Proactive Alerts
+Whenever a message exhausts its retries and is routed to a DLQ, `EventBus` immediately triggers an admin email alert via the existing `sendAdminAlert` helper (the same one used for background job failures). No manual polling is required to learn that a message failed permanently — admins configured in `ADMIN_EMAILS` receive a notification with the queue name, routing key, and retry count.
+
+---
 ---
 
 ## 4. Replay & Recovery Workflow

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
   LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic, Trophy,
-  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket
+  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket, Lock
 } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
@@ -357,8 +357,7 @@ function App() {
         { id: 'announcements', label: 'Announcements', icon: Megaphone, badge: 'NEW' },
         { id: 'auth_security', label: 'Auth & Security', icon: ShieldCheck },
         { id: 'settings', label: 'Settings', icon: Settings },
-        ...(isAdminUser ? [{ id: 'admin', label: 'Admin Panel', icon: ShieldAlert }, { id: 'audit_log', label: 'Audit Log', icon: Activity, badge: 'NEW' }, { id: 'devops_pipelines', label: 'Pipelines', icon: Terminal, badge: 'NEW' }, { id: 'sso_identity', label: 'SSO & Identity', icon: Shield, badge: 'NEW' }, { id: 'api_gateway', label: 'API Gateway', icon: Terminal, badge: 'NEW' }] : []),
-      ]
+...(isAdminUser ? [{ id: 'admin', label: 'Admin Panel', icon: ShieldAlert }, { id: 'audit_log', label: 'Audit Log', icon: Activity, badge: 'NEW' }, { id: 'devops_pipelines', label: 'Pipelines', icon: Terminal, badge: 'NEW' }, { id: 'sso_identity', label: 'SSO & Identity', icon: Shield, badge: 'NEW' }, { id: 'api_gateway', label: 'API Gateway', icon: Terminal, badge: 'NEW' }, { id: 'dlp', label: 'Data Loss Prevention', icon: Lock, badge: 'NEW' }] : []),      ]
     }
   ];
 
@@ -449,7 +448,7 @@ function App() {
       case 'devops_pipelines': return <DevopsPipelineHub />;
       case 'sso_identity': return <SsoIdentityHub />;
       case 'api_gateway': return <ApiGatewayHub />;
-
+      case 'dlp': return <DlpHub />;
       default: return <Dashboard />;
     }
   };

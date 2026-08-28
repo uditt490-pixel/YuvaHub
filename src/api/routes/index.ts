@@ -30,20 +30,16 @@ import watchlistRoutes from "./watchlistRoutes.js";
 import reportRoutes from "./reportRoutes.js";
 import skillGapRoutes from "./skillGapRoutes.js";
 import careerGoalRoutes from "./careerGoalRoutes.js";
-import alumniMentorshipRoutes from "./alumniMentorshipRoutes.js";
+import plannerRoutes from "./plannerRoutes.js";import alumniMentorshipRoutes from "./alumniMentorshipRoutes.js";
 import activityRoutes from "./activityRoutes.js";
 import announcementRoutes from "./announcementRoutes.js";
 import opportunityNoteRoutes from "./opportunityNoteRoutes.js";
 import savedSearchRoutes from "./savedSearchRoutes.js";
 import testimonialRoutes from "./testimonialRoutes.js";
 import eventRsvpRoutes from "./eventRsvpRoutes.js";
- feature/automated-skill-assessments
 import skillAssessmentRoutes from "./skillAssessmentRoutes.js";
-
 import voteRoutes from "./voteRoutes.js";
- main
-import { errorHandler } from "../middlewares/errorHandler.js";
-import { apiVersionHeaders } from "../versioning/middleware.js";
+import { errorHandler } from "../middlewares/errorHandler.js";import { apiVersionHeaders } from "../versioning/middleware.js";
 
 const rootRouter = Router();
 const v1Router = Router();
@@ -81,6 +77,7 @@ const routes = [
   reportRoutes,
   skillGapRoutes,
   careerGoalRoutes,
+  plannerRoutes,
   alumniMentorshipRoutes,
   activityRoutes,
   announcementRoutes,
@@ -88,13 +85,9 @@ const routes = [
   savedSearchRoutes,
   testimonialRoutes,
   eventRsvpRoutes,
- feature/automated-skill-assessments
   skillAssessmentRoutes,
-
   voteRoutes,
- main
 ];
-
 // Mount all routes onto v1Router
 routes.forEach((router) => {
   v1Router.use(router);

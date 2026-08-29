@@ -1,12 +1,12 @@
 import { Queue, QueueOptions } from 'bullmq';
-import { redisClient } from '../api/redis';
+import { redisClient } from '../config/redis.js';
 
 /**
  * Queue options for the opportunity deduplication pipeline.
  * Configured for reliability and graceful shutdowns.
  */
 const queueOptions: QueueOptions = {
-    connection: redisClient,
+    connection: redisClient as any,
     defaultJobOptions: {
         attempts: 3,
         backoff: {
@@ -43,7 +43,7 @@ export const addOpportunityToDeduplicationQueue = async (opportunityData: any) =
         'process-deduplication',
         { opportunityData },
         {
-            jobId: `dedup-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            jobId: `dedup-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         }
     );
 };

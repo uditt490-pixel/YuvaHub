@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { User } from '../../models/User';
-import { ReputationLog } from '../../models/ReputationLog';
-import { redisClient } from '../redis';
-import { logger } from '../../utils/logger';
+import { User } from '../../models/User.js';
+import { ReputationLog } from '../../models/ReputationLog.js';
+import { redis as redisClient } from '../../config/redis.js';
+import { logger } from '../../utils/logger.js';
 
 /**
  * Fetches the real-time weekly leaderboard from Redis.

@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import { redisClient } from '../api/redis';
+import { connection as redisClient } from '../queues/connection';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Opportunity } from '../models/Opportunity';
 import { normalizeStipend } from '../utils/stipendNormalizer';
@@ -64,9 +64,9 @@ export const opportunityDeduplicationWorker = new Worker(
             const recentOpportunities = await Opportunity.find({
                 createdAt: { $gte: thirtyDaysAgo },
                 status: 'active',
-            }).select('title description embedding canonicalId sourceLinks');
+            } as any).select('title description embedding canonicalId sourceLinks');
 
-            let matchedCanonicalId = null;
+            let matchedCanonicalId: string | null = null;
             let highestSimilarity = 0;
 
             // 4. Compare embeddings
@@ -75,7 +75,7 @@ export const opportunityDeduplicationWorker = new Worker(
                     const similarity = cosineSimilarity(newEmbedding, opp.embedding);
                     if (similarity > 0.90 && similarity > highestSimilarity) {
                         highestSimilarity = similarity;
-                        matchedCanonicalId = opp.canonicalId || opp._id.toString();
+                        matchedCanonicalId = opp.canonicalId || (opp._id as any).toString();
                     }
                 }
             }
@@ -83,7 +83,7 @@ export const opportunityDeduplicationWorker = new Worker(
             // 5. Merge or Create
             if (matchedCanonicalId) {
                 logger.info(`Duplicate found with similarity ${highestSimilarity}. Merging into ${matchedCanonicalId}`);
-                await Opportunity.findByIdAndUpdate(
+                await (Opportunity as any).findByIdAndUpdate(
                     matchedCanonicalId,
                     {
                         $addToSet: { sourceLinks: { source: opportunityData.source, url: opportunityData.url } },
@@ -98,21 +98,21 @@ export const opportunityDeduplicationWorker = new Worker(
                     ...opportunityData,
                     normalizedStipend,
                     embedding: newEmbedding,
-                    canonicalId: new Map().toString(), // Will be replaced by actual _id
+                    canonicalId: 'pending',
                     sourceLinks: [{ source: opportunityData.source, url: opportunityData.url }],
                 });
                 await newOpportunity.save();
 
                 // Update canonicalId to its own _id
-                newOpportunity.canonicalId = newOpportunity._id.toString();
+                newOpportunity.canonicalId = (newOpportunity._id as any).toString();
                 await newOpportunity.save();
 
                 return { status: 'created', id: newOpportunity._id };
             }
         } catch (error) {
-            logger.error({ error }, `Deduplication worker failed for job ${job.id}:`);
+            logger.error(error, `Deduplication worker failed for job ${job.id}:`);
             throw error;
         }
     },
-    { connection: redisClient }
+    { connection: redisClient as any }
 );

@@ -50,4 +50,4 @@ const opportunitySchema = new Schema<IOpportunity>(
 opportunitySchema.index({ 'normalizedStipend.min': 1, 'normalizedStipend.max': 1 });
 opportunitySchema.index({ status: 1, createdAt: -1 });
 
-export const Opportunity = mongoose.model<IOpportunity>('Opportunity', opportunitySchema);
+export const Opportunity = mongoose.models.Opportunity || mongoose.model<IOpportunity>('Opportunity', opportunitySchema);

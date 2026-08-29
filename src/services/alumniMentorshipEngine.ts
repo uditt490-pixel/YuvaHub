@@ -157,9 +157,7 @@ export class AlumniMentorshipEngine {
       slot.assignedStudentId = studentId;
       slot.assignedStudentName = studentName;
       slot.availableSessionsCount = Math.max(0, slot.availableSessionsCount - 1);
-      if (slot.availableSessionsCount === 0) {
-        slot.status = 'BOOKED';
-      }
+      slot.status = 'BOOKED';
       slot.updatedAt = new Date();
       return slot;
     }

@@ -53,6 +53,14 @@ export interface UserProfile {
   role?: 'student' | 'alumni' | 'employer' | string;
   verified_skills?: string[];
   verifiedSkills?: string[];
+  alumni_status?: 'student' | 'alumni' | 'verified' | 'pending' | string;
+  alumniStatus?: 'student' | 'alumni' | 'verified' | 'pending' | string;
+  graduation_year?: number;
+  graduationYear?: number;
+  current_company?: string;
+  currentCompany?: string;
+  is_open_to_mentoring?: boolean;
+  isOpenToMentoring?: boolean;
 }
 
 export interface QuizQuestion {

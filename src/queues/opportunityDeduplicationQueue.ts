@@ -1,12 +1,12 @@
 import { Queue, QueueOptions } from 'bullmq';
-import { redisClient } from '../api/redis';
+import { connection } from './connection';
 
 /**
  * Queue options for the opportunity deduplication pipeline.
  * Configured for reliability and graceful shutdowns.
  */
 const queueOptions: QueueOptions = {
-    connection: redisClient,
+    connection: connection as any,
     defaultJobOptions: {
         attempts: 3,
         backoff: {

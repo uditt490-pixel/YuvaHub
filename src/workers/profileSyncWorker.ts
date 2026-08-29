@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import { connection as redisClient } from '../queues/connection';
+import { connection } from '../queues/connection';
 import { DeveloperProfile } from '../models/DeveloperProfile';
 import { fetchGitHubStats } from '../services/githubService';
 import { fetchLeetCodeStats } from '../services/leetcodeService';
@@ -41,5 +41,5 @@ export const profileSyncWorker = new Worker(
             throw error;
         }
     },
-    { connection: redisClient }
+    { connection: connection as any }
 );

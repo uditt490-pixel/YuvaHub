@@ -1310,18 +1310,6 @@ export async function contributeToAlumniEndowment(id: string, payload?: any): Pr
   return apiClientRequest(`/campus/endowments/${encodeURIComponent(id)}/contribute`, 'POST', payload);
 }
 
-export async function fetchAlumniMentorshipSlots(...args: any[]): Promise<any> {
-  return apiClientRequest('/campus/mentorship/slots');
-}
-
-export async function registerAlumniMentorshipSlot(payload: any): Promise<any> {
-  return apiClientRequest('/campus/mentorship/slots', 'POST', payload);
-}
-
-export async function bookAlumniMentorshipSession(id: string, studentId?: string, studentName?: string): Promise<any> {
-  return apiClientRequest(`/campus/mentorship/slots/${encodeURIComponent(id)}/book`, 'POST', { studentId, studentName });
-}
-
 export async function fetchResearchPatents(...args: any[]): Promise<any> {
   return apiClientRequest('/campus/research-patents');
 }
@@ -1334,6 +1322,46 @@ export async function executePatentLicensingAgreement(id: string, payload?: any)
   return apiClientRequest(`/campus/research-patents/${encodeURIComponent(id)}/license`, 'POST', payload);
 }
 
+export async function fetchAlumniMentorshipSlots(filters?: any): Promise<any> {
+  const params = new URLSearchParams();
+  if (filters?.campusName && filters.campusName !== 'All') params.append('campusName', filters.campusName);
+  if (filters?.expertiseArea && filters.expertiseArea !== 'All') params.append('expertiseArea', filters.expertiseArea);
+  if (filters?.status && filters.status !== 'All') params.append('status', filters.status);
+  if (filters?.search) params.append('search', filters.search);
+
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetchWithRetry(`${API_BASE_URL}/alumni-mentorship/slots${query}`, { method: 'GET' });
+  if (!response.ok) {
+    return [];
+  }
+  const data = await response.json();
+  return data.data || data;
+}
+
+export async function registerAlumniMentorshipSlot(payload: any): Promise<any> {
+  const response = await fetchWithRetry(`${API_BASE_URL}/alumni-mentorship/slots`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to register alumni mentorship slot");
+  }
+  return await response.json();
+}
+
+export async function bookAlumniMentorshipSession(id: string, payloadOrStudentId?: any, studentName?: string): Promise<any> {
+  const body = typeof payloadOrStudentId === 'string'
+    ? { studentId: payloadOrStudentId, studentName }
+    : (payloadOrStudentId || {});
+  const response = await fetchWithRetry(`${API_BASE_URL}/alumni-mentorship/slots/${encodeURIComponent(id)}/book`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to book alumni mentorship session");
+  }
+  return await response.json();
+}
 
 export async function fetchMentalWellnessCheckIns(...args: any[]): Promise<any> {
   return apiClientRequest('/campus/mental-wellness/check-ins');

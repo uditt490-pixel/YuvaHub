@@ -6,13 +6,10 @@ import { AppError } from "../../lib/AppError.js";
 import { sendSuccess, sendError, sendPaginated } from "../../lib/apiResponse.js";
 import mongoose from "mongoose";
 
-// Mock models to bypass typescript errors for missing models
-const User = mongoose.models.User || mongoose.model('User', new mongoose.Schema({}));
-const Opportunity = mongoose.models.Opportunity || mongoose.model('Opportunity', new mongoose.Schema({}));
-
 // New Imports for Platform Stats & Moderation
-// Replaced missing model imports with MongoDB driver usage
 import { ObjectId } from "mongodb";
+import { User } from "../../models/User";
+import { Opportunity } from "../../models/Opportunity";
 import { logger } from "../../utils/logger.js";
 
 const sseClients: any[] = [];

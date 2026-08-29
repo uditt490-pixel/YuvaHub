@@ -54,6 +54,11 @@ const InterviewPrepStudio = lazy(() => import('./components/tabs/InterviewPrepSt
 const PortfolioShowcase = lazy(() => import('./components/tabs/PortfolioShowcase'));
 const MentorshipNetwork = lazy(() => import('./components/tabs/MentorshipNetwork'));
 const AchievementCenter = lazy(() => import('./components/tabs/AchievementCenter'));
+const StudentMentalWellnessDeskPage = lazy(() => import('./pages/StudentMentalWellnessDeskPage'));
+const CareerPathSimulator = lazy(() => import('./components/tabs/CareerPathSimulator'));
+const CampusResearchIpLicensingStudioPage = lazy(() => import('./pages/CampusResearchIpLicensingStudioPage'));
+const StudyGroupRooms = lazy(() => import('./components/tabs/StudyGroupRooms'));
+const ResourceVault = lazy(() => import('./components/tabs/ResourceVault'));
 
 const ResearchGrantTelemetryLab = lazy(() => import('./pages/Enterprise/ResearchGrantTelemetryLab').then(m => ({ default: m.ResearchGrantTelemetryLab })));
 const OpenSourceBountyStudio = lazy(() => import('./components/tabs/OpenSourceBountyStudio'));
@@ -94,13 +99,7 @@ const CampusStudentVentureStudioPage = lazy(() => import('./pages/CampusStudentV
 const Insights = lazy(() => import('./pages/Insights'));
 const AdminAnalyticsDashboard = lazy(() => import('./pages/AdminAnalyticsDashboard'));
 
-const StudentMentalWellnessDeskPage = lazy(() => import('./pages/StudentMentalWellnessDeskPage'));
-const CampusResearchIpLicensingStudioPage = lazy(() => import('./pages/CampusResearchIpLicensingStudioPage'));
-const CareerPathSimulator = lazy(() => import('./components/tabs/CareerPathSimulator'));
-const StudyGroupRooms = lazy(() => import('./components/tabs/StudyGroupRooms'));
-const ResourceVault = lazy(() => import('./components/tabs/ResourceVault'));
 const ComparisonStudio = lazy(() => import('./components/tabs/ComparisonStudio'));
-
 const LoadingFallback = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
     <div className="flex items-center gap-3 animate-pulse">

@@ -28,7 +28,7 @@ const userSchema = new Schema<IUser>(
 );
 
 // Pre-save hook to calculate level based on reputation score
-userSchema.pre('save', function (next: any) {
+userSchema.pre('save', function () {
     if (this.isModified('reputation_score')) {
         // Simple leveling formula: Level = floor(sqrt(reputation_score / 100)) + 1
         this.level = Math.floor(Math.sqrt(this.reputation_score / 100)) + 1;
@@ -43,7 +43,6 @@ userSchema.pre('save', function (next: any) {
         // Merge with existing badges without duplicates
         this.badges = Array.from(new Set([...this.badges, ...newBadges]));
     }
-    next();
 });
 
-export const User = mongoose.model<IUser>('User', userSchema);
+export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);

@@ -1,8 +1,8 @@
-import { eventBus } from '../utils/eventBus';
-import { User } from '../models/User';
-import { ReputationLog } from '../models/ReputationLog';
-import { redisClient } from '../api/redis';
-import { logger } from '../utils/logger';
+import { eventBus } from '../utils/eventBus.js';
+import { User } from '../models/User.js';
+import { ReputationLog } from '../models/ReputationLog.js';
+import { redisClient } from '../config/redis.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Configuration mapping actions to point values.
@@ -20,7 +20,7 @@ const POINT_RULES: Record<string, number> = {
  */
 export const initializeReputationWorker = () => {
     Object.keys(POINT_RULES).forEach((action) => {
-        eventBus.on(action, async (data: { userId: string;[key: string]: any }) => {
+        eventBus.on(action, async (data: { userId: string; [key: string]: any }) => {
             try {
                 const points = POINT_RULES[action];
                 if (!points) return;

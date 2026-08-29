@@ -8,6 +8,7 @@ import { getSocketIO } from "../api/socketInstance";
 import { enqueueEmail } from "../queues/emailQueue";
 import { v2 as cloudinary } from "cloudinary";
 import { jsPDF } from "jspdf";
+// @ts-ignore
 import autoTable from "jspdf-autotable";
 import { Readable } from "stream";
 

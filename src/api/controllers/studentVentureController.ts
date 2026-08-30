@@ -3,88 +3,70 @@ import { StudentVentureEngine } from "../../services/studentVentureEngine.js";
 import { AppError } from "../../lib/AppError.js";
 import { sendSuccess } from "../../lib/apiResponse.js";
 
-export const getStudentVentures = async (req: Request, res: Response) => {
-  const campusName = (req.query.campusName as string) || undefined;
-  const sectorDomain = (req.query.sectorDomain as string) || undefined;
-  const fundingStage = (req.query.fundingStage as string) || undefined;
-  const search = (req.query.search as string) || undefined;
+/**
+ * Controller for Student Ventures & Campus Startup Capital Suite
+ */
+export const getVentures = async (req: Request, res: Response) => {
+  const { campusName, sectorDomain, fundingStage, search } = req.query;
 
-  const ventures = await StudentVentureEngine.getVentures({
-    campusName,
-    sectorDomain,
-    fundingStage,
-    search,
-  });
+  const filters = {
+    campusName: typeof campusName === 'string' ? campusName : undefined,
+    sectorDomain: typeof sectorDomain === 'string' ? sectorDomain : undefined,
+    fundingStage: typeof fundingStage === 'string' ? fundingStage : undefined,
+    search: typeof search === 'string' ? search : undefined,
+  };
 
-  return sendSuccess(res, { ventures, count: ventures.length });
+  const results = await StudentVentureEngine.getVentures(filters);
+  return sendSuccess(res, { data: results, count: results.length });
 };
 
-export const registerStudentVenture = async (req: Request, res: Response) => {
+export const registerVenture = async (req: Request, res: Response) => {
   const {
     startupName,
     campusName,
-    studentFounderName,
+    founderStudentName,
     sectorDomain,
     fundingStage,
     targetInvestmentUsd,
-    pitchDeckUrl,
-    executiveSummary,
+    pitchSummary,
   } = req.body;
 
-  if (
-    !startupName ||
-    !campusName ||
-    !studentFounderName ||
-    !sectorDomain ||
-    !fundingStage ||
-    targetInvestmentUsd === undefined ||
-    !executiveSummary
-  ) {
-    throw AppError.badRequest("Missing required student venture registration fields");
+  if (!startupName || !campusName || !founderStudentName || !sectorDomain || !fundingStage) {
+    throw AppError.badRequest("Missing required student venture fields");
   }
 
-  const venture = await StudentVentureEngine.registerVenture({
+  const created = await StudentVentureEngine.registerVenture({
     startupName,
     campusName,
-    studentFounderName,
+    founderStudentName,
     sectorDomain,
     fundingStage,
-    targetInvestmentUsd: Number(targetInvestmentUsd),
-    pitchDeckUrl: pitchDeckUrl || "#",
-    executiveSummary,
+    targetInvestmentUsd: Number(targetInvestmentUsd) || 25000,
+    pitchSummary: pitchSummary || "",
   });
 
-  return sendSuccess(res, { venture }, 201);
+  return sendSuccess(res, { data: created }, 201);
 };
 
-export const commitStudentVentureInvestment = async (
-  req: Request,
-  res: Response
-) => {
-  const ventureId = (req.params.ventureId as string) || (req.body.ventureId as string);
-  const investmentAmountUsd = Number(
-    req.body.investmentAmountUsd || req.body.amountUsd || 1000
-  );
+export const commitVentureInvestment = async (req: Request, res: Response) => {
+  const paramId = req.params.id;
+  const id = Array.isArray(paramId) ? paramId[0] : paramId;
+  const { investmentAmountUsd, investorName } = req.body;
 
-  if (!ventureId) {
-    throw AppError.badRequest("Missing ventureId parameter");
+  if (!id) throw AppError.badRequest("Venture ID is required");
+  if (!investmentAmountUsd || Number(investmentAmountUsd) <= 0) {
+    throw AppError.badRequest("Valid investment amount is required");
   }
 
-  if (isNaN(investmentAmountUsd) || investmentAmountUsd <= 0) {
-    throw AppError.badRequest("Invalid investment amount specified");
-  }
-
-  const updatedVenture = await StudentVentureEngine.commitInvestment(
-    ventureId as string,
-    investmentAmountUsd
+  const updated = await StudentVentureEngine.investInVenture(
+    id,
+    Number(investmentAmountUsd),
+    investorName || "Angel Syndicate"
   );
 
-  if (!updatedVenture) {
+  if (!updated) {
     throw AppError.notFound("Student venture startup not found");
   }
 
-  return sendSuccess(res, {
-    venture: updatedVenture,
-    message: "Capital investment committed successfully",
-  });
+  return sendSuccess(res, { data: updated });
 };

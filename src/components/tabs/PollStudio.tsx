@@ -167,10 +167,10 @@ export default function PollStudio() {
 
   if (!user) {
     return (
-      <div className="w-full max-w-[1400px] mx-auto py-16 flex flex-col items-center justify-center p-10 text-center bg-white dark:bg-slate-900 rounded-3xl border border-[#e8ded1] dark:border-slate-800 space-y-4">
-        <BarChart2 className="w-12 h-12 text-[#b56b37]" />
-        <h2 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white">Poll Access Restricted</h2>
-        <p className="text-xs text-[#603620] dark:text-slate-400 max-w-sm font-medium">Please sign in to participate in student polls and surveys.</p>
+      <div className="w-full max-w-[1400px] mx-auto py-16 flex flex-col items-center justify-center p-10 text-center bg-surface dark:bg-slate-900 rounded-3xl border border-border-theme dark:border-slate-800 space-y-4">
+        <BarChart2 className="w-12 h-12 text-primary-blue" />
+        <h2 className="text-2xl font-serif font-bold text-text-primary dark:text-white">Poll Access Restricted</h2>
+        <p className="text-xs text-text-secondary dark:text-slate-400 max-w-sm font-medium">Please sign in to participate in student polls and surveys.</p>
       </div>
     );
   }
@@ -178,16 +178,16 @@ export default function PollStudio() {
   return (
     <div className="w-full max-w-[1400px] mx-auto space-y-8 font-sans pb-16 px-2 sm:px-4">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-[#e8ded1] dark:border-slate-800 shadow-2xs">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface dark:bg-slate-900 p-6 rounded-3xl border border-border-theme dark:border-slate-800 shadow-2xs">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#603620] text-[#f3e4bd] text-xs font-bold uppercase tracking-wider mb-2">
             <BarChart2 className="w-3.5 h-3.5 text-[#f3e4bd]" />
             <span>Community Polls</span>
           </div>
-          <h1 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-            Poll <span className="text-[#b56b37] italic">Studio</span>
+          <h1 className="text-2xl font-serif font-bold text-text-primary dark:text-white tracking-tight">
+            Poll <span className="text-primary-blue italic">Studio</span>
           </h1>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">
+          <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">
             Create and participate in real-time polls to gather insights from the community.
           </p>
         </div>
@@ -197,7 +197,7 @@ export default function PollStudio() {
         {/* Main Feed Column */}
         <div className="flex-1 space-y-6">
           {/* Poll Creator Box */}
-          <form onSubmit={handleCreatePoll} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-[#e8ded1] dark:border-slate-800 shadow-2xs space-y-4">
+          <form onSubmit={handleCreatePoll} className="bg-surface dark:bg-slate-900 p-6 rounded-3xl border border-border-theme dark:border-slate-800 shadow-2xs space-y-4">
             <div className="flex gap-3 items-start">
               <div className="w-10 h-10 rounded-2xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center font-serif font-bold text-base shrink-0 shadow-2xs">
                 {profile?.name?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'U'}
@@ -208,7 +208,7 @@ export default function PollStudio() {
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   placeholder="Ask a question (e.g. Which tech stack are you learning?)"
-                  className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs text-[#231f20] dark:text-white outline-none font-bold"
+                  className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs text-text-primary dark:text-white outline-none font-bold"
                 />
                 
                 <div className="space-y-2 pt-2">
@@ -219,7 +219,7 @@ export default function PollStudio() {
                         value={opt.text}
                         onChange={(e) => updateOption(i, e.target.value)}
                         placeholder={`Option ${i + 1}`}
-                        className="flex-1 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl px-4 py-2 text-xs text-[#231f20] dark:text-white outline-none font-medium"
+                        className="flex-1 bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl px-4 py-2 text-xs text-text-primary dark:text-white outline-none font-medium"
                       />
                       {options.length > 2 && (
                         <button type="button" onClick={() => removeOption(i)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer">
@@ -231,7 +231,7 @@ export default function PollStudio() {
                 </div>
                 
                 {options.length < 10 && (
-                  <button type="button" onClick={addOption} className="text-xs text-[#b56b37] font-bold flex items-center gap-1 hover:underline cursor-pointer">
+                  <button type="button" onClick={addOption} className="text-xs text-primary-blue font-bold flex items-center gap-1 hover:underline cursor-pointer">
                     <Plus className="w-3.5 h-3.5" /> Add Option
                   </button>
                 )}
@@ -245,13 +245,13 @@ export default function PollStudio() {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-3 border-t border-[#e8ded1] dark:border-slate-800 text-xs">
-              <label className="flex items-center gap-2 cursor-pointer text-[#603620] dark:text-slate-300 font-bold">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-3 border-t border-border-theme dark:border-slate-800 text-xs">
+              <label className="flex items-center gap-2 cursor-pointer text-text-secondary dark:text-slate-300 font-bold">
                 <input
                   type="checkbox"
                   checked={allowMultipleVotes}
                   onChange={(e) => setAllowMultipleVotes(e.target.checked)}
-                  className="rounded text-[#b56b37] focus:ring-[#b56b37]"
+                  className="rounded text-primary-blue focus:ring-[#b56b37]"
                 />
                 Allow multiple votes
               </label>
@@ -259,7 +259,7 @@ export default function PollStudio() {
               <button
                 type="submit"
                 disabled={creating || !question.trim()}
-                className="w-full sm:w-auto px-6 py-2.5 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-2.5 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-xs transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Sparkles className="w-3.5 h-3.5" /> Create Poll</>}
               </button>
@@ -280,24 +280,24 @@ export default function PollStudio() {
               const totalVotes = p.options.reduce((sum, opt) => sum + opt.votes, 0);
 
               return (
-                <div key={pid} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-[#e8ded1] dark:border-slate-800 shadow-2xs space-y-4 hover:border-[#b56b37] transition-all">
+                <div key={pid} className="bg-surface dark:bg-slate-900 p-6 rounded-3xl border border-border-theme dark:border-slate-800 shadow-2xs space-y-4 hover:border-primary-blue transition-all">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center font-serif font-bold text-xs">
                         {p.authorName?.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <h4 className="font-bold text-xs text-[#231f20] dark:text-white">{p.authorName}</h4>
-                        <span className="text-[10px] text-[#8c7569] font-medium">{new Date(p.createdAt).toLocaleDateString()}</span>
+                        <h4 className="font-bold text-xs text-text-primary dark:text-white">{p.authorName}</h4>
+                        <span className="text-[10px] text-text-muted font-medium">{new Date(p.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
 
-                    <span className="px-2.5 py-1 bg-[#fcf9f2] text-[#603620] border border-[#e8ded1] text-[10px] font-extrabold rounded-lg uppercase">
+                    <span className="px-2.5 py-1 bg-background text-text-secondary border border-border-theme text-[10px] font-extrabold rounded-lg uppercase">
                       {totalVotes} Votes
                     </span>
                   </div>
 
-                  <h3 className="text-base font-serif font-bold text-[#231f20] dark:text-white">{p.question}</h3>
+                  <h3 className="text-base font-serif font-bold text-text-primary dark:text-white">{p.question}</h3>
 
                   <div className="space-y-3 mt-4">
                     {p.options.map(opt => {
@@ -309,20 +309,20 @@ export default function PollStudio() {
                           disabled={p.status === 'closed' || (!p.allowMultipleVotes && hasVoted)}
                           className={`w-full relative group text-left cursor-pointer disabled:cursor-default overflow-hidden rounded-xl border ${
                             p.status === 'closed' || (!p.allowMultipleVotes && hasVoted)
-                              ? 'border-[#e8ded1] bg-[#fcf9f2] dark:border-slate-700 dark:bg-slate-800' 
-                              : 'border-[#e8ded1] hover:border-[#b56b37] bg-white dark:bg-slate-900'
+                              ? 'border-border-theme bg-background dark:border-slate-700 dark:bg-slate-800' 
+                              : 'border-border-theme hover:border-primary-blue bg-surface dark:bg-slate-900'
                           }`}
                         >
                           {/* Animated progress bar */}
                           <div 
-                            className="absolute top-0 left-0 bottom-0 bg-[#f6efe2] dark:bg-blue-900/30 transition-all duration-1000 ease-out z-0"
+                            className="absolute top-0 left-0 bottom-0 bg-surface-secondary dark:bg-blue-900/30 transition-all duration-1000 ease-out z-0"
                             style={{ width: `${percentage}%` }}
                           />
                           
-                          <div className="relative z-10 flex justify-between items-center p-3 text-xs font-bold text-[#231f20] dark:text-white">
+                          <div className="relative z-10 flex justify-between items-center p-3 text-xs font-bold text-text-primary dark:text-white">
                             <span className="flex-1">{opt.text}</span>
                             {(hasVoted || p.status === 'closed') && (
-                              <span className="text-[#603620] dark:text-slate-300 min-w-[40px] text-right">
+                              <span className="text-text-secondary dark:text-slate-300 min-w-[40px] text-right">
                                 {percentage}%
                               </span>
                             )}
@@ -332,7 +332,7 @@ export default function PollStudio() {
                     })}
                   </div>
                   
-                  <div className="flex justify-between items-center pt-3 border-t border-[#e8ded1] dark:border-slate-800 text-[10px] text-[#8c7569] font-bold">
+                  <div className="flex justify-between items-center pt-3 border-t border-border-theme dark:border-slate-800 text-[10px] text-text-muted font-bold">
                     <span>{p.allowMultipleVotes ? 'Multiple votes allowed' : 'Single vote only'}</span>
                     <span>{p.status === 'closed' ? 'Closed' : 'Active'}</span>
                   </div>

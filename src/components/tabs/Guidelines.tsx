@@ -372,7 +372,7 @@ function ReportingTimeline({ setActiveTab }: ReportingTimelineProps) {
                     className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-xs transition-all cursor-pointer ${
                       isActive
                         ? 'bg-[#603620] text-[#f3e4bd]'
-                        : 'bg-white border border-[#e8ded1] text-[#b56b37] hover:border-[#b56b37]'
+                        : 'bg-surface border border-border-theme text-primary-blue hover:border-primary-blue'
                     }`}
                   >
                     <Icon className="w-4 h-4" aria-hidden="true" />
@@ -388,28 +388,28 @@ function ReportingTimeline({ setActiveTab }: ReportingTimelineProps) {
                   onKeyDown={(e) => handleKeyDown(e, step.step)}
                   className={`flex-1 rounded-2xl border cursor-pointer transition-all overflow-hidden ${
                     isActive
-                      ? 'bg-[#fcf9f2] border-[#b56b37] shadow-xs'
-                      : 'bg-white border-[#e8ded1] shadow-xs hover:border-[#b56b37]'
+                      ? 'bg-background border-primary-blue shadow-xs'
+                      : 'bg-surface border-border-theme shadow-xs hover:border-primary-blue'
                   }`}
                 >
                   {/* Header row */}
                   <div className="flex items-center justify-between gap-3 px-5 py-3.5">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className={`text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${isActive ? 'text-[#b56b37]' : 'text-[#8c7569]'}`}>
+                      <span className={`text-[10px] font-extrabold uppercase tracking-wider shrink-0 ${isActive ? 'text-primary-blue' : 'text-text-muted'}`}>
                         Step {step.step}
                       </span>
-                      <h3 className={`text-xs md:text-sm font-serif font-bold leading-snug truncate transition-colors ${isActive ? 'text-[#b56b37]' : 'text-[#231f20]'}`}>
+                      <h3 className={`text-xs md:text-sm font-serif font-bold leading-snug truncate transition-colors ${isActive ? 'text-primary-blue' : 'text-text-primary'}`}>
                         {step.title}
                       </h3>
                     </div>
                     <ChevronDown
-                      className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isActive ? 'rotate-180 text-[#b56b37]' : 'text-[#8c7569]'}`}
+                      className={`w-4 h-4 shrink-0 transition-transform duration-300 ${isActive ? 'rotate-180 text-primary-blue' : 'text-text-muted'}`}
                       aria-hidden="true"
                     />
                   </div>
 
                   {/* Summary (always visible) */}
-                  <p className="px-5 pb-3 text-xs text-[#603620] leading-relaxed">
+                  <p className="px-5 pb-3 text-xs text-text-secondary leading-relaxed">
                     {step.desc}
                   </p>
 
@@ -420,10 +420,10 @@ function ReportingTimeline({ setActiveTab }: ReportingTimelineProps) {
                     }`}
                   >
                     <div className="overflow-hidden">
-                      <div className={`px-5 pb-4 pt-0 border-t border-[#e8ded1] transition-opacity ${
+                      <div className={`px-5 pb-4 pt-0 border-t border-border-theme transition-opacity ${
                         isActive ? 'opacity-100' : 'opacity-0'
                       }`}>
-                        <p className="text-xs text-[#231f20] leading-relaxed mt-2.5">
+                        <p className="text-xs text-text-primary leading-relaxed mt-2.5">
                           {step.detail}
                         </p>
                       </div>
@@ -453,10 +453,10 @@ function SectionHeader({ id, icon: Icon, title, subtitle }: SectionHeaderProps) 
         <Icon className="w-5 h-5" aria-hidden="true" />
       </div>
       <div>
-        <h2 id={id} className="text-xl md:text-2xl font-serif font-bold text-[#231f20] tracking-tight">
+        <h2 id={id} className="text-xl md:text-2xl font-serif font-bold text-text-primary tracking-tight">
           {title}
         </h2>
-        <p className="text-xs text-[#603620] mt-0.5 leading-relaxed">{subtitle}</p>
+        <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{subtitle}</p>
       </div>
     </div>
   );
@@ -478,32 +478,32 @@ export default function Guidelines() {
     <div className="max-w-6xl mx-auto pb-20 space-y-12 font-sans">
 
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[#603620] pt-2">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-text-secondary pt-2">
         <button
           type="button"
           onClick={() => setActiveTab('dashboard')}
-          className="hover:text-[#b56b37] transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
+          className="hover:text-primary-blue transition-colors bg-transparent border-none p-0 cursor-pointer font-bold"
         >
           Home
         </button>
         <span aria-hidden="true">/</span>
-        <span className="text-[#231f20] font-serif font-bold">Community Guidelines</span>
+        <span className="text-text-primary font-serif font-bold">Community Guidelines</span>
       </nav>
 
       {/* 1. Hero */}
       <section
         aria-labelledby="gl-hero-heading"
-        className="relative overflow-hidden rounded-2xl bg-white border border-[#e8ded1] p-8 md:p-12 text-[#231f20] shadow-xs"
+        className="relative overflow-hidden rounded-2xl bg-surface border border-border-theme p-8 md:p-12 text-text-primary shadow-xs"
       >
         <div className="relative z-10 max-w-3xl space-y-4">
-          <span className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#b56b37] bg-[#f6efe2] border border-[#e8ded1] rounded-full">
+          <span className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-primary-blue bg-surface-secondary border border-border-theme rounded-full">
             YuvaHub Standards & Safety
           </span>
-          <h1 id="gl-hero-heading" className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-[#231f20]">
+          <h1 id="gl-hero-heading" className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-text-primary">
             Community Guidelines
           </h1>
 
-          <p className="text-xs md:text-sm text-[#603620] font-medium leading-relaxed max-w-xl">
+          <p className="text-xs md:text-sm text-text-secondary font-medium leading-relaxed max-w-xl">
             Help us build a respectful, safe and inclusive community for students, mentors, and developers across India.
           </p>
 
@@ -515,7 +515,7 @@ export default function Guidelines() {
                 e.preventDefault();
                 document.getElementById('best-practices')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-blue hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-xs"
             >
               <BookOpen className="w-4 h-4" aria-hidden="true" />
               Best Practices
@@ -526,7 +526,7 @@ export default function Guidelines() {
                 setActiveTab('help');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] border border-[#e8ded1] text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface-secondary hover:bg-primary-blue hover:text-white text-text-secondary border border-border-theme text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
             >
               <HelpCircle className="w-4 h-4" aria-hidden="true" />
               Help Center
@@ -534,7 +534,7 @@ export default function Guidelines() {
             <button
               type="button"
               onClick={() => setActiveTab('support')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] border border-[#e8ded1] text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface-secondary hover:bg-primary-blue hover:text-white text-text-secondary border border-border-theme text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
             >
               <Flag className="w-4 h-4" aria-hidden="true" />
               Report Violation
@@ -557,14 +557,14 @@ export default function Guidelines() {
             return (
               <div
                 key={card.title}
-                className="bg-white border border-[#e8ded1] rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-[#b56b37] transition-all"
+                className="bg-surface border border-border-theme rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-primary-blue transition-all"
               >
                 <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1">{card.title}</h3>
-                  <p className="text-[11px] text-[#603620] leading-relaxed">{card.body}</p>
+                  <h3 className="text-xs font-serif font-bold text-text-primary mb-1">{card.title}</h3>
+                  <p className="text-[11px] text-text-secondary leading-relaxed">{card.body}</p>
                 </div>
               </div>
             );
@@ -586,14 +586,14 @@ export default function Guidelines() {
             return (
               <div
                 key={item.title}
-                className="bg-white border border-[#e8ded1] rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-[#b56b37] transition-all"
+                className="bg-surface border border-border-theme rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-primary-blue transition-all"
               >
                 <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1">{item.title}</h3>
-                  <p className="text-[11px] text-[#603620] leading-relaxed">{item.body}</p>
+                  <h3 className="text-xs font-serif font-bold text-text-primary mb-1">{item.title}</h3>
+                  <p className="text-[11px] text-text-secondary leading-relaxed">{item.body}</p>
                 </div>
               </div>
             );
@@ -611,7 +611,7 @@ export default function Guidelines() {
         />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Allowed */}
-          <div className="bg-white border border-emerald-200 rounded-2xl p-6 shadow-xs">
+          <div className="bg-surface border border-emerald-200 rounded-2xl p-6 shadow-xs">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-emerald-100">
               <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-800 flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4 text-emerald-700" aria-hidden="true" />
@@ -620,7 +620,7 @@ export default function Guidelines() {
             </div>
             <ul className="space-y-2.5" role="list">
               {ALLOWED_USES.map((item) => (
-                <li key={item} className="flex items-start gap-2 text-xs text-[#231f20] leading-relaxed">
+                <li key={item} className="flex items-start gap-2 text-xs text-text-primary leading-relaxed">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
                   {item}
                 </li>
@@ -629,7 +629,7 @@ export default function Guidelines() {
           </div>
 
           {/* Prohibited */}
-          <div className="bg-white border border-red-200 rounded-2xl p-6 shadow-xs">
+          <div className="bg-surface border border-red-200 rounded-2xl p-6 shadow-xs">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-red-100">
               <div className="w-7 h-7 rounded-lg bg-red-50 text-red-700 flex items-center justify-center">
                 <XCircle className="w-4 h-4 text-red-700" aria-hidden="true" />
@@ -638,7 +638,7 @@ export default function Guidelines() {
             </div>
             <ul className="space-y-2.5" role="list">
               {PROHIBITED_USES.map((item) => (
-                <li key={item} className="flex items-start gap-2 text-xs text-[#231f20] leading-relaxed">
+                <li key={item} className="flex items-start gap-2 text-xs text-text-primary leading-relaxed">
                   <XCircle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" aria-hidden="true" />
                   {item}
                 </li>
@@ -662,9 +662,9 @@ export default function Guidelines() {
               <div aria-hidden="true" className="shrink-0 w-8 h-8 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center text-xs font-extrabold shadow-xs">
                 {i + 1}
               </div>
-              <div className="bg-white border border-[#e8ded1] rounded-xl p-4 flex-1 shadow-xs hover:border-[#b56b37] transition-all">
-                <h3 className="text-xs font-serif font-bold text-[#231f20] mb-0.5">{step.label}</h3>
-                <p className="text-[11px] text-[#603620] leading-relaxed">{step.desc}</p>
+              <div className="bg-surface border border-border-theme rounded-xl p-4 flex-1 shadow-xs hover:border-primary-blue transition-all">
+                <h3 className="text-xs font-serif font-bold text-text-primary mb-0.5">{step.label}</h3>
+                <p className="text-[11px] text-text-secondary leading-relaxed">{step.desc}</p>
               </div>
             </li>
           ))}
@@ -685,14 +685,14 @@ export default function Guidelines() {
             return (
               <div
                 key={item.title}
-                className="bg-white border border-[#e8ded1] rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-[#b56b37] transition-all"
+                className="bg-surface border border-border-theme rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-primary-blue transition-all"
               >
                 <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1">{item.title}</h3>
-                  <p className="text-[11px] text-[#603620] leading-relaxed">{item.body}</p>
+                  <h3 className="text-xs font-serif font-bold text-text-primary mb-1">{item.title}</h3>
+                  <p className="text-[11px] text-text-secondary leading-relaxed">{item.body}</p>
                 </div>
               </div>
             );
@@ -717,17 +717,17 @@ export default function Guidelines() {
             return (
               <div
                 key={stage.label}
-                className="bg-white border border-[#e8ded1] rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-[#b56b37] transition-all"
+                className="bg-surface border border-border-theme rounded-2xl p-5 flex flex-col gap-3 shadow-xs hover:border-primary-blue transition-all"
               >
-                <span className="text-[10px] font-extrabold text-[#b56b37] uppercase tracking-wider">
+                <span className="text-[10px] font-extrabold text-primary-blue uppercase tracking-wider">
                   Stage {i + 1}
                 </span>
                 <div className="w-9 h-9 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1">{stage.label}</h3>
-                  <p className="text-[11px] text-[#603620] leading-relaxed">{stage.desc}</p>
+                  <h3 className="text-xs font-serif font-bold text-text-primary mb-1">{stage.label}</h3>
+                  <p className="text-[11px] text-text-secondary leading-relaxed">{stage.desc}</p>
                 </div>
               </div>
             );
@@ -747,10 +747,10 @@ export default function Guidelines() {
           {BEST_PRACTICES.map((item) => (
             <div
               key={item}
-              className="flex items-start gap-2.5 bg-white border border-[#e8ded1] rounded-xl px-4 py-3 shadow-xs hover:border-[#b56b37] transition-all"
+              className="flex items-start gap-2.5 bg-surface border border-border-theme rounded-xl px-4 py-3 shadow-xs hover:border-primary-blue transition-all"
             >
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" aria-hidden="true" />
-              <span className="text-xs text-[#231f20] font-medium leading-relaxed">{item}</span>
+              <span className="text-xs text-text-primary font-medium leading-relaxed">{item}</span>
             </div>
           ))}
         </div>
@@ -772,8 +772,8 @@ export default function Guidelines() {
               <div
                 key={faq.id}
                 role="listitem"
-                className={`border rounded-2xl overflow-hidden bg-white transition-all ${
-                  isOpen ? 'border-[#b56b37] shadow-xs' : 'border-[#e8ded1] hover:border-[#b56b37]'
+                className={`border rounded-2xl overflow-hidden bg-surface transition-all ${
+                  isOpen ? 'border-primary-blue shadow-xs' : 'border-border-theme hover:border-primary-blue'
                 }`}
               >
                 <button
@@ -784,12 +784,12 @@ export default function Guidelines() {
                   onClick={() => toggleFaq(faq.id)}
                   className="w-full text-left p-5 flex items-center justify-between gap-4 bg-transparent border-none cursor-pointer focus:outline-none"
                 >
-                  <span className="text-xs md:text-sm font-serif font-bold text-[#231f20] leading-snug">
+                  <span className="text-xs md:text-sm font-serif font-bold text-text-primary leading-snug">
                     {faq.question}
                   </span>
                   <div
                     className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-all ${
-                      isOpen ? 'bg-[#603620] text-[#f3e4bd] rotate-180' : 'bg-[#f6efe2] text-[#8c7569]'
+                      isOpen ? 'bg-[#603620] text-[#f3e4bd] rotate-180' : 'bg-surface-secondary text-text-muted'
                     }`}
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -806,11 +806,11 @@ export default function Guidelines() {
                 >
                   <div className="overflow-hidden">
                     <div
-                      className={`px-5 pb-5 border-t border-[#e8ded1] pt-3 transition-opacity ${
+                      className={`px-5 pb-5 border-t border-border-theme pt-3 transition-opacity ${
                         isOpen ? 'opacity-100' : 'opacity-0'
                       }`}
                     >
-                      <p className="text-xs text-[#603620] leading-relaxed">
+                      <p className="text-xs text-text-secondary leading-relaxed">
                         {faq.answer}
                       </p>
                     </div>
@@ -823,19 +823,19 @@ export default function Guidelines() {
       </section>
 
       {/* CTA strip */}
-      <div className="bg-white border border-[#e8ded1] rounded-2xl p-8 md:p-10 text-center shadow-xs space-y-4">
-        <Shield className="w-8 h-8 text-[#b56b37] mx-auto" aria-hidden="true" />
-        <h2 className="text-lg font-serif font-bold text-[#231f20]">
+      <div className="bg-surface border border-border-theme rounded-2xl p-8 md:p-10 text-center shadow-xs space-y-4">
+        <Shield className="w-8 h-8 text-primary-blue mx-auto" aria-hidden="true" />
+        <h2 className="text-lg font-serif font-bold text-text-primary">
           Questions or concerns?
         </h2>
-        <p className="text-xs text-[#603620] max-w-md mx-auto leading-relaxed">
+        <p className="text-xs text-text-secondary max-w-md mx-auto leading-relaxed">
           If you witnessed a violation or have questions about these guidelines, our support team is ready to help.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button
             type="button"
             onClick={() => setActiveTab('support')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-blue hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
           >
             <Flag className="w-4 h-4" aria-hidden="true" />
             Report a Violation
@@ -846,7 +846,7 @@ export default function Guidelines() {
               setActiveTab('help');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] border border-[#e8ded1] text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-surface-secondary hover:bg-primary-blue hover:text-white text-text-secondary border border-border-theme text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all cursor-pointer"
           >
             <ArrowRight className="w-4 h-4" aria-hidden="true" />
             Visit Help Center

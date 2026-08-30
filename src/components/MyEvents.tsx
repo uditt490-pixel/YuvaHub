@@ -102,7 +102,7 @@ export function MyEvents() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader className="w-6 h-6 text-[#b56b37] animate-spin" />
+        <Loader className="w-6 h-6 text-primary-blue animate-spin" />
       </div>
     );
   }
@@ -121,7 +121,7 @@ export function MyEvents() {
       {events.map((event) => (
         <div
           key={event.id}
-          className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden"
+          className="bg-surface dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden"
         >
           {/* Event Header */}
           <div className="p-4 border-b border-gray-200 dark:border-slate-700">
@@ -180,11 +180,11 @@ export function MyEvents() {
               </p>
 
               {expandedEventId === event.id && (
-                <div className="flex flex-col items-center gap-4 bg-white dark:bg-slate-800 p-4 rounded-lg">
+                <div className="flex flex-col items-center gap-4 bg-surface dark:bg-slate-800 p-4 rounded-lg">
                   {/* QR Code */}
                   <div
                     id={`qr-${event.id}`}
-                    className="border-4 border-[#b56b37] p-2 rounded-lg"
+                    className="border-4 border-primary-blue p-2 rounded-lg"
                   >
                     <QRCode
                       value={event.qrToken}
@@ -205,7 +205,7 @@ export function MyEvents() {
                   <div className="flex gap-2 w-full">
                     <button
                       onClick={() => downloadQR(event)}
-                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-[#b56b37] hover:bg-[#96552a] text-white rounded-lg font-bold text-sm transition"
+                      className="flex-1 flex items-center justify-center gap-2 py-2 px-3 bg-primary-blue hover:bg-[#96552a] text-white rounded-lg font-bold text-sm transition"
                     >
                       <Download className="w-4 h-4" />
                       Download
@@ -226,7 +226,7 @@ export function MyEvents() {
           {/* RSVP Stats */}
           <div className="p-4 bg-gray-50 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 text-xs">
             <p className="text-gray-600 dark:text-gray-400">
-              <span className="font-bold text-[#b56b37]">{event.rsvpCount}</span> / {event.capacity}{' '}
+              <span className="font-bold text-primary-blue">{event.rsvpCount}</span> / {event.capacity}{' '}
               confirmed • {event.capacity - event.rsvpCount} spots available
             </p>
           </div>

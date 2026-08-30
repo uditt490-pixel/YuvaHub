@@ -202,7 +202,7 @@ export default function ResearchGrantPortal() {
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 isActive
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
+                  : 'bg-surface dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
               }`}
             >
               <Icon size={14} />
@@ -216,7 +216,7 @@ export default function ResearchGrantPortal() {
 
       {/* TAB 1: GRANTS */}
       {activeTab === 'grants' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Available Innovation Grants</h3>
@@ -277,7 +277,7 @@ export default function ResearchGrantPortal() {
 
       {/* TAB 2: PROPOSAL */}
       {activeTab === 'proposal' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div>
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Research Proposal Builder</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">Formulate research objectives and budget allocation.</p>
@@ -335,7 +335,7 @@ export default function ResearchGrantPortal() {
 
       {/* TAB 3: MILESTONES */}
       {activeTab === 'milestones' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div>
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Milestone Disbursement Ledger</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">Track grant payouts based on verified research deliverables.</p>
@@ -363,7 +363,7 @@ export default function ResearchGrantPortal() {
 
       {/* TAB 4: EXPORT */}
       {activeTab === 'export' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Grant Proposal Manifest JSON</h3>

@@ -118,7 +118,7 @@ export default function StudyGroupRooms() {
     const currentRoom = rooms.find(r => r.id === joinedRoomId) || { name: "Study Group", topic: "Unknown", resourceUrl: "" };
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between bg-surface dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{currentRoom.name}</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{currentRoom.topic}</p>
@@ -137,7 +137,7 @@ export default function StudyGroupRooms() {
           </div>
         )}
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-surface dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
           <h2 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
             <Globe className="w-5 h-5 text-green-500" /> Live Members ({liveMembers.length})
           </h2>
@@ -173,7 +173,7 @@ export default function StudyGroupRooms() {
         <input 
           type="text" 
           placeholder="Search by topic or name..." 
-          className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -182,7 +182,7 @@ export default function StudyGroupRooms() {
       {loading ? (
         <div className="text-center py-12 text-gray-500">Loading rooms...</div>
       ) : rooms.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 text-gray-500">
+        <div className="text-center py-12 bg-surface dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 text-gray-500">
           No study groups found. Be the first to create one!
         </div>
       ) : (
@@ -190,7 +190,7 @@ export default function StudyGroupRooms() {
           {rooms.map(room => {
             const isFull = (room.members?.length || 0) >= room.maxCapacity;
             return (
-              <div key={room.id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+              <div key={room.id} className="bg-surface dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="font-bold text-lg text-gray-900 dark:text-white">{room.name}</h3>
                   {room.isActive && <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />}
@@ -224,7 +224,7 @@ export default function StudyGroupRooms() {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-md w-full p-6">
+          <div className="bg-surface dark:bg-gray-900 rounded-2xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold">Create Study Group</h2>
               <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">

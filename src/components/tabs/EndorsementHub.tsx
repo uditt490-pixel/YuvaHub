@@ -37,22 +37,22 @@ export default function EndorsementHub() {
   if (!user) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-[#e8ded1] dark:border-gray-700 mt-6">
+    <div className="bg-surface dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-border-theme dark:border-gray-700 mt-6">
       <div className="flex items-center gap-3 mb-5">
-        <ThumbsUp className="w-5 h-5 text-[#b56b37]" />
-        <h3 className="text-xl font-serif font-bold text-[#231f20] dark:text-white">Skill Endorsements</h3>
+        <ThumbsUp className="w-5 h-5 text-primary-blue" />
+        <h3 className="text-xl font-serif font-bold text-text-primary dark:text-white">Skill Endorsements</h3>
       </div>
       
       {loading ? (
-        <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#b56b37]" /></div>
+        <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-primary-blue" /></div>
       ) : received.length === 0 ? (
         <p className="text-sm text-gray-500">You haven't received any skill endorsements yet.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {received.map(item => (
-            <div key={item.skill} className="flex justify-between items-center p-4 bg-[#fcf9f2] dark:bg-gray-900 rounded-xl border border-[#e8ded1] dark:border-gray-700">
-              <span className="font-bold text-[#603620] dark:text-gray-300">{item.skill}</span>
-              <span className="bg-[#b56b37] text-white text-xs font-bold px-2 py-1 rounded-full">
+            <div key={item.skill} className="flex justify-between items-center p-4 bg-background dark:bg-gray-900 rounded-xl border border-border-theme dark:border-gray-700">
+              <span className="font-bold text-text-secondary dark:text-gray-300">{item.skill}</span>
+              <span className="bg-primary-blue text-white text-xs font-bold px-2 py-1 rounded-full">
                 {item.count} {item.count === 1 ? 'Endorsement' : 'Endorsements'}
               </span>
             </div>

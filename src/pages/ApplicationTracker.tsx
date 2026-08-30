@@ -21,9 +21,9 @@ const COLUMNS = {
   drafts: {
     id: 'drafts',
     title: 'Saved/Drafts',
-    icon: <Clock className="w-5 h-5 text-slate-400" />,
+    icon: <Clock className="w-5 h-5 text-text-muted" />,
     color: 'bg-slate-500/10 border-slate-500/20',
-    headerColor: 'text-slate-400',
+    headerColor: 'text-text-muted',
     statuses: ['draft', 'pending_confirmation', 'queued', 'retrying']
   },
   applied: {
@@ -141,7 +141,7 @@ export const ApplicationTracker: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 p-6 sm:p-8 font-sans">
+    <div className="font-sans h-full">
       <div className="max-w-7xl mx-auto space-y-8">
         
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -149,7 +149,7 @@ export const ApplicationTracker: React.FC = () => {
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">
               Application Tracker
             </h1>
-            <p className="text-slate-400 mt-2">Manage your pipeline and track your success.</p>
+            <p className="text-text-muted mt-2">Manage your pipeline and track your success.</p>
           </div>
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-lg flex items-center gap-2">
@@ -171,7 +171,7 @@ export const ApplicationTracker: React.FC = () => {
                       {col.icon}
                       <h2 className={`font-semibold ${col.headerColor}`}>{col.title}</h2>
                     </div>
-                    <span className="text-xs font-medium text-slate-500 bg-slate-800 px-2 py-1 rounded-full">
+                    <span className="text-xs font-medium text-text-secondary bg-surface-secondary px-2 py-1 rounded-full">
                       {colApps.length}
                     </span>
                   </div>
@@ -181,8 +181,8 @@ export const ApplicationTracker: React.FC = () => {
                       <div
                         {...provided.droppableProps}
                         ref={provided.innerRef}
-                        className={`flex-1 rounded-xl p-3 border border-slate-800 transition-colors duration-300 ${
-                          snapshot.isDraggingOver ? 'bg-slate-800/50 border-emerald-500/30' : 'bg-slate-900/50'
+                        className={`flex-1 rounded-xl p-3 border border-border-theme transition-colors duration-300 ${
+                          snapshot.isDraggingOver ? 'bg-surface-secondary border-emerald-500/30' : 'bg-transparent'
                         }`}
                       >
                         <AnimatePresence>
@@ -203,11 +203,11 @@ export const ApplicationTracker: React.FC = () => {
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     whileHover={{ y: -2, scale: 1.02 }}
                                     className={`p-4 rounded-xl border backdrop-blur-sm shadow-xl transition-all ${col.color} ${
-                                      snapshot.isDragging ? 'shadow-2xl ring-2 ring-emerald-500/50 z-50' : 'hover:border-slate-600'
+                                      snapshot.isDragging ? 'shadow-2xl ring-2 ring-emerald-500/50 z-50' : 'hover:border-border-theme'
                                     }`}
                                   >
                                     <div className="flex justify-between items-start gap-2 mb-3">
-                                      <h3 className="font-medium text-slate-200 line-clamp-2 leading-tight">
+                                      <h3 className="font-medium text-text-primary line-clamp-2 leading-tight">
                                         {app.opportunity.title}
                                       </h3>
                                       {app.opportunity.applyUrl && (
@@ -215,7 +215,7 @@ export const ApplicationTracker: React.FC = () => {
                                           href={app.opportunity.applyUrl}
                                           target="_blank"
                                           rel="noopener noreferrer"
-                                          className="text-slate-500 hover:text-emerald-400 transition-colors"
+                                          className="text-text-secondary hover:text-emerald-400 transition-colors"
                                           onClick={(e) => e.stopPropagation()}
                                         >
                                           <ExternalLink className="w-4 h-4" />
@@ -224,14 +224,14 @@ export const ApplicationTracker: React.FC = () => {
                                     </div>
                                     
                                     {app.opportunity.organization && (
-                                      <div className="flex items-center gap-1.5 text-sm text-slate-400 mb-4">
+                                      <div className="flex items-center gap-1.5 text-sm text-text-muted mb-4">
                                         <Building2 className="w-4 h-4 shrink-0" />
                                         <span className="truncate">{app.opportunity.organization}</span>
                                       </div>
                                     )}
 
-                                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-700/50">
-                                      <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-border-theme/50">
+                                      <div className="flex items-center gap-1.5 text-xs text-text-secondary">
                                         <Calendar className="w-3.5 h-3.5" />
                                         <span>{new Date(app.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                       </div>

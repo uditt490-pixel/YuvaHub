@@ -19,7 +19,7 @@ export const MockInterviewHub: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="w-full max-w-md bg-surface rounded-xl shadow-md overflow-hidden">
         <div className="p-6">
           <h2 className="text-xl font-bold mb-4">Mock Interview Matchmaking</h2>
           

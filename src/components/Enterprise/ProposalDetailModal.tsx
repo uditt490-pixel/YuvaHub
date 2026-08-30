@@ -65,11 +65,11 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
   const getStatusBadge = (status: ResearchProposal['status']) => {
     switch (status) {
       case 'FUNDS_DISBURSED':
-        return 'bg-emerald-500 text-white';
+        return 'bg-emerald-500/200 text-white';
       case 'INSTITUTIONAL_APPROVAL':
-        return 'bg-blue-500 text-white';
+        return 'bg-blue-500/200 text-white';
       case 'PEER_REVIEW':
-        return 'bg-purple-500 text-white';
+        return 'bg-purple-500/200 text-white';
       case 'DRAFTING':
         return 'bg-slate-400 text-white';
       case 'AUDIT_FLAGGED':
@@ -78,33 +78,33 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl shadow-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-blue/70 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme rounded-3xl w-full max-w-4xl shadow-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-6 border-b border-border-theme dark:border-border-theme bg-surface dark:bg-primary-blue/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="font-mono text-xs text-slate-400 font-bold">{proposal.grantCode}</span>
+              <span className="font-mono text-xs text-text-muted font-bold">{proposal.grantCode}</span>
               <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${getStatusBadge(proposal.status)}`}>
                 {proposal.status.replace(/_/g, ' ')}
               </span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+              <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-500/200/20 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                 {proposal.category.replace(/_/g, ' ')}
               </span>
             </div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-bold text-text-primary dark:text-white">
               {proposal.title}
             </h2>
-            <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-              <span>{proposal.principalInvestigator}</span> • <span className="font-semibold text-blue-600 dark:text-blue-400">{proposal.college}</span> ({proposal.department})
+            <div className="text-xs text-text-muted flex items-center gap-2 mt-0.5">
+              <span>{proposal.principalInvestigator}</span> • <span className="font-semibold text-blue-400 dark:text-blue-400">{proposal.college}</span> ({proposal.department})
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-text-muted hover:text-text-secondary dark:hover:text-white hover:bg-surface-secondary dark:hover:bg-surface-secondary transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -112,41 +112,41 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
         </div>
 
         {/* Quick Capital & Duration Bar */}
-        <div className="px-6 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs">
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="text-slate-400 text-[10px] font-bold uppercase">Requested Grant</div>
-            <div className="text-base font-extrabold text-slate-900 dark:text-white mt-0.5">
+        <div className="px-6 py-3 bg-surface dark:bg-primary-blue border-b border-border-theme dark:border-border-theme grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs">
+          <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/50">
+            <div className="text-text-muted text-[10px] font-bold uppercase">Requested Grant</div>
+            <div className="text-base font-extrabold text-text-primary dark:text-white mt-0.5">
               ₹{proposal.requestedGrantLakhs} Lakhs
             </div>
           </div>
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="text-slate-400 text-[10px] font-bold uppercase">Disbursed Capital</div>
-            <div className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+          <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/50">
+            <div className="text-text-muted text-[10px] font-bold uppercase">Disbursed Capital</div>
+            <div className="text-base font-extrabold text-emerald-400 dark:text-emerald-400 mt-0.5">
               ₹{proposal.disbursedGrantLakhs} Lakhs
             </div>
           </div>
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="text-slate-400 text-[10px] font-bold uppercase">Scientific Score</div>
-            <div className="text-base font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
+          <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/50">
+            <div className="text-text-muted text-[10px] font-bold uppercase">Scientific Score</div>
+            <div className="text-base font-extrabold text-blue-400 dark:text-blue-400 mt-0.5">
               {proposal.compositeReviewScore}%
             </div>
           </div>
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="text-slate-400 text-[10px] font-bold uppercase">Research Duration</div>
-            <div className="text-base font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">
+          <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/50">
+            <div className="text-text-muted text-[10px] font-bold uppercase">Research Duration</div>
+            <div className="text-base font-extrabold text-purple-400 dark:text-purple-400 mt-0.5">
               {proposal.durationMonths} Months
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 px-6 bg-slate-50/50 dark:bg-slate-900/40 text-xs">
+        <div className="flex border-b border-border-theme dark:border-border-theme px-6 bg-surface/50 dark:bg-primary-blue/40 text-xs">
           <button
             onClick={() => setActiveTab('abstract')}
             className={`py-3 px-4 font-bold border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'abstract'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-blue-600 text-blue-400 dark:text-blue-400'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <BookOpen className="w-4 h-4" /> Scientific Abstract & Methodology
@@ -155,8 +155,8 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
             onClick={() => setActiveTab('milestones')}
             className={`py-3 px-4 font-bold border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'milestones'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-blue-600 text-blue-400 dark:text-blue-400'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <DollarSign className="w-4 h-4" /> Milestone Disbursement ({proposal.milestones.length})
@@ -165,8 +165,8 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
             onClick={() => setActiveTab('reviews')}
             className={`py-3 px-4 font-bold border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'reviews'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-blue-600 text-blue-400 dark:text-blue-400'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <Award className="w-4 h-4" /> Peer Review Scorecards ({proposal.peerReviews.length})
@@ -177,19 +177,19 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
           {activeTab === 'abstract' && (
             <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
-                <span className="text-slate-400 font-bold uppercase text-[10px]">Research Abstract</span>
-                <p className="text-slate-800 dark:text-slate-200 leading-relaxed">{proposal.abstract}</p>
+              <div className="p-4 rounded-2xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme space-y-2">
+                <span className="text-text-muted font-bold uppercase text-[10px]">Research Abstract</span>
+                <p className="text-text-primary dark:text-slate-200 leading-relaxed">{proposal.abstract}</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1">
-                  <span className="text-slate-400 font-bold uppercase text-[10px]">Principal Investigator Email</span>
-                  <div className="font-semibold text-slate-900 dark:text-white">{proposal.piEmail}</div>
+                <div className="p-4 rounded-xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme space-y-1">
+                  <span className="text-text-muted font-bold uppercase text-[10px]">Principal Investigator Email</span>
+                  <div className="font-semibold text-text-primary dark:text-white">{proposal.piEmail}</div>
                 </div>
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1">
-                  <span className="text-slate-400 font-bold uppercase text-[10px]">IRB Ethics Approval Code</span>
-                  <div className="font-mono font-bold text-emerald-600">{proposal.irbApprovalCode || 'IRB-SERB-PENDING'}</div>
+                <div className="p-4 rounded-xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme space-y-1">
+                  <span className="text-text-muted font-bold uppercase text-[10px]">IRB Ethics Approval Code</span>
+                  <div className="font-mono font-bold text-emerald-400">{proposal.irbApprovalCode || 'IRB-SERB-PENDING'}</div>
                 </div>
               </div>
             </div>
@@ -197,34 +197,34 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
 
           {activeTab === 'milestones' && (
             <div className="space-y-4 text-xs">
-              <h4 className="font-bold uppercase tracking-wider text-slate-500">
+              <h4 className="font-bold uppercase tracking-wider text-text-muted">
                 Capital Tranche Milestones & Deliverables
               </h4>
               <div className="space-y-3">
                 {proposal.milestones.map((m) => (
                   <div
                     key={m.id}
-                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="p-4 rounded-2xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 dark:text-white">{m.milestoneTitle}</span>
+                        <span className="font-bold text-text-primary dark:text-white">{m.milestoneTitle}</span>
                         {m.isUnlocked ? (
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-500/200/20 text-emerald-800 text-[10px] font-bold flex items-center gap-1">
                             <Unlock className="w-3 h-3" /> Unlocked & Disbursed
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-md bg-border-theme text-text-primary text-[10px] font-bold flex items-center gap-1">
                             <Lock className="w-3 h-3" /> Locked
                           </span>
                         )}
                       </div>
-                      <p className="text-slate-600 dark:text-slate-400">{m.deliverablesSummary}</p>
-                      <div className="text-[10px] text-slate-500">Target Month: Month {m.targetMonth}</div>
+                      <p className="text-text-secondary dark:text-text-muted">{m.deliverablesSummary}</p>
+                      <div className="text-[10px] text-text-muted">Target Month: Month {m.targetMonth}</div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="font-extrabold text-sm text-emerald-600">₹{m.allocatedAmountLakhs} Lakhs</span>
+                      <span className="font-extrabold text-sm text-emerald-400">₹{m.allocatedAmountLakhs} Lakhs</span>
                       {!m.isUnlocked && (
                         <button
                           onClick={() => onDisburseMilestone(proposal, m)}
@@ -243,7 +243,7 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
           {activeTab === 'reviews' && (
             <div className="space-y-6 text-xs">
               <div className="flex justify-between items-center">
-                <h4 className="font-bold uppercase tracking-wider text-slate-500">
+                <h4 className="font-bold uppercase tracking-wider text-text-muted">
                   Peer Review Evaluations
                 </h4>
                 <button
@@ -255,7 +255,7 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
               </div>
 
               {showAddReview && (
-                <form onSubmit={handleSubmitReview} className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 space-y-3">
+                <form onSubmit={handleSubmitReview} className="p-4 rounded-2xl bg-blue-500/20 dark:bg-blue-950/40 border border-blue-500/30 dark:border-blue-900 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block font-bold mb-1">Scientific Merit (0-10)</label>
@@ -266,7 +266,7 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
                         step="0.1"
                         value={scientificScore}
                         onChange={(e) => setScientificScore(Number(e.target.value))}
-                        className="w-full p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700"
+                        className="w-full p-2 rounded-lg bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme"
                       />
                     </div>
                     <div>
@@ -278,7 +278,7 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
                         step="0.1"
                         value={feasibilityScore}
                         onChange={(e) => setFeasibilityScore(Number(e.target.value))}
-                        className="w-full p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700"
+                        className="w-full p-2 rounded-lg bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme"
                       />
                     </div>
                     <div>
@@ -290,7 +290,7 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
                         step="0.1"
                         value={methodologyScore}
                         onChange={(e) => setMethodologyScore(Number(e.target.value))}
-                        className="w-full p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700"
+                        className="w-full p-2 rounded-lg bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme"
                       />
                     </div>
                   </div>
@@ -302,7 +302,7 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
                       value={writtenEval}
                       onChange={(e) => setWrittenEval(e.target.value)}
                       placeholder="Scientific evaluation notes..."
-                      className="w-full p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700"
+                      className="w-full p-2.5 rounded-lg bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme"
                       required
                     />
                   </div>
@@ -311,7 +311,7 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setShowAddReview(false)}
-                      className="px-3 py-1 text-slate-500"
+                      className="px-3 py-1 text-text-muted"
                     >
                       Cancel
                     </button>
@@ -328,15 +328,15 @@ export const ProposalDetailModal: React.FC<ProposalDetailModalProps> = ({
 
               <div className="space-y-3">
                 {proposal.peerReviews.length === 0 ? (
-                  <p className="text-slate-400 italic">No peer review evaluations recorded yet.</p>
+                  <p className="text-text-muted italic">No peer review evaluations recorded yet.</p>
                 ) : (
                   proposal.peerReviews.map((rev) => (
-                    <div key={rev.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                    <div key={rev.id} className="p-4 rounded-2xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme space-y-2">
                       <div className="flex justify-between font-bold">
                         <span>{rev.reviewerName} ({rev.reviewerTitle})</span>
-                        <span className="text-emerald-600 font-extrabold">{rev.overallRecommendation.replace(/_/g, ' ')}</span>
+                        <span className="text-emerald-400 font-extrabold">{rev.overallRecommendation.replace(/_/g, ' ')}</span>
                       </div>
-                      <p className="italic text-slate-700 dark:text-slate-300">"{rev.writtenEvaluation}"</p>
+                      <p className="italic text-text-primary dark:text-slate-300">"{rev.writtenEvaluation}"</p>
                     </div>
                   ))
                 )}

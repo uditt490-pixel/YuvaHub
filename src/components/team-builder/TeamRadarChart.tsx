@@ -17,7 +17,7 @@ const TeamRadarChart: React.FC<TeamRadarChartProps> = ({ currentSkills, required
   }));
 
   return (
-    <div className="w-full h-64 bg-gray-900 rounded-xl p-4 border border-gray-800 shadow-xl">
+    <div className="w-full h-64 bg-surface rounded-xl p-4 border border-border-theme shadow-xl">
       <h3 className="text-lg font-semibold text-white mb-2 text-center">Team Skill Distribution</h3>
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
@@ -53,11 +53,11 @@ const TeamRadarChart: React.FC<TeamRadarChartProps> = ({ currentSkills, required
       <div className="flex justify-center gap-4 mt-2 text-xs">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
-          <span className="text-gray-400">Current Skills</span>
+          <span className="text-text-muted">Current Skills</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 bg-rose-500 opacity-70 rounded-sm"></div>
-          <span className="text-gray-400">Needed (Gaps)</span>
+          <span className="text-text-muted">Needed (Gaps)</span>
         </div>
       </div>
     </div>

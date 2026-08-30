@@ -25,7 +25,7 @@ export default function MissionSection() {
       >
         {/* Icon column */}
         <div className="shrink-0">
-          <div className="w-16 h-16 rounded-[18px] bg-white/15 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-[18px] bg-surface/15 flex items-center justify-center">
             <Target className="w-8 h-8 text-white" aria-hidden="true" />
           </div>
         </div>

@@ -38,7 +38,7 @@ export const LiveQueueManager: React.FC<LiveQueueManagerProps> = ({ boothId, com
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl text-center relative overflow-hidden">
+      <div className="bg-surface rounded-2xl p-8 max-w-md w-full shadow-2xl text-center relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-2 bg-blue-100">
           <div className="h-full bg-blue-600 animate-pulse" style={{ width: '100%' }}></div>
         </div>

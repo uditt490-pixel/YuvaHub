@@ -132,11 +132,11 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
   const getStatusBadge = (status: ResearchProposal['status']) => {
     switch (status) {
       case 'FUNDS_DISBURSED':
-        return 'bg-emerald-500 text-white';
+        return 'bg-emerald-500/200 text-white';
       case 'INSTITUTIONAL_APPROVAL':
-        return 'bg-blue-500 text-white';
+        return 'bg-blue-500/200 text-white';
       case 'PEER_REVIEW':
-        return 'bg-purple-500 text-white';
+        return 'bg-purple-500/200 text-white';
       case 'DRAFTING':
         return 'bg-slate-400 text-white';
       case 'AUDIT_FLAGGED':
@@ -145,42 +145,42 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-10 font-sans space-y-8">
+    <div className="min-h-screen bg-surface dark:bg-slate-950 text-text-primary dark:text-slate-100 p-4 sm:p-6 lg:p-10 font-sans space-y-8">
       {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl shadow-xl flex items-center gap-3 bg-slate-900 text-white dark:bg-white dark:text-slate-900 border border-slate-700 animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl shadow-xl flex items-center gap-3 bg-primary-blue text-white dark:bg-surface dark:text-text-primary border border-border-theme animate-in fade-in slide-in-from-bottom-5 duration-200">
           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           <span className="text-xs font-bold">{toastMessage.text}</span>
         </div>
       )}
 
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-surface dark:bg-primary-blue p-6 rounded-3xl border border-border-theme dark:border-border-theme shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-900">
+            <span className="px-3 py-1 rounded-full bg-emerald-500/20 dark:bg-emerald-950 text-emerald-400 dark:text-emerald-400 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 border border-emerald-500/30 dark:border-emerald-900">
               <BookOpen className="w-3.5 h-3.5" /> Academic Research & Capital Grants
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-mono font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-surface-secondary dark:bg-surface-secondary text-text-secondary dark:text-slate-300 text-[10px] font-mono font-bold">
               DST / SERB / BIRAC
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-text-primary dark:text-white tracking-tight">
             Research Grant & Proposal Telemetry Lab
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-text-muted dark:text-text-muted mt-1">
             Peer review scorecards, milestone tranche disbursements, and institutional scientific governance.
           </p>
         </div>
 
         {/* View Switchers */}
-        <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center bg-surface-secondary dark:bg-surface-secondary p-1.5 rounded-2xl border border-border-theme dark:border-border-theme">
           <button
             onClick={() => setActiveView('grid')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               activeView === 'grid'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-surface dark:bg-primary-blue text-blue-400 dark:text-blue-400 shadow-sm'
+                : 'text-text-muted hover:text-text-primary dark:hover:text-white'
             }`}
           >
             <LayoutGrid className="w-4 h-4" /> Proposals Board
@@ -189,8 +189,8 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
             onClick={() => setActiveView('ledger')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               activeView === 'ledger'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-surface dark:bg-primary-blue text-blue-400 dark:text-blue-400 shadow-sm'
+                : 'text-text-muted hover:text-text-primary dark:hover:text-white'
             }`}
           >
             <List className="w-4 h-4" /> Capital Ledger
@@ -199,8 +199,8 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
             onClick={() => setActiveView('peer_review')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               activeView === 'peer_review'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-surface dark:bg-primary-blue text-blue-400 dark:text-blue-400 shadow-sm'
+                : 'text-text-muted hover:text-text-primary dark:hover:text-white'
             }`}
           >
             <Award className="w-4 h-4" /> Peer Review Matrix
@@ -224,7 +224,7 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center p-20 space-y-4">
           <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">
             Syncing National Grant Ledger...
           </p>
         </div>
@@ -237,18 +237,18 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
               <div
                 key={proposal.id}
                 onClick={() => setSelectedProposal(proposal)}
-                className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-emerald-500 transition-all cursor-pointer space-y-4"
+                className="p-5 rounded-3xl bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme shadow-sm hover:shadow-md hover:border-emerald-500 transition-all cursor-pointer space-y-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="font-mono text-xs font-bold text-slate-400">
+                    <div className="font-mono text-xs font-bold text-text-muted">
                       {proposal.grantCode}
                     </div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1 mt-0.5">
+                    <h3 className="font-bold text-sm text-text-primary dark:text-white line-clamp-1 mt-0.5">
                       {proposal.title}
                     </h3>
-                    <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                      <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                    <div className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
+                      <Building2 className="w-3.5 h-3.5 text-blue-400" />
                       <span>{proposal.college}</span>
                     </div>
                   </div>
@@ -257,19 +257,19 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-text-secondary dark:text-text-muted line-clamp-2 leading-relaxed">
                   {proposal.abstract}
                 </p>
 
                 {/* Score & Tranche Bar */}
-                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 space-y-1.5 text-xs">
+                <div className="p-3 rounded-2xl bg-surface dark:bg-surface-secondary/60 space-y-1.5 text-xs">
                   <div className="flex justify-between font-bold">
-                    <span className="text-slate-500">Disbursed Tranche</span>
-                    <span className="text-emerald-600 font-extrabold">
+                    <span className="text-text-muted">Disbursed Tranche</span>
+                    <span className="text-emerald-400 font-extrabold">
                       ₹{proposal.disbursedGrantLakhs} / ₹{proposal.requestedGrantLakhs} Lakhs
                     </span>
                   </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-border-theme dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                     <div
                       className="bg-gradient-to-r from-emerald-500 to-teal-600 h-full rounded-full"
                       style={{ width: `${(proposal.disbursedGrantLakhs / (proposal.requestedGrantLakhs || 1)) * 100}%` }}
@@ -279,36 +279,36 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
 
                 {/* PI & Duration */}
                 <div className="grid grid-cols-2 gap-2 text-center text-xs">
-                  <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-                    <div className="text-[10px] text-slate-400 font-bold uppercase">Principal Inv.</div>
-                    <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">
+                  <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/40">
+                    <div className="text-[10px] text-text-muted font-bold uppercase">Principal Inv.</div>
+                    <div className="font-bold text-text-primary dark:text-slate-200 mt-0.5 truncate">
                       {proposal.principalInvestigator}
                     </div>
                   </div>
-                  <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-                    <div className="text-[10px] text-slate-400 font-bold uppercase">Duration</div>
-                    <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                  <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/40">
+                    <div className="text-[10px] text-text-muted font-bold uppercase">Duration</div>
+                    <div className="font-bold text-text-primary dark:text-slate-200 mt-0.5">
                       {proposal.durationMonths} Months
                     </div>
                   </div>
                 </div>
 
                 {/* Footer */}
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <div className="pt-3 border-t border-border-theme dark:border-border-theme flex items-center justify-between">
                   {nextLocked ? (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setDisbursementTarget({ proposal, milestone: nextLocked });
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 font-bold text-xs flex items-center gap-1 hover:bg-emerald-100"
+                      className="px-3 py-1.5 rounded-xl bg-emerald-500/20 dark:bg-emerald-950 text-emerald-400 font-bold text-xs flex items-center gap-1 hover:bg-emerald-500/200/20"
                     >
                       <DollarSign className="w-3.5 h-3.5" /> Disburse
                     </button>
                   ) : (
-                    <span className="text-xs font-bold text-emerald-600">Fully Disbursed</span>
+                    <span className="text-xs font-bold text-emerald-400">Fully Disbursed</span>
                   )}
-                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-0.5">
+                  <span className="text-xs font-bold text-blue-400 dark:text-blue-400 flex items-center gap-0.5">
                     Inspect <ChevronRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
@@ -318,10 +318,10 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
         </div>
       ) : activeView === 'ledger' ? (
         /* Ledger Table View */
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+        <div className="bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme rounded-3xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+              <thead className="bg-surface dark:bg-surface-secondary/80 border-b border-border-theme dark:border-border-theme text-text-muted dark:text-text-muted font-bold uppercase tracking-wider text-[10px]">
                 <tr>
                   <th className="p-4">Grant Code & Title</th>
                   <th className="p-4">Principal Investigator</th>
@@ -336,23 +336,23 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {proposals.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr key={p.id} className="hover:bg-surface dark:hover:bg-surface-secondary/50 transition-colors">
                     <td className="p-4">
-                      <div className="font-mono font-bold text-slate-900 dark:text-white">{p.grantCode}</div>
-                      <div className="text-[11px] text-slate-500 truncate max-w-[220px]">{p.title}</div>
+                      <div className="font-mono font-bold text-text-primary dark:text-white">{p.grantCode}</div>
+                      <div className="text-[11px] text-text-muted truncate max-w-[220px]">{p.title}</div>
                     </td>
-                    <td className="p-4 font-semibold text-slate-800 dark:text-slate-200">
+                    <td className="p-4 font-semibold text-text-primary dark:text-slate-200">
                       {p.principalInvestigator}
                     </td>
-                    <td className="p-4 text-slate-700 dark:text-slate-300">
+                    <td className="p-4 text-text-primary dark:text-slate-300">
                       {p.college}
                     </td>
-                    <td className="p-4 font-bold text-blue-600 dark:text-blue-400">
+                    <td className="p-4 font-bold text-blue-400 dark:text-blue-400">
                       {p.category.replace(/_/g, ' ')}
                     </td>
                     <td className="p-4 font-mono font-bold">₹{p.requestedGrantLakhs} L</td>
-                    <td className="p-4 font-mono font-bold text-emerald-600">₹{p.disbursedGrantLakhs} L</td>
-                    <td className="p-4 font-extrabold text-blue-600">{p.compositeReviewScore}%</td>
+                    <td className="p-4 font-mono font-bold text-emerald-400">₹{p.disbursedGrantLakhs} L</td>
+                    <td className="p-4 font-extrabold text-blue-400">{p.compositeReviewScore}%</td>
                     <td className="p-4">
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${getStatusBadge(p.status)}`}>
                         {p.status.replace(/_/g, ' ')}
@@ -361,7 +361,7 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
                     <td className="p-4 text-right space-x-2">
                       <button
                         onClick={() => setSelectedProposal(p)}
-                        className="px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-100"
+                        className="px-3 py-1 rounded-lg bg-blue-500/20 dark:bg-blue-950 text-blue-400 dark:text-blue-400 font-bold hover:bg-blue-500/200/20"
                       >
                         Inspect
                       </button>
@@ -375,42 +375,42 @@ export const ResearchGrantTelemetryLab: React.FC = () => {
       ) : (
         /* Peer Review Matrix */
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Award className="w-5 h-5 text-purple-600" />
+          <div className="bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme rounded-3xl p-6 shadow-sm space-y-4">
+            <h3 className="text-base font-bold text-text-primary dark:text-white flex items-center gap-2">
+              <Award className="w-5 h-5 text-purple-400" />
               National Scientific Peer Review Framework
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="text-xs text-text-muted dark:text-text-muted leading-relaxed">
               Every submitted proposal undergoes double-blind evaluation by senior academicians from premier national research labs across 3 primary dimensions: Scientific Merit, Commercial Feasibility, and Methodology Rigor.
             </p>
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2 text-xs font-semibold">
+            <div className="p-4 rounded-2xl bg-surface dark:bg-surface-secondary/60 border border-border-theme dark:border-border-theme space-y-2 text-xs font-semibold">
               <div className="flex justify-between">
                 <span>Minimum Funding Threshold</span>
-                <span className="text-emerald-600">&gt; 85% Composite Score</span>
+                <span className="text-emerald-400">&gt; 85% Composite Score</span>
               </div>
               <div className="flex justify-between">
                 <span>Average Evaluation Turnaround</span>
-                <span className="text-blue-600">&lt; 14 Days</span>
+                <span className="text-blue-400">&lt; 14 Days</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+          <div className="bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme rounded-3xl p-6 shadow-sm space-y-4">
+            <h3 className="text-base font-bold text-text-primary dark:text-white flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
               Institutional Ethics & IRB Governance
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="text-xs text-text-muted dark:text-text-muted leading-relaxed">
               Capital disbursements are conditionally locked until institutional review board (IRB) ethical clearances and safety certifications are confirmed.
             </p>
             <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900">
-                <div className="text-xl font-black text-emerald-600 dark:text-emerald-400">100%</div>
-                <div className="text-[10px] text-slate-500">Ethics Compliant</div>
+              <div className="p-3.5 rounded-2xl bg-emerald-500/20 dark:bg-emerald-950/40 border border-emerald-500/30 dark:border-emerald-900">
+                <div className="text-xl font-black text-emerald-400 dark:text-emerald-400">100%</div>
+                <div className="text-[10px] text-text-muted">Ethics Compliant</div>
               </div>
-              <div className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900">
-                <div className="text-xl font-black text-blue-600 dark:text-blue-400">Milestone</div>
-                <div className="text-[10px] text-slate-500">Tranche Governance</div>
+              <div className="p-3.5 rounded-2xl bg-blue-500/20 dark:bg-blue-950/40 border border-blue-500/30 dark:border-blue-900">
+                <div className="text-xl font-black text-blue-400 dark:text-blue-400">Milestone</div>
+                <div className="text-[10px] text-text-muted">Tranche Governance</div>
               </div>
             </div>
           </div>

@@ -19,7 +19,7 @@ export const FeedbackForm: React.FC<{ sessionId: string; onComplete: () => void 
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full bg-white rounded-xl shadow-md overflow-hidden">
+    <div className="max-w-2xl mx-auto w-full bg-surface rounded-xl shadow-md overflow-hidden">
       <div className="p-6 border-b border-gray-200">
         <h2 className="text-xl font-bold">Session Complete! Peer Feedback</h2>
       </div>

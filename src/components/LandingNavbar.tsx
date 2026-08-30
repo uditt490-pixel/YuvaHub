@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Zap, Sun, Moon, Menu, X, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import ThemeToggle from './ThemeToggle';
 
 interface LandingNavbarProps {
   /** Called when the user clicks Login */
@@ -26,7 +27,7 @@ function scrollToSection(id: string) {
 }
 
 export default function LandingNavbar({ onLoginClick, onNavClick }: LandingNavbarProps) {
-  const { activeTab, setActiveTab, theme, toggleTheme } = useAppContext();
+  const { activeTab, setActiveTab } = useAppContext();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -45,7 +46,7 @@ export default function LandingNavbar({ onLoginClick, onNavClick }: LandingNavba
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#fcf9f2]/90 backdrop-blur-md border-b border-[#e8ded1] transition-colors duration-300">
+    <header className="sticky top-0 z-50 bg-navbar/90 backdrop-blur-md border-b border-border-theme transition-colors duration-300">
       <div className="max-w-7xl mx-auto h-[72px] px-6 lg:px-12 flex items-center justify-between">
         
         {/* Brand Mark */}
@@ -56,23 +57,23 @@ export default function LandingNavbar({ onLoginClick, onNavClick }: LandingNavba
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         >
-          <div className="w-9 h-9 rounded-full bg-[#603620] flex items-center justify-center shadow-md">
+          <div className="w-9 h-9 rounded-full bg-search-btn flex items-center justify-center shadow-md">
             <Zap className="w-4 h-4 text-[#f3e4bd]" />
           </div>
-          <span className="font-serif font-bold text-2xl tracking-tight text-[#231f20]">
-            Yuva<span className="text-[#b56b37] italic">Hub</span>
+          <span className="font-serif font-bold text-2xl tracking-tight text-text-primary">
+            Yuva<span className="text-primary-blue italic">Hub</span>
           </span>
         </div>
 
         {/* Desktop Nav Links or Back Button */}
         {activeTab === 'dashboard' ? (
-          <nav className="hidden md:flex items-center gap-10 text-xs uppercase tracking-widest font-bold text-[#603620]">
+          <nav className="hidden md:flex items-center gap-10 text-xs uppercase tracking-widest font-bold text-text-secondary">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
                 href={`#${link.href}`}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="hover:text-[#b56b37] transition-colors cursor-pointer"
+                className="hover:text-primary-blue transition-colors cursor-pointer"
               >
                 {link.label}
               </a>
@@ -84,7 +85,7 @@ export default function LandingNavbar({ onLoginClick, onNavClick }: LandingNavba
               setActiveTab('dashboard');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#b56b37] hover:text-[#603620] transition-colors bg-transparent border-none cursor-pointer"
+            className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-primary-blue hover:text-text-primary transition-colors bg-transparent border-none cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Home
           </button>
@@ -92,17 +93,22 @@ export default function LandingNavbar({ onLoginClick, onNavClick }: LandingNavba
 
         {/* Actions */}
         <div className="flex items-center gap-3">
+          
+          {/* Desktop Theme Toggle */}
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
 
           <button
             onClick={onLoginClick}
-            className="hidden md:block px-6 py-2.5 text-xs font-extrabold uppercase tracking-wider bg-[#b56b37] text-white rounded-full shadow-md hover:bg-[#603620] transition-all cursor-pointer"
+            className="hidden md:block px-6 py-2.5 text-xs font-extrabold uppercase tracking-wider bg-primary-blue text-white rounded-full shadow-md hover:opacity-90 transition-all cursor-pointer"
           >
             Sign In
           </button>
 
           {/* Mobile Hamburger */}
           <button
-            className="md:hidden p-2 text-[#603620] rounded-xl hover:bg-[#f3e4bd]/50"
+            className="md:hidden p-2 text-text-secondary rounded-xl hover:bg-surface-secondary"
             onClick={() => setMobileOpen((prev) => !prev)}
             aria-label="Toggle Menu"
           >
@@ -113,14 +119,21 @@ export default function LandingNavbar({ onLoginClick, onNavClick }: LandingNavba
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#fcf9f2] border-b border-[#e8ded1] shadow-xl px-6 py-6 flex flex-col gap-4">
+        <div className="md:hidden bg-navbar border-b border-border-theme shadow-xl px-6 py-6 flex flex-col gap-4">
+          
+          {/* Mobile Theme Toggle */}
+          <div className="flex justify-between items-center pb-4 border-b border-border-theme/50">
+            <span className="text-sm font-bold uppercase tracking-wider text-text-secondary">Theme</span>
+            <ThemeToggle />
+          </div>
+
           {activeTab === 'dashboard' ? (
             NAV_LINKS.map((link) => (
               <a
                 key={link.href}
                 href={`#${link.href}`}
                 onClick={(e) => handleNavClick(e, link.href)}
-                className="text-sm font-bold uppercase tracking-wider text-[#603620] hover:text-[#b56b37]"
+                className="text-sm font-bold uppercase tracking-wider text-text-secondary hover:text-primary-blue"
               >
                 {link.label}
               </a>
@@ -132,14 +145,14 @@ export default function LandingNavbar({ onLoginClick, onNavClick }: LandingNavba
                 setActiveTab('dashboard');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="text-sm font-bold uppercase tracking-wider text-[#b56b37] flex items-center gap-2"
+              className="text-sm font-bold uppercase tracking-wider text-primary-blue flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" /> Back to Home
             </button>
           )}
           <button
             onClick={() => { setMobileOpen(false); onLoginClick(); }}
-            className="mt-2 w-full py-3 text-xs font-extrabold uppercase tracking-wider bg-[#b56b37] text-white rounded-full shadow-md text-center"
+            className="mt-2 w-full py-3 text-xs font-extrabold uppercase tracking-wider bg-primary-blue text-white rounded-full shadow-md text-center"
           >
             Sign In / Register
           </button>

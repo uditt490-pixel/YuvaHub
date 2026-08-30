@@ -28,7 +28,7 @@ function StatDivider() {
   return (
     <div
       aria-hidden="true"
-      className="hidden md:block w-px h-[40px] bg-white/20 dark:bg-border-theme"
+      className="hidden md:block w-px h-[40px] bg-surface/20 dark:bg-border-theme"
     />
   );
 }

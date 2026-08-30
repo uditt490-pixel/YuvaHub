@@ -16,22 +16,22 @@ interface AuditLogTimelineProps {
 }
 
 const SEVERITY_CONFIG: Record<AuditSeverity, { dot: string; badge: string; label: string }> = {
-  INFO: { dot: 'bg-emerald-500', badge: 'bg-emerald-100 text-emerald-700 border-emerald-200', label: 'INFO' },
-  WARNING: { dot: 'bg-amber-500', badge: 'bg-amber-100 text-amber-700 border-amber-200', label: 'WARNING' },
-  CRITICAL: { dot: 'bg-red-500', badge: 'bg-red-100 text-red-700 border-red-200', label: 'CRITICAL' },
+  INFO: { dot: 'bg-emerald-500/200', badge: 'bg-emerald-500/200/20 text-emerald-400 border-emerald-500/30', label: 'INFO' },
+  WARNING: { dot: 'bg-amber-500/200', badge: 'bg-amber-500/200/20 text-amber-400 border-amber-500/30', label: 'WARNING' },
+  CRITICAL: { dot: 'bg-red-500/200', badge: 'bg-red-500/200/20 text-red-400 border-red-500/30', label: 'CRITICAL' },
   EMERGENCY: { dot: 'bg-rose-600', badge: 'bg-rose-100 text-rose-700 border-rose-200', label: 'EMERGENCY' },
 };
 
 const CATEGORY_COLORS: Record<AuditCategory, string> = {
-  AUTHENTICATION: 'bg-blue-100 text-blue-700 border-blue-200',
-  AUTHORIZATION: 'bg-purple-100 text-purple-700 border-purple-200',
-  DATA_MODIFICATION: 'bg-orange-100 text-orange-700 border-orange-200',
-  DATA_EXPORT: 'bg-teal-100 text-teal-700 border-teal-200',
-  USER_MANAGEMENT: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-  SYSTEM_CONFIG: 'bg-slate-100 text-slate-700 border-slate-200',
+  AUTHENTICATION: 'bg-blue-500/200/20 text-blue-400 border-blue-500/30',
+  AUTHORIZATION: 'bg-purple-500/200/20 text-purple-400 border-purple-500/30',
+  DATA_MODIFICATION: 'bg-orange-500/200/20 text-orange-400 border-orange-500/30',
+  DATA_EXPORT: 'bg-teal-500/200/20 text-teal-400 border-teal-500/30',
+  USER_MANAGEMENT: 'bg-indigo-500/200/20 text-indigo-400 border-indigo-500/30',
+  SYSTEM_CONFIG: 'bg-surface-secondary text-text-primary border-border-theme',
   BILLING: 'bg-green-100 text-green-700 border-green-200',
-  SECURITY: 'bg-red-100 text-red-700 border-red-200',
-  API_ACCESS: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+  SECURITY: 'bg-red-500/200/20 text-red-400 border-red-500/30',
+  API_ACCESS: 'bg-cyan-500/200/20 text-cyan-400 border-cyan-500/30',
   INTEGRATION: 'bg-violet-100 text-violet-700 border-violet-200',
 };
 
@@ -69,19 +69,19 @@ const TimelineEntryCard: React.FC<{
   return (
     <div className={`relative pl-8 pb-1 group`}>
       {/* Timeline line */}
-      <div className="absolute left-[11px] top-0 bottom-0 w-0.5 bg-slate-200 group-hover:bg-indigo-300 transition-colors" />
+      <div className="absolute left-[11px] top-0 bottom-0 w-0.5 bg-border-theme group-hover:bg-indigo-300 transition-colors" />
 
       {/* Timeline dot */}
       <div className={`absolute left-0 top-4 w-6 h-6 rounded-full border-2 border-white shadow-sm flex items-center justify-center z-10 ${sev.dot}`}>
-        <div className="w-2 h-2 bg-white rounded-full" />
+        <div className="w-2 h-2 bg-surface rounded-full" />
       </div>
 
       {/* Card */}
       <div
-        className={`ml-4 bg-white rounded-xl border transition-all cursor-pointer ${
+        className={`ml-4 bg-surface rounded-xl border transition-all cursor-pointer ${
           isExpanded
             ? 'border-indigo-300 shadow-md ring-1 ring-indigo-100'
-            : 'border-slate-200 hover:border-slate-300 hover:shadow-sm'
+            : 'border-border-theme hover:border-border-theme hover:shadow-sm'
         }`}
       >
         {/* Main row */}
@@ -94,10 +94,10 @@ const TimelineEntryCard: React.FC<{
               <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase border ${catColor}`}>
                 {entry.category.replace(/_/g, ' ')}
               </span>
-              <span className="text-[10px] font-bold text-slate-400">{entry.action.replace(/_/g, ' ')}</span>
+              <span className="text-[10px] font-bold text-text-muted">{entry.action.replace(/_/g, ' ')}</span>
             </div>
-            <p className="text-sm font-bold text-slate-800 truncate">{entry.description}</p>
-            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-500 font-medium">
+            <p className="text-sm font-bold text-text-primary truncate">{entry.description}</p>
+            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-text-muted font-medium">
               <span className="flex items-center gap-1">
                 <User className="h-3 w-3" /> {entry.actorName}
               </span>
@@ -112,49 +112,49 @@ const TimelineEntryCard: React.FC<{
 
           <div className="flex items-center gap-2 shrink-0">
             {entry.riskScore > 60 && (
-              <span className="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-black border border-red-200">
+              <span className="px-2 py-0.5 bg-red-500/200/20 text-red-400 rounded text-[10px] font-black border border-red-500/30">
                 HIGH RISK
               </span>
             )}
-            <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-4 w-4 text-text-muted transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
           </div>
         </div>
 
         {/* Expanded Detail */}
         {isExpanded && (
-          <div className="px-4 pb-4 pt-1 border-t border-slate-100 space-y-3 animate-in slide-in-from-top-1 duration-200">
+          <div className="px-4 pb-4 pt-1 border-t border-border-theme space-y-3 animate-in slide-in-from-top-1 duration-200">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-slate-50 rounded-lg p-3">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Time</p>
-                <p className="text-xs font-bold text-slate-800">{formatExactTime(entry.timestamp)}</p>
+              <div className="bg-surface rounded-lg p-3">
+                <p className="text-[10px] font-bold text-text-muted uppercase mb-1">Time</p>
+                <p className="text-xs font-bold text-text-primary">{formatExactTime(entry.timestamp)}</p>
               </div>
-              <div className="bg-slate-50 rounded-lg p-3">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Resource</p>
-                <p className="text-xs font-bold text-slate-800 truncate">{entry.resourceType.replace(/_/g, ' ')}</p>
-                <p className="text-[10px] text-slate-500 font-mono truncate">{entry.resourceName}</p>
+              <div className="bg-surface rounded-lg p-3">
+                <p className="text-[10px] font-bold text-text-muted uppercase mb-1">Resource</p>
+                <p className="text-xs font-bold text-text-primary truncate">{entry.resourceType.replace(/_/g, ' ')}</p>
+                <p className="text-[10px] text-text-muted font-mono truncate">{entry.resourceName}</p>
               </div>
-              <div className="bg-slate-50 rounded-lg p-3">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Actor</p>
-                <p className="text-xs font-bold text-slate-800">{entry.actorName}</p>
-                <p className="text-[10px] text-slate-500">{entry.actorRole}</p>
+              <div className="bg-surface rounded-lg p-3">
+                <p className="text-[10px] font-bold text-text-muted uppercase mb-1">Actor</p>
+                <p className="text-xs font-bold text-text-primary">{entry.actorName}</p>
+                <p className="text-[10px] text-text-muted">{entry.actorRole}</p>
               </div>
-              <div className="bg-slate-50 rounded-lg p-3">
-                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Risk Score</p>
-                <p className={`text-xs font-bold ${entry.riskScore > 60 ? 'text-red-600' : entry.riskScore > 30 ? 'text-amber-600' : 'text-emerald-600'}`}>
+              <div className="bg-surface rounded-lg p-3">
+                <p className="text-[10px] font-bold text-text-muted uppercase mb-1">Risk Score</p>
+                <p className={`text-xs font-bold ${entry.riskScore > 60 ? 'text-red-400' : entry.riskScore > 30 ? 'text-amber-400' : 'text-emerald-400'}`}>
                   {entry.riskScore}/100
                 </p>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[11px] text-slate-500">
+              <div className="flex items-center gap-2 text-[11px] text-text-muted">
                 <span className="font-mono">{entry.id}</span>
                 <span>•</span>
                 <span>{entry.actorIp}</span>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); onSelect(); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-colors"
               >
                 View Full Detail <ExternalLink className="h-3 w-3" />
               </button>
@@ -199,14 +199,14 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({
       <div className="space-y-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="pl-8 relative">
-            <div className="absolute left-0 top-4 w-6 h-6 rounded-full bg-slate-200 animate-pulse" />
-            <div className="ml-4 bg-white rounded-xl border border-slate-200 p-4 animate-pulse">
+            <div className="absolute left-0 top-4 w-6 h-6 rounded-full bg-border-theme animate-pulse" />
+            <div className="ml-4 bg-surface rounded-xl border border-border-theme p-4 animate-pulse">
               <div className="flex gap-2 mb-2">
-                <div className="h-5 w-16 bg-slate-100 rounded" />
-                <div className="h-5 w-20 bg-slate-100 rounded" />
+                <div className="h-5 w-16 bg-surface-secondary rounded" />
+                <div className="h-5 w-20 bg-surface-secondary rounded" />
               </div>
-              <div className="h-4 w-3/4 bg-slate-100 rounded mb-2" />
-              <div className="h-3 w-1/2 bg-slate-100 rounded" />
+              <div className="h-4 w-3/4 bg-surface-secondary rounded mb-2" />
+              <div className="h-3 w-1/2 bg-surface-secondary rounded" />
             </div>
           </div>
         ))}
@@ -216,10 +216,10 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({
 
   if (groups.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 border-dashed p-16 text-center">
+      <div className="bg-surface rounded-2xl border border-border-theme border-dashed p-16 text-center">
         <Filter className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-slate-700">No Audit Events Found</h3>
-        <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
+        <h3 className="text-lg font-bold text-text-primary">No Audit Events Found</h3>
+        <p className="text-sm text-text-muted mt-2 max-w-md mx-auto">
           No audit log entries match your current filter criteria. Try broadening your filters or adjusting the time range.
         </p>
       </div>
@@ -240,17 +240,17 @@ export const AuditLogTimeline: React.FC<AuditLogTimelineProps> = ({
             >
               <div className="flex items-center gap-2">
                 {isCollapsed ? (
-                  <ChevronRight className="h-4 w-4 text-slate-400 group-hover/header:text-indigo-500 transition-colors" />
+                  <ChevronRight className="h-4 w-4 text-text-muted group-hover/header:text-indigo-500 transition-colors" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-slate-400 group-hover/header:text-indigo-500 transition-colors" />
+                  <ChevronDown className="h-4 w-4 text-text-muted group-hover/header:text-indigo-500 transition-colors" />
                 )}
-                <h3 className="text-sm font-black text-slate-800 uppercase tracking-wide">{group.label}</h3>
+                <h3 className="text-sm font-black text-text-primary uppercase tracking-wide">{group.label}</h3>
               </div>
-              <div className="flex-1 h-px bg-slate-200 group-hover/header:bg-indigo-200 transition-colors" />
+              <div className="flex-1 h-px bg-border-theme group-hover/header:bg-indigo-200 transition-colors" />
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-500">{group.totalEvents} events</span>
+                <span className="text-xs font-bold text-text-muted">{group.totalEvents} events</span>
                 {group.criticalCount > 0 && (
-                  <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-black border border-red-200">
+                  <span className="flex items-center gap-1 px-2 py-0.5 bg-red-500/200/20 text-red-400 rounded text-[10px] font-black border border-red-500/30">
                     <AlertTriangle className="h-3 w-3" /> {group.criticalCount} critical
                   </span>
                 )}

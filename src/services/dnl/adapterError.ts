@@ -42,7 +42,10 @@ export class AdapterError extends Error {
     retryable?: boolean;
     cause?: unknown;
   }) {
-    super(options.message, { cause: options.cause });
+    super(options.message);
+    if (options.cause) {
+      (this as any).cause = options.cause;
+    }
     this.name = "AdapterError";
     this.source = options.source;
     this.stage = options.stage;

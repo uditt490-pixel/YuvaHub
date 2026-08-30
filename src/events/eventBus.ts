@@ -184,7 +184,7 @@ class EventBus {
 
   async getAllDlqStats(): Promise<DlqStats[]> {
     const stats: DlqStats[] = [];
-    for (const queueName of this.registeredQueues.keys()) {
+    for (const queueName of Array.from(this.registeredQueues.keys())) {
       stats.push(await this.getDlqStats(queueName));
     }
     return stats;

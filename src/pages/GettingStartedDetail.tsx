@@ -448,7 +448,7 @@ export default function GettingStartedDetail({ stepId }: GettingStartedDetailPro
           {content.sections.map((section, index) => (
             <div
               key={index}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="bg-surface dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: `${200 + index * 100}ms` }}
             >
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -471,15 +471,15 @@ export default function GettingStartedDetail({ stepId }: GettingStartedDetailPro
                 Follow the steps above to submit your application. Our AI-powered Apply Assist will help you craft the perfect application.
               </p>
               <div className="flex flex-wrap justify-center gap-4">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-2 px-4 py-2 bg-surface dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-800">
                   <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">AI-Powered</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-2 px-4 py-2 bg-surface dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-800">
                   <FileCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Real-time Tracking</span>
                 </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-2 px-4 py-2 bg-surface dark:bg-gray-800 rounded-lg border border-green-200 dark:border-green-800">
                   <Sparkles className="w-4 h-4 text-green-600 dark:text-green-400" />
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Smart Suggestions</span>
                 </div>

@@ -87,6 +87,41 @@ export class AlumniMentorshipEngine {
     return validated as IAlumniMentorshipSlot;
   }
 
+  public static async registerMentor(payload: {
+    mentorName: string;
+    campusName: string;
+    alumniGraduationYear?: number;
+    mentorAlumniBatchYear?: number;
+    currentCompany?: string;
+    mentorCurrentCompany?: string;
+    currentJobTitle?: string;
+    mentorCurrentRole?: string;
+    expertiseDomain?: string;
+    expertiseArea?: 'SOFTWARE_ENGINEERING' | 'PRODUCT_MANAGEMENT' | 'AI_RESEARCH' | 'VENTURE_CAPITAL';
+    maxMenteesCapacity?: number;
+    availableSessionsCount?: number;
+    bioSummary?: string;
+    sessionTopics?: string;
+  }): Promise<IAlumniMentorshipSlot> {
+    const mentorAlumniBatchYear = payload.mentorAlumniBatchYear || payload.alumniGraduationYear || 2018;
+    const mentorCurrentCompany = payload.mentorCurrentCompany || payload.currentCompany || 'Technology Inc.';
+    const mentorCurrentRole = payload.mentorCurrentRole || payload.currentJobTitle || 'Senior Staff Specialist';
+    const expertiseArea = (payload.expertiseArea || (payload.expertiseDomain as any) || 'SOFTWARE_ENGINEERING');
+    const availableSessionsCount = payload.availableSessionsCount || payload.maxMenteesCapacity || 3;
+    const sessionTopics = payload.sessionTopics || payload.bioSummary || 'Career Mentorship & Guidance';
+
+    return this.registerSlot({
+      mentorName: payload.mentorName,
+      campusName: payload.campusName,
+      mentorAlumniBatchYear,
+      mentorCurrentCompany,
+      mentorCurrentRole,
+      expertiseArea,
+      availableSessionsCount,
+      sessionTopics,
+    });
+  }
+
   public static async getSlots(filters: MentorshipFilterQuery): Promise<IAlumniMentorshipSlot[]> {
     return inMemorySlots.filter(item => {
       if (filters.campusName && filters.campusName !== 'All' && item.campusName !== filters.campusName) return false;
@@ -100,6 +135,15 @@ export class AlumniMentorshipEngine {
         if (!matchesMentor && !matchesCompany && !matchesTopics) return false;
       }
       return true;
+    });
+  }
+
+  public static async getMentors(filters: any): Promise<IAlumniMentorshipSlot[]> {
+    return this.getSlots({
+      campusName: filters.campusName,
+      expertiseArea: filters.expertiseDomain || filters.expertiseArea,
+      status: filters.availabilityStatus || filters.status,
+      search: filters.search,
     });
   }
 
@@ -122,10 +166,12 @@ export class AlumniMentorshipEngine {
     return null;
   }
 
-  public static resetInMemorySlots(slots?: IAlumniMentorshipSlot[]) {
-    inMemorySlots.length = 0;
-    if (slots) {
-      inMemorySlots.push(...slots);
-    }
+  public static async requestSession(
+    slotId: string,
+    studentName: string,
+    _sessionTopic?: string
+  ): Promise<IAlumniMentorshipSlot | null> {
+    return this.bookSession(slotId, `STU-${Date.now()}`, studentName);
   }
 }
+

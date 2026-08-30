@@ -100,6 +100,7 @@ Everything else is optional for local development. The app runs in a mock/fallba
 > **Security reminder:** Never commit your `.env` file. It is already listed in `.gitignore`.
 
 For a full description of every variable, see [docs/ENVIRONMENT_VARIABLES.md](./docs/ENVIRONMENT_VARIABLES.md).
+For secret management best practices (rotation, CI/CD, cloud deployment), see [docs/SECRET_MANAGEMENT.md](./docs/SECRET_MANAGEMENT.md).
 
 ## Firebase Authentication Setup
 

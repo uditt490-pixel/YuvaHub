@@ -1,7 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
   LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic, Trophy,
-  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield
+  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket, Compass, Map, Swords
 } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
@@ -13,6 +13,11 @@ import LoadingScreen from './components/ui/LoadingScreen';
 import NotificationDropdown from './components/ui/NotificationDropdown';
 import BackToTopButton from './components/ui/BackToTopButton';
 import AccessibilityEnhancer from './components/accessibility/AccessibilityEnhancer';
+import AnnouncementBanner from './components/ui/AnnouncementBanner';
+import InstallPrompt from './components/ui/InstallPrompt';
+import { CompareProvider } from './context/CompareContext';
+import { CompareBottomBar } from './components/ui/CompareBottomBar';
+import { usePrefetchBookmarks } from './hooks/usePrefetchBookmarks';
 
 // Route components are lazy-loaded to reduce the initial bundle size (code splitting)
 const Dashboard = lazy(() => import('./components/tabs/Dashboard'));
@@ -47,7 +52,13 @@ const GrantFellowshipStudio = lazy(() => import('./components/tabs/GrantFellowsh
 const CampusAlumniHub = lazy(() => import('./components/tabs/CampusAlumniHub'));
 const ResumeAtsStudio = lazy(() => import('./components/tabs/ResumeAtsStudio'));
 const SkillGapStudio = lazy(() => import('./components/tabs/SkillGapStudio'));
+const CodingChallengeArena = lazy(() => import("./components/tabs/CodingChallengeArena"));
+const LearningPathBuilder = lazy(() => import("./components/tabs/LearningPathBuilder"));
 const InterviewPrepStudio = lazy(() => import('./components/tabs/InterviewPrepStudio'));
+const PortfolioShowcase = lazy(() => import('./components/tabs/PortfolioShowcase'));
+const MentorshipNetwork = lazy(() => import('./components/tabs/MentorshipNetwork'));
+const AchievementCenter = lazy(() => import('./components/tabs/AchievementCenter'));
+
 const ResearchGrantTelemetryLab = lazy(() => import('./pages/Enterprise/ResearchGrantTelemetryLab').then(m => ({ default: m.ResearchGrantTelemetryLab })));
 const OpenSourceBountyStudio = lazy(() => import('./components/tabs/OpenSourceBountyStudio'));
 const OpportunityMatchStudio = lazy(() => import('./components/tabs/OpportunityMatchStudio'));
@@ -68,6 +79,7 @@ const ExperiencesHub = lazy(() => import('./components/tabs/ExperiencesHub'));
 const PollStudio = lazy(() => import('./components/tabs/PollStudio'));
 const WatchlistManager = lazy(() => import('./components/tabs/WatchlistManager'));
 const AuditLogCenter = lazy(() => import('./pages/Enterprise/AuditLogCenter').then(m => ({ default: m.AuditLogCenter })));
+const DevopsPipelineHub = lazy(() => import('./pages/Enterprise/DevopsPipelineHub').then(m => ({ default: m.DevopsPipelineHub })));
 const SsoIdentityHub = lazy(() => import('./pages/Enterprise/SsoIdentityHub').then(m => ({ default: m.SsoIdentityHub })));
 const DlpHub = lazy(() => import('./pages/Enterprise/DlpHub').then(m => ({ default: m.DlpHub })));
 const ApiGatewayHub = lazy(() => import('./pages/Enterprise/ApiGatewayHub').then(m => ({ default: m.ApiGatewayHub })));
@@ -75,7 +87,7 @@ const CareerGoalTracker = lazy(() => import('./components/tabs/CareerGoalTracker
 const CampusResearchIpLicensingStudioPage = lazy(() => import('./pages/CampusResearchIpLicensingStudioPage'));
 
 const LoadingFallback = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
+  <div className="min-h-screen flex flex-col items-center justify-center bg-surface gap-6">
     <div className="flex items-center gap-3 animate-pulse">
        <div className="w-12 h-12 rounded-xl bg-[#2563EB] flex items-center justify-center shadow-lg shadow-blue-500/20">
          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -210,6 +222,11 @@ function App() {
   const { isConnected, transportMode } = useSocket();
   const [avatarError, setAvatarError] = useState(false);
 
+  // Proactively warm the IndexedDB offline cache whenever the user is logged in
+  // and online. This ensures bookmarks are available offline even if the user
+  // never opens the Bookmarks tab in a given session (closes the prefetch gap).
+  usePrefetchBookmarks({ bookmarkIds: profile?.bookmarks });
+
   useEffect(() => {
     setAvatarError(false);
   }, [profile?.avatarUrl, user?.photoURL]);
@@ -269,13 +286,15 @@ function App() {
       title: "Core Platform",
       items: [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'cardiovascular_hub', label: 'Cardiovascular & ECMO Hub', icon: HeartPulse, badge: 'CTICU' },
+
         { id: 'opportunities', label: 'Opportunities', icon: Globe },
         { id: 'application_tracker', label: 'Application Tracker', icon: Briefcase },
         { id: 'watchlist_manager', label: 'Watchlists & Alerts', icon: Sparkles, badge: 'NEW' },
         { id: 'deadline_calendar', label: 'Deadline Calendar', icon: Calendar, badge: 'NEW' },
         { id: 'opportunity_match', label: 'AI Match Studio', icon: Sparkles, badge: 'AI' },
         { id: 'teams', label: 'Team Builder', icon: Users },
+        { id: 'experiences', icon: FileText, label: 'Experiences' },
+        { id: 'saved-searches', icon: Search, label: 'Saved Searches' },
         { id: 'bookmarks', label: 'Bookmarks', icon: Bookmark },
       ]
     },
@@ -284,12 +303,16 @@ function App() {
       items: [
         { id: 'degree_planner', label: 'Degree Planner Hub', icon: Target },
         { id: 'skill_gap', label: 'Skill Gap Analyzer', icon: Target },
+        { id: 'coding_arena', label: 'Coding Challenge Arena', icon: Swords },
+        { id: 'learning_path', label: 'Learning Path Builder', icon: Map },
         { id: 'ai_assistant', label: 'AI Assistant', icon: Brain },
         { id: 'career_match', label: 'Career Match Studio', icon: TrendingUp },
         { id: 'career_goals', label: 'Career Goal Tracker', icon: Target, badge: 'AI' },
         { id: 'resume_ats', label: 'Resume ATS Optimizer', icon: FileText },
         { id: 'interview_prep', label: 'AI Interview Studio', icon: Video },
+        { id: 'career_sim', label: 'Career Simulator', icon: Compass, badge: 'NEW' },
         { id: 'project_showcase', label: 'Project Vault', icon: FolderGit2 },
+        { id: 'portfolio', label: 'Portfolio Showcase', icon: FolderGit2, badge: 'NEW' },
         { id: 'mock_interview', label: 'Mock Interview Room', icon: Mic },
       ]
     },
@@ -297,8 +320,11 @@ function App() {
       title: "Ecosystem & Community",
       items: [
         { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
+        { id: 'achievement_center', label: 'Achievement Center', icon: Award, badge: 'NEW' },
+        { id: 'achievement_center', label: 'Achievement Center', icon: Award, badge: 'NEW' },
         { id: 'study_groups', label: 'Study Groups', icon: Users, badge: 'NEW' },
         { id: 'mentorship', label: 'Mentorship', icon: GraduationCap },
+        { id: 'mentor_network', label: 'Mentor Network', icon: Users, badge: 'NEW' },
         { id: 'focus_room', label: 'Global Focus Room', icon: Clock },
         { id: 'bounty_board', label: 'Bounty Board', icon: Coins },
         { id: 'interview_experiences', label: 'Interview Experiences', icon: MessageSquare },
@@ -309,7 +335,7 @@ function App() {
         { id: 'code_review', label: 'Code Review Exchange', icon: Code2, badge: 'NEW' },
         { id: 'direct_messages', label: 'Direct Messages', icon: MessageSquare, badge: 'NEW' },
         { id: 'campus_alumni', label: 'Campus & Alumni Hub', icon: Building2 },
-        { id: 'mental_wellness', label: 'Mental Wellness Desk', icon: HeartPulse, badge: 'NEW' },
+        { id: 'student_ventures', label: 'Student Venture Studio', icon: Rocket, badge: 'NEW' },
       ]
     },
     {
@@ -328,9 +354,13 @@ function App() {
       title: "Account & System",
       items: [
         { id: 'profile', label: 'My Profile', icon: User },
+        { id: 'insights', label: 'My Insights', icon: Activity },
+        { id: 'my_rsvps', label: 'My RSVPs', icon: Ticket, badge: 'NEW' },
+        { id: 'activity_feed', label: 'Activity Feed', icon: Activity, badge: 'NEW' },
+        { id: 'announcements', label: 'Announcements', icon: Megaphone, badge: 'NEW' },
         { id: 'auth_security', label: 'Auth & Security', icon: ShieldCheck },
         { id: 'settings', label: 'Settings', icon: Settings },
-        ...(isAdminUser ? [{ id: 'admin', label: 'Admin Panel', icon: ShieldAlert }, { id: 'audit_log', label: 'Audit Log', icon: Activity, badge: 'NEW' }, { id: 'sso_identity', label: 'SSO & Identity', icon: Shield, badge: 'NEW' }, { id: 'api_gateway', label: 'API Gateway', icon: Terminal, badge: 'NEW' }] : []),
+        ...(isAdminUser ? [{ id: 'admin', label: 'Admin Panel', icon: ShieldAlert }, { id: 'admin_scrapers', label: 'Scraper Observability', icon: Activity, badge: 'NEW' }, { id: 'admin_analytics', label: 'Platform Analytics', icon: Activity, badge: 'NEW' }, { id: 'audit_log', label: 'Audit Log', icon: Activity, badge: 'NEW' }, { id: 'devops_pipelines', label: 'Pipelines', icon: Terminal, badge: 'NEW' }, { id: 'sso_identity', label: 'SSO & Identity', icon: Shield, badge: 'NEW' }, { id: 'api_gateway', label: 'API Gateway', icon: Terminal, badge: 'NEW' }] : []),
       ]
     }
   ];
@@ -338,11 +368,13 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
-      case 'cardiovascular_hub': return <CardiovascularCriticalCareHub />;
+
       case 'opportunities': return <Opportunities />;
       case 'application_tracker': return <ApplicationTracker />;
       case 'deadline_calendar': return <DeadlineCalendar />;
       case 'teams': return <Teams />;
+      case 'experiences': return <ExperiencesHub />;
+      case 'saved-searches': return <SavedSearchManager />;
       case 'bookmarks': return <Bookmarks />;
       case 'leaderboard': return <Leaderboard />;
       case 'ai_assistant': return (
@@ -367,36 +399,47 @@ function App() {
       case 'grant_studio': return <GrantFellowshipStudio />;
       case 'alumni_endowments': return <CampusAlumniEndowmentStudioPage />;
       case 'student_venture': return <CampusStudentVentureStudioPage />;
-      case 'mental_wellness': return <StudentMentalWellnessDeskPage />;
+      case 'mental_wellness': return <div className="p-8 text-center text-gray-500">Mental Wellness Module Coming Soon</div>; // <StudentMentalWellnessDeskPage />;
       case 'campus_alumni': return <CampusAlumniHub />;
       case 'resume_ats': return <ResumeAtsStudio />;
       case 'skill_gap': return <SkillGapStudio />;
+      case 'coding_arena': return <CodingChallengeArena />;
+      case 'learning_path': return <LearningPathBuilder />;
       case 'interview_prep': return <InterviewPrepStudio />;
+      case 'career_sim': return <div className="p-8 text-center text-gray-500">Career Simulator Coming Soon</div>; // <CareerPathSimulator />;
       case 'opensource_bounties': return <OpenSourceBountyStudio />;
       case 'opportunity_match': return <OpportunityMatchStudio />;
       case 'tech_ecosystem': return <TechEcosystemStudio />;
       case 'hackathon_judge': return <HackathonJudgeStudio />;
       case 'research_patents': return <CampusResearchIpLicensingStudioPage />;
       case 'mentorship_advisory': return <MentorshipAdvisoryStudio />;
+      case 'mentor_network': return <MentorshipNetwork />;
       case 'research_grants': return <ResearchGrantPortal />;
-      case 'research_patents': return <CampusResearchIpLicensingStudioPage />;
+      case 'research_patents': return <div className="p-8 text-center text-gray-500">Research & IP Module Coming Soon</div>; // <CampusResearchIpLicensingStudioPage />;
       case 'project_showcase': return <ProjectShowcaseVault />;
+      case 'portfolio': return <PortfolioShowcase />;
+      case 'achievement_center': return <AchievementCenter />;
       case 'star_interview': return <StarInterviewStudio />;
       case 'submit': return <SubmitOpportunity />;
       case 'mentorship': return <MentorshipAdvisoryStudio />;
       case 'focus_room': return <FocusRoom />;
-      case 'study_groups': return <StudyGroupRooms />;
+      case 'study_groups': return <div className="p-8 text-center text-gray-500">Study Groups Coming Soon</div>; // <StudyGroupRooms />;
       case 'bounty_board': return <BountyBoard />;
       case 'interview_experiences': return <ExperiencesHub />;
       case 'community': return <Community />;
-      case 'resource_vault': return <ResourceVault />;
+      case 'resource_vault': return <div className="p-8 text-center text-gray-500">Resource Vault Coming Soon</div>; // <ResourceVault />;
       case 'poll_studio': return <PollStudio />;
-      case 'code_review': return <CodeReviewExchange />;
-      case 'direct_messages': return <DirectMessages />;
+      case 'student_ventures': return <CampusStudentVentureStudioPage />;
       case 'profile': return <Profile />;
+      case 'insights': return <Insights />;
+      case 'my_rsvps': return <MyRsvps />;
+      case 'activity_feed': return <ActivityFeed />;
+      case 'announcements': return <Announcements />;
       case 'settings': return <SettingsTab />;
       case 'auth_security': return <AuthSecurityCenter />;
       case 'admin': return <AdminDashboard />;
+      case 'admin_scrapers': return <ScraperHealthDashboard />;
+      case 'admin_analytics': return <AdminAnalyticsDashboard />;
       case 'security': return <Security />;
       case 'privacy': return <Privacy />;
       case 'terms': return <Terms />;
@@ -412,8 +455,11 @@ function App() {
       case 'watchlist_manager': return <WatchlistManager />;
       case 'faq': return <FAQ />;
       case 'audit_log': return <AuditLogCenter />;
+      case 'devops_pipelines': return <DevopsPipelineHub />;
       case 'sso_identity': return <SsoIdentityHub />;
       case 'api_gateway': return <ApiGatewayHub />;
+      case 'comparison_studio': return <ComparisonStudio />;
+
       default: return <Dashboard />;
     }
   };
@@ -426,7 +472,7 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col font-sans">
         {/* Public Header */}
-        <header className="sticky top-0 z-50 h-[60px] bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 lg:px-12">
+        <header className="sticky top-0 z-50 h-[60px] bg-surface dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 lg:px-12">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => { clearSelectedOpportunity(); setActiveTab('dashboard'); }}>
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
@@ -471,7 +517,7 @@ function App() {
               onClick={() => { clearSelectedOpportunity(); setActiveTab('dashboard'); }} 
               className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline font-bold bg-transparent border-none cursor-pointer"
             >
-              ← Back to Home
+              â† Back to Home
             </button>
           </div>
           <Suspense fallback={<LoadingScreen />}>
@@ -520,7 +566,8 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 text-gray-900 font-sans overflow-hidden dark:bg-gray-900 dark:text-gray-100">
+    <CompareProvider>
+    <div className="flex h-screen bg-background text-text-primary font-sans overflow-hidden">
       {/* Global accessibility enhancer: focus trap, ARIA labels, Esc handling */}
       <AccessibilityEnhancer />
 
@@ -532,6 +579,12 @@ function App() {
         Skip to main content
       </a>
 
+      {/* PWA Install Prompt + Global Announcement Banner */}
+      <div className="absolute top-0 left-0 right-0 z-[60]">
+        <InstallPrompt />
+        <AnnouncementBanner />
+      </div>
+
       {/* Centralized SEO component for logged-in views */}
       {selectedOppId ? null : (
         <SEO 
@@ -542,14 +595,14 @@ function App() {
       )}
       
       {/* Sidebar Desktop - Fixed 240px */}
-      <aside className="hidden lg:flex w-60 border-r border-[#e8ded1] dark:border-gray-800 flex-col bg-[#fcf9f2] dark:bg-gray-900 z-10 shrink-0 relative">
-        <div className="h-16 px-5 border-b border-[#e8ded1] flex items-center justify-between shrink-0">
+      <aside className="hidden lg:flex w-60 border-r border-border-theme dark:border-gray-800 flex-col bg-background dark:bg-gray-900 z-10 shrink-0 relative">
+        <div className="h-16 px-5 border-b border-border-theme flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-[#603620] flex items-center justify-center shadow-md">
                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#f3e4bd]"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
-            <h1 className="text-xl font-serif font-bold tracking-tight text-[#231f20] dark:text-white">
-              Yuva<span className="text-[#b56b37] dark:text-blue-400 italic">Hub</span>
+            <h1 className="text-xl font-serif font-bold tracking-tight text-text-primary dark:text-white">
+              Yuva<span className="text-primary-blue dark:text-blue-400 italic">Hub</span>
             </h1>
           </div>
         </div>
@@ -557,7 +610,7 @@ function App() {
         <nav className="flex-1 p-3 space-y-4 overflow-y-auto scrollbar-none" role="tablist" aria-label="Main navigation">
           {NAVIGATION_GROUPS.map((group, groupIdx) => (
             <div key={groupIdx} className="space-y-1">
-              <div className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-[#603620] dark:text-gray-400 mb-1">
+              <div className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-text-secondary dark:text-gray-400 mb-1">
                 {group.title}
               </div>
               {group.items.map((tab) => {
@@ -577,16 +630,16 @@ function App() {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-[#f6efe2] dark:bg-blue-950/60 text-[#b56b37] dark:text-blue-400 font-extrabold border-r-2 border-[#b56b37] dark:border-blue-500 shadow-xs'
-                        : 'text-[#603620] dark:text-gray-400 hover:bg-[#f6efe2]/70 dark:hover:bg-gray-800/80 hover:text-[#231f20] dark:hover:text-white'
+                        ? 'bg-surface-secondary dark:bg-slate-800 text-primary-blue dark:text-blue-400 font-extrabold'
+                        : 'text-text-secondary dark:text-gray-400 hover:bg-surface-secondary/70 dark:hover:bg-gray-800/80 hover:text-text-primary dark:hover:text-white'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 truncate">
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#b56b37] dark:text-blue-400' : 'text-[#8c7569] dark:text-gray-500'}`} aria-hidden="true" />
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-primary-blue dark:text-blue-400' : 'text-text-muted dark:text-gray-500'}`} aria-hidden="true" />
                       <span className="truncate">{tab.label}</span>
                     </div>
                     {tab.badge && (
-                      <span className="px-1.5 py-0.5 text-[9px] font-black uppercase rounded bg-[#b56b37] dark:bg-blue-600 text-white">
+                      <span className="px-1.5 py-0.5 text-[9px] font-black uppercase rounded bg-primary-blue dark:bg-blue-600 text-white">
                         {tab.badge}
                       </span>
                     )}
@@ -597,16 +650,16 @@ function App() {
           ))}
         </nav>
 
-        <div className="p-3 border-t border-[#e8ded1]">
+        <div className="p-3 border-t border-border-theme">
           {user ? (
             <div className="flex flex-col gap-2">
-              <span className="text-[11px] text-[#8c7569] font-medium truncate px-2">{user.email}</span>
+              <span className="text-[11px] text-text-muted font-medium truncate px-2">{user.email}</span>
               <button onClick={logout} className="w-full py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition border border-red-200 cursor-pointer">
                 Logout
               </button>
             </div>
           ) : (
-            <button onClick={signInWithGoogle} className="clean-btn w-full py-2 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer bg-[#b56b37] hover:bg-[#603620]">
+            <button onClick={signInWithGoogle} className="clean-btn w-full py-2 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer bg-primary-blue hover:bg-[#603620]">
                Sign in with Google
             </button>
           )}
@@ -614,18 +667,18 @@ function App() {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 border-b border-[#e8ded1] bg-[#fcf9f2] z-50 flex items-center justify-between px-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 border-b border-border-theme bg-background z-50 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-[#603620] flex items-center justify-center shadow-md">
              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#f3e4bd]"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           </div>
-          <h1 className="text-lg font-serif font-bold tracking-tight text-[#231f20]">
-            Yuva<span className="text-[#b56b37] italic">Hub</span>
+          <h1 className="text-lg font-serif font-bold tracking-tight text-text-primary">
+            Yuva<span className="text-primary-blue italic">Hub</span>
           </h1>
         </div>
         <div className="flex items-center gap-4">
           <NotificationDropdown profile={profile} />
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-[#603620] hover:text-gray-900" aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}>
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-text-secondary hover:text-gray-900" aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}>
             {isMobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
         </div>
@@ -633,11 +686,11 @@ function App() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-16 bg-[#fcf9f2] z-40 p-4 border-b border-[#e8ded1] overflow-y-auto" role="dialog" aria-label="Navigation menu">
+        <div className="lg:hidden fixed inset-0 top-16 bg-background z-40 p-4 border-b border-border-theme overflow-y-auto" role="dialog" aria-label="Navigation menu">
           <nav className="space-y-4" role="tablist" aria-label="Main navigation">
             {NAVIGATION_GROUPS.map((group, groupIdx) => (
               <div key={groupIdx} className="space-y-1">
-                <div className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-[#603620] mb-1">
+                <div className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-text-secondary mb-1">
                   {group.title}
                 </div>
                 {group.items.map((tab) => {
@@ -657,16 +710,16 @@ function App() {
                       }}
                       className={`w-full flex items-center justify-between px-3 py-3 text-xs font-semibold rounded-xl transition-all ${
                         isActive
-                          ? 'bg-[#f6efe2] text-[#b56b37] font-extrabold border-r-2 border-[#b56b37]'
-                          : 'text-[#603620] hover:bg-[#f6efe2]/70 hover:text-[#231f20]'
+                          ? 'bg-surface-secondary text-primary-blue font-extrabold'
+                          : 'text-text-secondary hover:bg-surface-secondary/70 hover:text-text-primary'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#b56b37]' : 'text-[#8c7569]'}`} aria-hidden="true" />
+                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-primary-blue' : 'text-text-muted'}`} aria-hidden="true" />
                         <span>{tab.label}</span>
                       </div>
                       {tab.badge && (
-                        <span className="px-1.5 py-0.5 text-[9px] font-black uppercase rounded bg-[#b56b37] text-white">
+                        <span className="px-1.5 py-0.5 text-[9px] font-black uppercase rounded bg-primary-blue text-white">
                           {tab.badge}
                         </span>
                       )}
@@ -676,7 +729,7 @@ function App() {
               </div>
             ))}
             
-            <div className="pt-2 border-t border-[#e8ded1]">
+            <div className="pt-2 border-t border-border-theme">
               {user ? (
                 <button
                   onClick={() => { logout(); setIsMobileMenuOpen(false); }}
@@ -687,7 +740,7 @@ function App() {
               ) : (
                 <button
                   onClick={() => { signInWithGoogle(); setIsMobileMenuOpen(false); }}
-                  className="clean-btn w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 bg-[#b56b37]"
+                  className="clean-btn w-full py-2.5 text-xs font-bold flex items-center justify-center gap-2 bg-primary-blue"
                 >
                   Sign in with Google
                 </button>
@@ -701,17 +754,17 @@ function App() {
       <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col pt-16 lg:pt-0 h-screen overflow-hidden relative">
         
         {/* Topbar */}
-        <div className="hidden lg:flex h-16 border-b border-[#e8ded1] bg-[#fcf9f2] items-center justify-between px-6 shrink-0">
+        <div className="hidden lg:flex h-16 border-b border-border-theme bg-navbar items-center justify-between px-6 shrink-0">
            <div className="flex-1 max-w-[500px] ml-8 mr-8">
               {activeTab === 'opportunities' ? (
                  <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8c7569]">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted">
                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </div>
-                    <input type="text" placeholder="Search standard competitions..." aria-label="Search opportunities" className="w-full bg-white border border-[#e8ded1] outline-none rounded-xl pl-10 pr-4 py-2 text-xs text-[#231f20] focus:ring-2 focus:ring-[#b56b37]/20 focus:border-[#b56b37] transition-all" value={appSearchQuery} onChange={(e) => setAppSearchQuery(e.target.value)} />
+                    <input type="text" placeholder="Search standard competitions..." aria-label="Search opportunities" className="w-full bg-surface border border-border-theme outline-none rounded-xl pl-10 pr-4 py-2 text-xs text-text-primary focus:ring-2 focus:ring-[#b56b37]/20 focus:border-primary-blue transition-all" value={appSearchQuery} onChange={(e) => setAppSearchQuery(e.target.value)} />
                  </div>
               ) : (
-                 <p className="text-xs text-[#603620] font-semibold">
+                 <p className="text-xs text-text-secondary font-semibold">
                    {selectedOppId 
                      ? "Detail Overview" 
                      : (user ? `Welcome back, ${profile?.name || user?.displayName || user?.email?.split('@')[0] || 'Student'}` : 'Welcome to YuvaHub')
@@ -721,12 +774,12 @@ function App() {
            </div>
            <div className="flex items-center gap-4">
               {user && (
-                <div className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs bg-[#f6efe2] text-[#603620] border border-[#e8ded1] ${karmaBumpFlag ? 'animate-karma-bounce' : ''}`}>
-                  <Sparkles className="w-3.5 h-3.5 text-[#b56b37]" />
+                <div className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs bg-surface-secondary text-text-secondary border border-border-theme ${karmaBumpFlag ? 'animate-karma-bounce' : ''}`}>
+                  <Sparkles className="w-3.5 h-3.5 text-primary-blue" />
                   <span>{karmaBalance} Karma</span>
                 </div>
               )}
-              <div className="hidden md:flex items-center gap-2 text-xs font-semibold bg-white text-[#603620] px-3 py-1 rounded-full border border-[#e8ded1]">
+              <div className="hidden md:flex items-center gap-2 text-xs font-semibold bg-surface text-text-secondary px-3 py-1 rounded-full border border-border-theme">
                 <span className={`w-2 h-2 rounded-full ${isConnected ? (transportMode === 'websocket' ? 'bg-emerald-500' : 'bg-amber-500') : 'bg-red-500'}`}></span>
                 <span>
                   {!isConnected ? 'Disconnected' : (transportMode === 'websocket' ? 'Connected' : 'Polling active')}
@@ -740,7 +793,7 @@ function App() {
                     <img 
                       src={avatarSrc.includes("cloudinary.com") ? avatarSrc.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_64,h_64/") : avatarSrc} 
                       alt="Avatar" 
-                      className="w-8 h-8 rounded-full object-cover border border-[#e8ded1] shadow-xs cursor-pointer hover:opacity-90 transition-opacity" 
+                      className="w-8 h-8 rounded-full object-cover border border-border-theme shadow-xs cursor-pointer hover:opacity-90 transition-opacity" 
                       referrerPolicy="no-referrer"
                       onError={() => setAvatarError(true)}
                       onClick={() => setActiveTab('profile')}
@@ -750,7 +803,7 @@ function App() {
                 return (
                   <div 
                     onClick={() => setActiveTab('profile')}
-                    className="w-8 h-8 rounded-full bg-[#603620] text-[#f3e4bd] flex items-center justify-center font-extrabold text-xs shadow-xs border border-[#e8ded1] cursor-pointer hover:opacity-90 transition-opacity"
+                    className="w-8 h-8 rounded-full bg-[#603620] text-[#f3e4bd] flex items-center justify-center font-extrabold text-xs shadow-xs border border-border-theme cursor-pointer hover:opacity-90 transition-opacity"
                   >
                     {profile?.name ? profile.name.charAt(0).toUpperCase() : (user?.displayName ? user.displayName.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || 'U'))}
                   </div>
@@ -771,10 +824,12 @@ function App() {
           </Suspense>
         </div>
 
+        <CompareBottomBar />
         <BackToTopButton />
       </main>
 
     </div>
+    </CompareProvider>
   );
 }
 

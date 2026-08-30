@@ -12,7 +12,7 @@ export const BoothCard: React.FC<BoothCardProps> = ({ booth }) => {
   const [isQueueOpen, setIsQueueOpen] = useState(false);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col h-full">
+    <div className="bg-surface rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 overflow-hidden flex flex-col h-full">
       <div className="p-6 flex-grow">
         <div className="flex justify-between items-start mb-4">
           <h3 className="text-2xl font-bold text-gray-900">{booth.companyName}</h3>
@@ -44,7 +44,7 @@ export const BoothCard: React.FC<BoothCardProps> = ({ booth }) => {
         </button>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="w-full bg-white hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-4 border border-gray-300 rounded-lg transition-colors shadow-sm"
+          className="w-full bg-surface hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-4 border border-gray-300 rounded-lg transition-colors shadow-sm"
         >
           Drop Resume
         </button>

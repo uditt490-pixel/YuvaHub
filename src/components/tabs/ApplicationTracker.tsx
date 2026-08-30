@@ -184,7 +184,7 @@ export default function ApplicationTracker() {
       </div>
 
       {/* Upcoming deadlines */}
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-2xl border border-zinc-200 bg-surface p-6 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="mb-5 flex items-center gap-2">
           <Calendar className="h-5 w-5 text-teal-600" />
           <h2 className="text-xl font-semibold">
@@ -230,7 +230,7 @@ export default function ApplicationTracker() {
       </div>
 
       {/* Applications */}
-      <div className="rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-2xl border border-zinc-200 bg-surface dark:border-zinc-800 dark:bg-zinc-900">
         <div className="border-b border-zinc-200 p-6 dark:border-zinc-800">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-teal-600" />
@@ -298,7 +298,7 @@ export default function ApplicationTracker() {
                             event.target.value
                           )
                         }
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
+                        className="rounded-lg border border-zinc-200 bg-surface px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800"
                       >
                         {STATUS_OPTIONS.map((status) => (
                           <option

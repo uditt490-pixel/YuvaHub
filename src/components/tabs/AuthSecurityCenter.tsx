@@ -318,11 +318,11 @@ export default function AuthSecurityCenter() {
     <div className="max-w-6xl mx-auto space-y-6 pb-16 font-sans">
       
       {/* Top Banner Header */}
-      <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 md:p-8 shadow-xs relative overflow-hidden text-[#231f20]">
+      <div className="bg-surface border border-border-theme rounded-2xl p-6 md:p-8 shadow-xs relative overflow-hidden text-text-primary">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#b56b37] bg-[#f6efe2] border border-[#e8ded1] rounded-full">
+              <span className="px-3 py-1 text-[10px] font-black uppercase tracking-wider text-primary-blue bg-surface-secondary border border-border-theme rounded-full">
                 YuvaHub Account Vault
               </span>
               <span className="px-3 py-1 text-[10px] font-black text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full flex items-center gap-1">
@@ -330,25 +330,25 @@ export default function AuthSecurityCenter() {
               </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-text-primary tracking-tight">
               Authentication & Security Command Center
             </h1>
-            <p className="text-[#603620] text-xs md:text-sm max-w-2xl leading-relaxed">
+            <p className="text-text-secondary text-xs md:text-sm max-w-2xl leading-relaxed">
               Manage connected OAuth providers, monitor active login sessions, configure hardware passkeys, and inspect cryptographic token claims.
             </p>
           </div>
 
           {/* Dynamic Health Score Meter */}
-          <div className="flex items-center gap-4 bg-[#fcf9f2] border border-[#e8ded1] p-4 rounded-2xl w-full lg:w-auto shrink-0">
-            <div className="relative flex items-center justify-center w-16 h-16 rounded-full border-4 border-[#b56b37] bg-[#603620] font-serif font-bold text-xl text-[#f3e4bd] shadow-xs">
+          <div className="flex items-center gap-4 bg-background border border-border-theme p-4 rounded-2xl w-full lg:w-auto shrink-0">
+            <div className="relative flex items-center justify-center w-16 h-16 rounded-full border-4 border-primary-blue bg-[#603620] font-serif font-bold text-xl text-[#f3e4bd] shadow-xs">
               {securityScore}%
             </div>
             <div>
-              <div className="text-[10px] uppercase font-black text-[#603620] tracking-wider">Security Health Score</div>
-              <div className="text-xs font-extrabold text-[#b56b37] flex items-center gap-1">
+              <div className="text-[10px] uppercase font-black text-text-secondary tracking-wider">Security Health Score</div>
+              <div className="text-xs font-extrabold text-primary-blue flex items-center gap-1">
                 {securityScore >= 80 ? 'HIGH PROTECTED' : 'SECURED ACCOUNT'}
               </div>
-              <div className="text-[11px] text-[#8c7569] font-medium">{connectedProviders.filter(p => p.connected).length} Provider Linked • TOTP Enforced</div>
+              <div className="text-[11px] text-text-muted font-medium">{connectedProviders.filter(p => p.connected).length} Provider Linked • TOTP Enforced</div>
             </div>
           </div>
         </div>
@@ -364,7 +364,7 @@ export default function AuthSecurityCenter() {
               {notification.type === 'error' ? <AlertTriangle size={16} /> : <CheckCircle2 size={16} />}
               <span>{notification.message}</span>
             </div>
-            <button onClick={() => setNotification({ type: '', message: '' })} className="text-[#8c7569] hover:text-[#231f20] cursor-pointer">
+            <button onClick={() => setNotification({ type: '', message: '' })} className="text-text-muted hover:text-text-primary cursor-pointer">
               <X size={14} />
             </button>
           </div>
@@ -372,7 +372,7 @@ export default function AuthSecurityCenter() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#e8ded1] no-scrollbar">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-border-theme no-scrollbar">
         {[
           { id: 'posture', label: 'Security Posture', icon: Shield },
           { id: 'oauth', label: `OAuth Providers (${connectedProviders.filter(p => p.connected).length})`, icon: Key },
@@ -389,8 +389,8 @@ export default function AuthSecurityCenter() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? 'bg-[#b56b37] text-white shadow-xs'
-                  : 'bg-white text-[#603620] hover:text-[#231f20] hover:bg-[#f6efe2] border border-[#e8ded1]'
+                  ? 'bg-primary-blue text-white shadow-xs'
+                  : 'bg-surface text-text-secondary hover:text-text-primary hover:bg-surface-secondary border border-border-theme'
               }`}
             >
               <Icon size={14} />
@@ -405,56 +405,56 @@ export default function AuthSecurityCenter() {
       {/* TAB 1: POSTURE & SUMMARY */}
       {activeTab === 'posture' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-4 shadow-xs">
+          <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-4 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-[#603620] text-[#f3e4bd]">
                 <UserCheck size={20} />
               </div>
               <div>
-                <h4 className="text-[10px] font-extrabold text-[#603620] uppercase tracking-wider">Identity Verification</h4>
-                <div className="text-sm font-serif font-bold text-[#231f20]">VERIFIED MEMBER</div>
+                <h4 className="text-[10px] font-extrabold text-text-secondary uppercase tracking-wider">Identity Verification</h4>
+                <div className="text-sm font-serif font-bold text-text-primary">VERIFIED MEMBER</div>
               </div>
             </div>
-            <p className="text-xs text-[#603620] leading-relaxed">
-              Primary email <code className="bg-[#fcf9f2] text-[#231f20] px-1.5 py-0.5 rounded border border-[#e8ded1] font-mono text-[11px]">{user?.email || 'user@yuvahub.com'}</code> is authenticated via Firebase.
+            <p className="text-xs text-text-secondary leading-relaxed">
+              Primary email <code className="bg-background text-text-primary px-1.5 py-0.5 rounded border border-border-theme font-mono text-[11px]">{user?.email || 'user@yuvahub.com'}</code> is authenticated via Firebase.
             </p>
             <div className="pt-2 flex items-center gap-2 text-xs font-bold text-emerald-800">
               <CheckCircle2 size={14} /> Account active & authenticated
             </div>
           </div>
 
-          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-4 shadow-xs">
+          <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-4 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-[#603620] text-[#f3e4bd]">
                 <Fingerprint size={20} />
               </div>
               <div>
-                <h4 className="text-[10px] font-extrabold text-[#603620] uppercase tracking-wider">Hardware Authentication</h4>
-                <div className="text-sm font-serif font-bold text-[#b56b37]">{passkeys.length} PASSKEYS ACTIVE</div>
+                <h4 className="text-[10px] font-extrabold text-text-secondary uppercase tracking-wider">Hardware Authentication</h4>
+                <div className="text-sm font-serif font-bold text-primary-blue">{passkeys.length} PASSKEYS ACTIVE</div>
               </div>
             </div>
-            <p className="text-xs text-[#603620] leading-relaxed">
+            <p className="text-xs text-text-secondary leading-relaxed">
               Biometric keys and hardware credentials configured for zero-password single-tap login.
             </p>
             <button
               onClick={() => setActiveTab('mfa')}
-              className="w-full py-2.5 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] border border-[#e8ded1] rounded-xl text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
+              className="w-full py-2.5 bg-surface-secondary hover:bg-primary-blue hover:text-white text-text-secondary border border-border-theme rounded-xl text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
             >
               Manage Passkeys
             </button>
           </div>
 
-          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-4 shadow-xs">
+          <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-4 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-[#603620] text-[#f3e4bd]">
                 <Monitor size={20} />
               </div>
               <div>
-                <h4 className="text-[10px] font-extrabold text-[#603620] uppercase tracking-wider">Active Sessions</h4>
-                <div className="text-sm font-serif font-bold text-[#b56b37]">{activeSessions.length} CONNECTED DEVICE</div>
+                <h4 className="text-[10px] font-extrabold text-text-secondary uppercase tracking-wider">Active Sessions</h4>
+                <div className="text-sm font-serif font-bold text-primary-blue">{activeSessions.length} CONNECTED DEVICE</div>
               </div>
             </div>
-            <p className="text-xs text-[#603620] leading-relaxed">
+            <p className="text-xs text-text-secondary leading-relaxed">
               Session monitored with user-agent telemetry and cryptographic token guards.
             </p>
             <button
@@ -469,29 +469,29 @@ export default function AuthSecurityCenter() {
 
       {/* TAB 2: OAUTH PROVIDERS (REAL DATA FROM FIREBASE) */}
       {activeTab === 'oauth' && (
-        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-6 shadow-xs">
+        <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-6 shadow-xs">
           <div>
-            <h3 className="text-base font-serif font-bold text-[#231f20]">Connected Identity Providers</h3>
-            <p className="text-xs text-[#603620]">Manage OAuth login methods linked to your YuvaHub profile.</p>
+            <h3 className="text-base font-serif font-bold text-text-primary">Connected Identity Providers</h3>
+            <p className="text-xs text-text-secondary">Manage OAuth login methods linked to your YuvaHub profile.</p>
           </div>
 
           <div className="space-y-3">
             {connectedProviders.map((provider) => (
-              <div key={provider.id} className="flex items-center justify-between p-4 bg-[#fcf9f2] rounded-xl border border-[#e8ded1] text-xs">
+              <div key={provider.id} className="flex items-center justify-between p-4 bg-background rounded-xl border border-border-theme text-xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white border border-[#e8ded1] flex items-center justify-center font-bold text-[#b56b37]">
+                  <div className="w-10 h-10 rounded-xl bg-surface border border-border-theme flex items-center justify-center font-bold text-primary-blue">
                     {provider.id.includes('google') ? 'G' : provider.id.includes('github') ? <Github size={18} /> : <Mail size={18} />}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-serif font-bold text-xs text-[#231f20]">{provider.name}</span>
+                      <span className="font-serif font-bold text-xs text-text-primary">{provider.name}</span>
                       {provider.isPrimary && (
-                        <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase bg-[#f6efe2] text-[#b56b37] border border-[#e8ded1] rounded-md">
+                        <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase bg-surface-secondary text-primary-blue border border-border-theme rounded-md">
                           PRIMARY
                         </span>
                       )}
                     </div>
-                    <div className="text-[#603620] mt-0.5">{provider.email || 'Not connected'}</div>
+                    <div className="text-text-secondary mt-0.5">{provider.email || 'Not connected'}</div>
                   </div>
                 </div>
 
@@ -501,7 +501,7 @@ export default function AuthSecurityCenter() {
                       <CheckCircle2 size={12} /> CONNECTED
                     </span>
                   ) : (
-                    <span className="px-3 py-1 text-[10px] font-extrabold uppercase bg-[#f6efe2] text-[#8c7569] border border-[#e8ded1] rounded-full">
+                    <span className="px-3 py-1 text-[10px] font-extrabold uppercase bg-surface-secondary text-text-muted border border-border-theme rounded-full">
                       NOT CONNECTED
                     </span>
                   )}
@@ -514,11 +514,11 @@ export default function AuthSecurityCenter() {
 
       {/* TAB 3: ACTIVE SESSIONS */}
       {activeTab === 'sessions' && (
-        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-6 shadow-xs">
+        <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-6 shadow-xs">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-serif font-bold text-[#231f20]">Active Device Connections</h3>
-              <p className="text-xs text-[#603620]">View active login sessions and terminate unknown devices.</p>
+              <h3 className="text-base font-serif font-bold text-text-primary">Active Device Connections</h3>
+              <p className="text-xs text-text-secondary">View active login sessions and terminate unknown devices.</p>
             </div>
             <button
               onClick={() => setRevokeAllModalOpen(true)}
@@ -532,26 +532,26 @@ export default function AuthSecurityCenter() {
             {activeSessions.map((sess) => {
               const DevIcon = sess.icon;
               return (
-                <div key={sess.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#fcf9f2] border border-[#e8ded1] text-xs">
+                <div key={sess.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-background border border-border-theme text-xs">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-white rounded-xl border border-[#e8ded1] text-[#b56b37]">
+                    <div className="p-3 bg-surface rounded-xl border border-border-theme text-primary-blue">
                       <DevIcon size={18} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-serif font-bold text-xs text-[#231f20]">{sess.device}</span>
+                        <span className="font-serif font-bold text-xs text-text-primary">{sess.device}</span>
                         {sess.isCurrent && (
                           <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-md">
                             CURRENT DEVICE
                           </span>
                         )}
                       </div>
-                      <div className="text-[#603620] mt-1 flex items-center gap-2 text-xs">
+                      <div className="text-text-secondary mt-1 flex items-center gap-2 text-xs">
                         <span>IP: {sess.ip}</span>
                         <span>•</span>
                         <span>{sess.location}</span>
                         <span>•</span>
-                        <span className="text-[#231f20] font-bold">{sess.lastActive}</span>
+                        <span className="text-text-primary font-bold">{sess.lastActive}</span>
                       </div>
                     </div>
                   </div>
@@ -574,13 +574,13 @@ export default function AuthSecurityCenter() {
       {/* TAB 4: MFA & PASSKEYS */}
       {activeTab === 'mfa' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-4 shadow-xs">
+          <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-4 shadow-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Smartphone className="text-[#b56b37]" size={24} />
+                <Smartphone className="text-primary-blue" size={24} />
                 <div>
-                  <h4 className="text-sm font-serif font-bold text-[#231f20]">Authenticator App (TOTP)</h4>
-                  <p className="text-xs text-[#603620]">Google Authenticator or 1Password</p>
+                  <h4 className="text-sm font-serif font-bold text-text-primary">Authenticator App (TOTP)</h4>
+                  <p className="text-xs text-text-secondary">Google Authenticator or 1Password</p>
                 </div>
               </div>
               <span className="px-2.5 py-1 text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
@@ -588,30 +588,30 @@ export default function AuthSecurityCenter() {
               </span>
             </div>
 
-            <p className="text-xs text-[#603620] leading-relaxed">
+            <p className="text-xs text-text-secondary leading-relaxed">
               Generates temporary verification codes for multi-factor login challenges.
             </p>
 
             <button
               onClick={() => setShowQrModal(true)}
-              className="w-full py-2.5 bg-[#b56b37] hover:bg-[#603620] text-white rounded-xl text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
+              className="w-full py-2.5 bg-primary-blue hover:bg-[#603620] text-white rounded-xl text-xs font-extrabold uppercase tracking-wider transition-colors cursor-pointer"
             >
               Configure TOTP Secret QR
             </button>
           </div>
 
-          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-4 shadow-xs">
+          <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-4 shadow-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Fingerprint className="text-[#b56b37]" size={24} />
+                <Fingerprint className="text-primary-blue" size={24} />
                 <div>
-                  <h4 className="text-sm font-serif font-bold text-[#231f20]">FIDO2 Biometric Passkeys</h4>
-                  <p className="text-xs text-[#603620]">TouchID, FaceID, YubiKey</p>
+                  <h4 className="text-sm font-serif font-bold text-text-primary">FIDO2 Biometric Passkeys</h4>
+                  <p className="text-xs text-text-secondary">TouchID, FaceID, YubiKey</p>
                 </div>
               </div>
               <button
                 onClick={() => setPasskeyModalOpen(true)}
-                className="px-3 py-1.5 bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-3 py-1.5 bg-primary-blue hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Plus size={14} /> Register Key
               </button>
@@ -619,14 +619,14 @@ export default function AuthSecurityCenter() {
 
             <div className="space-y-2">
               {passkeys.map(pk => (
-                <div key={pk.id} className="flex items-center justify-between p-3 bg-[#fcf9f2] rounded-xl border border-[#e8ded1] text-xs">
+                <div key={pk.id} className="flex items-center justify-between p-3 bg-background rounded-xl border border-border-theme text-xs">
                   <div>
-                    <div className="font-serif font-bold text-xs text-[#231f20]">{pk.name}</div>
-                    <div className="text-[11px] text-[#603620]">Added {pk.added} • {pk.lastUsed}</div>
+                    <div className="font-serif font-bold text-xs text-text-primary">{pk.name}</div>
+                    <div className="text-[11px] text-text-secondary">Added {pk.added} • {pk.lastUsed}</div>
                   </div>
                   <button
                     onClick={() => setPasskeys(passkeys.filter(p => p.id !== pk.id))}
-                    className="p-1.5 text-[#8c7569] hover:text-red-600 transition-colors cursor-pointer"
+                    className="p-1.5 text-text-muted hover:text-red-600 transition-colors cursor-pointer"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -639,22 +639,22 @@ export default function AuthSecurityCenter() {
 
       {/* TAB 5: JWT TELEMETRY (REAL FIREBASE TOKEN CLAIMS) */}
       {activeTab === 'jwt' && (
-        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-6 shadow-xs">
+        <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-6 shadow-xs">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-serif font-bold text-[#231f20]">Firebase JWT Payload Inspector</h3>
-              <p className="text-xs text-[#603620]">Live decoded claims of your active Firebase ID token.</p>
+              <h3 className="text-base font-serif font-bold text-text-primary">Firebase JWT Payload Inspector</h3>
+              <p className="text-xs text-text-secondary">Live decoded claims of your active Firebase ID token.</p>
             </div>
             <button
               onClick={handleCopyJwtPayload}
-              className="px-3 py-1.5 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] text-xs font-extrabold uppercase tracking-wider rounded-xl border border-[#e8ded1] transition-all flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 bg-surface-secondary hover:bg-primary-blue hover:text-white text-text-secondary text-xs font-extrabold uppercase tracking-wider rounded-xl border border-border-theme transition-all flex items-center gap-1.5 cursor-pointer"
             >
               {isCopiedToken ? <Check size={14} className="text-emerald-700" /> : <Copy size={14} />}
               {isCopiedToken ? 'Copied' : 'Copy JSON'}
             </button>
           </div>
 
-          <div className="bg-[#231f20] p-4 rounded-xl border border-[#e8ded1] font-mono text-xs text-[#f3e4bd] overflow-x-auto">
+          <div className="bg-[#231f20] p-4 rounded-xl border border-border-theme font-mono text-xs text-[#f3e4bd] overflow-x-auto">
             {jwtLoading ? (
               <div className="py-6 text-center text-[#f3e4bd] animate-pulse">Loading Firebase ID token claims...</div>
             ) : (
@@ -666,28 +666,28 @@ export default function AuthSecurityCenter() {
 
       {/* TAB 6: AUDIT TRAIL */}
       {activeTab === 'audit' && (
-        <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 space-y-6 shadow-xs">
+        <div className="bg-surface border border-border-theme rounded-2xl p-6 space-y-6 shadow-xs">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-serif font-bold text-[#231f20]">Security Event Audit Trail</h3>
-              <p className="text-xs text-[#603620]">Persistent log of authentication challenges and security setting modifications.</p>
+              <h3 className="text-base font-serif font-bold text-text-primary">Security Event Audit Trail</h3>
+              <p className="text-xs text-text-secondary">Persistent log of authentication challenges and security setting modifications.</p>
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
-                <Search size={14} className="absolute left-3 top-3 text-[#8c7569]" />
+                <Search size={14} className="absolute left-3 top-3 text-text-muted" />
                 <input
                   type="text"
                   placeholder="Filter security events..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl text-xs text-[#231f20] outline-none focus:border-[#b56b37]"
+                  className="w-full pl-9 pr-3 py-2 bg-background border border-border-theme rounded-xl text-xs text-text-primary outline-none focus:border-primary-blue"
                 />
               </div>
 
               <button
                 onClick={handleExportLogs}
-                className="px-3.5 py-2 bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] text-xs font-extrabold uppercase tracking-wider rounded-xl border border-[#e8ded1] transition-all flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-2 bg-surface-secondary hover:bg-primary-blue hover:text-white text-text-secondary text-xs font-extrabold uppercase tracking-wider rounded-xl border border-border-theme transition-all flex items-center gap-1.5 cursor-pointer"
               >
                 <Download size={14} /> Export JSON
               </button>
@@ -696,16 +696,16 @@ export default function AuthSecurityCenter() {
 
           <div className="space-y-3">
             {filteredAuditLogs.map((log) => (
-              <div key={log.id} className="p-4 bg-[#fcf9f2] rounded-xl border border-[#e8ded1] text-xs space-y-1">
+              <div key={log.id} className="p-4 bg-background rounded-xl border border-border-theme text-xs space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-[#b56b37] uppercase">{log.eventType}</span>
-                  <span className="text-[#8c7569] text-[11px] flex items-center gap-1">
+                  <span className="font-extrabold text-primary-blue uppercase">{log.eventType}</span>
+                  <span className="text-text-muted text-[11px] flex items-center gap-1">
                     <Clock size={12} /> {new Date(log.timestamp).toLocaleString()}
                   </span>
                 </div>
-                <p className="text-[#231f20] font-medium">{log.description}</p>
-                <div className="text-[11px] text-[#603620] pt-1 border-t border-[#e8ded1]">
-                  Actor: <strong className="text-[#231f20]">{log.actor}</strong>
+                <p className="text-text-primary font-medium">{log.description}</p>
+                <div className="text-[11px] text-text-secondary pt-1 border-t border-border-theme">
+                  Actor: <strong className="text-text-primary">{log.actor}</strong>
                 </div>
               </div>
             ))}
@@ -718,25 +718,25 @@ export default function AuthSecurityCenter() {
       {/* Revoke All Sessions Modal */}
       {revokeAllModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 max-w-md w-full text-[#231f20] space-y-4 shadow-xl">
+          <div className="bg-surface border border-border-theme rounded-2xl p-6 max-w-md w-full text-text-primary space-y-4 shadow-xl">
             <div className="flex items-center gap-3 text-red-600">
               <AlertTriangle size={24} />
               <h3 className="text-base font-serif font-bold">Invalidate Remote Sessions</h3>
             </div>
 
-            <p className="text-xs text-[#603620]">
+            <p className="text-xs text-text-secondary">
               This will log out all connected web browsers and mobile apps except for your current device.
             </p>
 
             <form onSubmit={handleRevokeAllSessions} className="space-y-4">
               <div>
-                <label className="block text-[10px] uppercase font-extrabold text-[#603620] mb-1">Reason (Required):</label>
+                <label className="block text-[10px] uppercase font-extrabold text-text-secondary mb-1">Reason (Required):</label>
                 <textarea
                   rows={3}
                   value={revokeReason}
                   onChange={(e) => setRevokeReason(e.target.value)}
                   placeholder="e.g. Security check or lost device"
-                  className="w-full p-3 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl text-xs text-[#231f20] outline-none focus:border-[#b56b37]"
+                  className="w-full p-3 bg-background border border-border-theme rounded-xl text-xs text-text-primary outline-none focus:border-primary-blue"
                   required
                 />
               </div>
@@ -745,7 +745,7 @@ export default function AuthSecurityCenter() {
                 <button
                   type="button"
                   onClick={() => setRevokeAllModalOpen(false)}
-                  className="px-4 py-2 bg-white border border-[#e8ded1] text-[#603620] text-xs font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-surface border border-border-theme text-text-secondary text-xs font-bold rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -764,21 +764,21 @@ export default function AuthSecurityCenter() {
       {/* Add Passkey Modal */}
       {passkeyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 max-w-md w-full text-[#231f20] space-y-4 shadow-xl">
-            <div className="flex items-center gap-3 text-[#b56b37]">
+          <div className="bg-surface border border-border-theme rounded-2xl p-6 max-w-md w-full text-text-primary space-y-4 shadow-xl">
+            <div className="flex items-center gap-3 text-primary-blue">
               <Fingerprint size={24} />
               <h3 className="text-base font-serif font-bold">Register FIDO2 Passkey</h3>
             </div>
 
             <form onSubmit={handleAddPasskey} className="space-y-4">
               <div>
-                <label className="block text-[10px] uppercase font-extrabold text-[#603620] mb-1">Key Description:</label>
+                <label className="block text-[10px] uppercase font-extrabold text-text-secondary mb-1">Key Description:</label>
                 <input
                   type="text"
                   value={passkeyName}
                   onChange={(e) => setPasskeyName(e.target.value)}
                   placeholder="e.g. Personal Biometric Key"
-                  className="w-full p-3 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl text-xs text-[#231f20] outline-none focus:border-[#b56b37]"
+                  className="w-full p-3 bg-background border border-border-theme rounded-xl text-xs text-text-primary outline-none focus:border-primary-blue"
                   required
                 />
               </div>
@@ -787,13 +787,13 @@ export default function AuthSecurityCenter() {
                 <button
                   type="button"
                   onClick={() => setPasskeyModalOpen(false)}
-                  className="px-4 py-2 bg-white border border-[#e8ded1] text-[#603620] text-xs font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-surface border border-border-theme text-text-secondary text-xs font-bold rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-primary-blue hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl cursor-pointer"
                 >
                   Register Key
                 </button>
@@ -806,21 +806,21 @@ export default function AuthSecurityCenter() {
       {/* TOTP QR Modal */}
       {showQrModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="bg-white border border-[#e8ded1] rounded-2xl p-6 max-w-md w-full text-[#231f20] space-y-4 shadow-xl text-center">
+          <div className="bg-surface border border-border-theme rounded-2xl p-6 max-w-md w-full text-text-primary space-y-4 shadow-xl text-center">
             <h3 className="text-base font-serif font-bold">Scan Authenticator QR</h3>
-            <p className="text-xs text-[#603620]">Scan with Google Authenticator or 1Password.</p>
+            <p className="text-xs text-text-secondary">Scan with Google Authenticator or 1Password.</p>
             
             <div className="w-44 h-44 mx-auto bg-[#231f20] p-4 rounded-xl flex items-center justify-center text-[#f3e4bd] font-mono text-[10px] text-center break-all">
               [QR ENCODED: otpauth://totp/YuvaHub:{user?.email || "user"}?secret={totpSecret}]
             </div>
 
-            <div className="text-xs font-mono text-[#b56b37] bg-[#fcf9f2] p-2.5 rounded-xl border border-[#e8ded1]">
+            <div className="text-xs font-mono text-primary-blue bg-background p-2.5 rounded-xl border border-border-theme">
               Secret: {totpSecret}
             </div>
 
             <button
               onClick={() => setShowQrModal(false)}
-              className="w-full py-2.5 bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl cursor-pointer"
+              className="w-full py-2.5 bg-primary-blue hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl cursor-pointer"
             >
               Done
             </button>

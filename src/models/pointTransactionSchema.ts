@@ -10,6 +10,8 @@ export const PointTransactionSchema = z.object({
     "share_resource",
     "review_resume",
     "upvote_received",
+    "gig_escrow",
+    "gig_payout",
     "other",
   ]),
   timestamp: z.coerce.date(),

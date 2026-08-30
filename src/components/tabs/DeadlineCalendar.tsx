@@ -106,22 +106,35 @@ const DeadlineCalendar: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 text-gray-900 overflow-y-auto w-full p-4 md:p-6 lg:p-8">
+    <div className="flex flex-col h-full bg-background text-text-primary dark:text-white overflow-y-auto w-full p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto w-full space-y-6">
         
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">Deadline Calendar</h1>
-            <p className="text-gray-500 mt-1">Track your bookmarked and applied opportunities</p>
+        {/* Header Banner */}
+        <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white mb-8">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 rounded-full flex items-center gap-1.5 shadow-xs">
+                  <Calendar className="w-3.5 h-3.5 text-indigo-400" /> Organization & Tracking
+                </span>
+              </div>
+              <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+                Deadline <span className="text-primary-blue italic">Calendar</span>
+              </h1>
+              <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
+                Track your bookmarked and applied opportunities in one unified calendar. Never miss a hackathon, fellowship, or job deadline.
+              </p>
+            </div>
+            
+            <button 
+              onClick={handleExportAll}
+              className="flex items-center gap-2 px-5 py-2.5 bg-slate-900/50 backdrop-blur-md border border-cyan-800/40 text-cyan-400 shadow-sm rounded-xl hover:bg-slate-800/80 font-bold tracking-wide transition-colors text-sm"
+            >
+              <Download className="w-4 h-4 text-cyan-400" />
+              Export All to ICS
+            </button>
           </div>
-          <button 
-            onClick={handleExportAll}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 shadow-sm rounded-lg hover:bg-gray-50 font-medium transition-colors"
-          >
-            <Download className="w-4 h-4 text-gray-600" />
-            Export All to ICS
-          </button>
         </div>
 
         {loading ? (
@@ -132,24 +145,24 @@ const DeadlineCalendar: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-6">
             
             {/* Calendar Grid */}
-            <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+            <div className="flex-1 bg-surface dark:bg-slate-900 rounded-xl shadow-sm border border-border-theme dark:border-slate-800 overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border-theme dark:border-slate-800 bg-background/50">
                 <h2 className="text-xl font-semibold">
                   {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
                 </h2>
                 <div className="flex items-center gap-2">
-                  <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
+                  <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
                     <ChevronLeft className="w-5 h-5" />
                   </button>
-                  <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-gray-200 transition-colors">
+                  <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors">
                     <ChevronRight className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/80">
+              <div className="grid grid-cols-7 border-b border-border-theme dark:border-slate-800 bg-background/80">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <div key={day} className="py-3 text-center text-sm font-medium text-gray-500">
+                  <div key={day} className="py-3 text-center text-sm font-medium text-text-muted dark:text-slate-400">
                     {day}
                   </div>
                 ))}
@@ -157,7 +170,7 @@ const DeadlineCalendar: React.FC = () => {
 
               <div className="grid grid-cols-7">
                 {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-                  <div key={`empty-${i}`} className="min-h-[100px] sm:min-h-[120px] p-2 border-r border-b border-gray-100 bg-gray-50/30" />
+                  <div key={`empty-${i}`} className="min-h-[100px] sm:min-h-[120px] p-2 border-r border-b border-border-theme dark:border-slate-800/60 bg-background/30" />
                 ))}
                 
                 {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -171,13 +184,13 @@ const DeadlineCalendar: React.FC = () => {
                     <div 
                       key={day} 
                       onClick={() => setSelectedDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
-                      className={`min-h-[100px] sm:min-h-[120px] p-2 border-r border-b border-gray-100 cursor-pointer transition-colors relative
-                        ${isSelected ? 'bg-purple-50/50' : 'hover:bg-gray-50'}
+                      className={`min-h-[100px] sm:min-h-[120px] p-2 border-r border-b border-border-theme dark:border-slate-800/60 cursor-pointer transition-colors relative
+                        ${isSelected ? 'bg-purple-50 dark:bg-purple-900/30/50' : 'hover:bg-background'}
                         ${isPast ? 'opacity-50' : ''}
                       `}
                     >
                       <div className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full mb-1
-                        ${isToday ? 'bg-purple-600 text-white shadow-md' : 'text-gray-700'}
+                        ${isToday ? 'bg-purple-600 text-white shadow-md' : 'text-text-secondary dark:text-slate-300'}
                       `}>
                         {day}
                       </div>
@@ -189,7 +202,7 @@ const DeadlineCalendar: React.FC = () => {
                             className={`text-xs px-2 py-1 rounded truncate flex items-center gap-1 text-white shadow-sm ${getEventColor(e.type)}`}
                             title={e.title}
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-white/50 flex-shrink-0" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-surface dark:bg-slate-900/50 flex-shrink-0" />
                             {e.title}
                           </div>
                         ))}
@@ -201,12 +214,12 @@ const DeadlineCalendar: React.FC = () => {
             </div>
 
             {/* Side Panel */}
-            <div className={`w-full lg:w-96 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[600px] transition-all
+            <div className={`w-full lg:w-96 bg-surface dark:bg-slate-900 rounded-xl shadow-sm border border-border-theme dark:border-slate-800 flex flex-col h-[600px] transition-all
               ${selectedDay ? 'opacity-100' : 'opacity-50 pointer-events-none'}
             `}>
-              <div className="p-4 border-b border-gray-200 bg-gray-50/50">
+              <div className="p-4 border-b border-border-theme dark:border-slate-800 bg-background/50">
                 <h3 className="font-semibold text-lg flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-purple-600" />
+                  <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   {selectedDay ? selectedDay.toLocaleDateString(undefined, { weekday: 'short', month: 'long', day: 'numeric' }) : 'Select a date'}
                 </h3>
               </div>
@@ -216,37 +229,37 @@ const DeadlineCalendar: React.FC = () => {
                   getEventsForDate(selectedDay.getDate()).map(e => {
                     const existingReminder = reminders.find(r => r.opportunityId === e.id);
                     return (
-                      <div key={e.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                      <div key={e.id} className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-gray-900 leading-tight">{e.title}</h4>
+                          <h4 className="font-medium text-text-primary dark:text-white leading-tight">{e.title}</h4>
                           <span className={`text-[10px] uppercase tracking-wide font-bold px-2 py-0.5 rounded text-white ${getEventColor(e.type)}`}>
                             {e.type}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 flex items-center gap-1 mb-1">
+                        <p className="text-sm text-text-secondary dark:text-slate-400 flex items-center gap-1 mb-1">
                           <Building className="w-3 h-3" /> {e.organization}
                         </p>
                         
-                        <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-gray-100">
-                          <a href={e.link} target="_blank" rel="noreferrer" className="text-xs font-medium text-purple-600 hover:text-purple-700 bg-purple-50 px-2 py-1 rounded">
+                        <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-border-theme dark:border-slate-800/60">
+                          <a href={e.link} target="_blank" rel="noreferrer" className="text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 bg-purple-50 dark:bg-purple-900/30 px-2 py-1 rounded">
                             View Details
                           </a>
                           <button 
                             onClick={() => handleExportSingle(e.id)}
-                            className="text-xs font-medium text-gray-600 hover:text-gray-900 bg-gray-100 px-2 py-1 rounded flex items-center gap-1"
+                            className="text-xs font-medium text-text-secondary dark:text-slate-400 hover:text-text-primary dark:text-white bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded flex items-center gap-1"
                           >
                             <Download className="w-3 h-3" /> ICS
                           </button>
                           
                           {existingReminder ? (
-                            <div className="w-full flex items-center justify-between bg-green-50 text-green-700 text-xs px-2 py-1.5 rounded mt-2">
+                            <div className="w-full flex items-center justify-between bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs px-2 py-1.5 rounded mt-2">
                               <span className="flex items-center gap-1"><Bell className="w-3 h-3"/> Reminder Set</span>
                               <button onClick={() => handleDeleteReminder(existingReminder._id || existingReminder.id)} className="hover:text-green-900 underline">Remove</button>
                             </div>
                           ) : (
                             <button 
                               onClick={() => { setActiveEvent(e); setReminderModalOpen(true); }}
-                              className="text-xs font-medium text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded flex items-center gap-1 w-full justify-center mt-2"
+                              className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded flex items-center gap-1 w-full justify-center mt-2"
                             >
                               <Bell className="w-3 h-3" /> Set Reminder
                             </button>
@@ -256,7 +269,7 @@ const DeadlineCalendar: React.FC = () => {
                     )
                   })
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-2">
+                  <div className="h-full flex flex-col items-center justify-center text-text-muted dark:text-slate-500 space-y-2">
                     <Calendar className="w-12 h-12 opacity-20" />
                     <p>No deadlines on this date.</p>
                   </div>
@@ -270,14 +283,14 @@ const DeadlineCalendar: React.FC = () => {
 
       {/* Reminder Modal */}
       {reminderModalOpen && activeEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b border-gray-100">
-              <h3 className="font-semibold text-lg flex items-center gap-2"><Bell className="w-5 h-5 text-purple-600"/> Set Reminder</h3>
-              <button onClick={() => setReminderModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5"/></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 dark:bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-surface dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b border-border-theme dark:border-slate-800/60">
+              <h3 className="font-semibold text-lg flex items-center gap-2"><Bell className="w-5 h-5 text-purple-600 dark:text-purple-400"/> Set Reminder</h3>
+              <button onClick={() => setReminderModalOpen(false)} className="text-text-muted dark:text-slate-500 hover:text-text-secondary dark:text-slate-400"><X className="w-5 h-5"/></button>
             </div>
             <div className="p-6">
-              <p className="text-sm text-gray-600 mb-4">When do you want to be reminded about <strong>{activeEvent.title}</strong>?</p>
+              <p className="text-sm text-text-secondary dark:text-slate-400 mb-4">When do you want to be reminded about <strong>{activeEvent.title}</strong>?</p>
               
               <div className="space-y-3">
                 {[
@@ -285,23 +298,23 @@ const DeadlineCalendar: React.FC = () => {
                   { label: '48 Hours Before', value: 48 },
                   { label: '1 Week Before', value: 168 }
                 ].map(opt => (
-                  <label key={opt.value} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <label key={opt.value} className="flex items-center gap-3 p-3 border border-border-theme dark:border-slate-800 rounded-lg cursor-pointer hover:bg-background transition-colors">
                     <input 
                       type="checkbox" 
-                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                      className="w-4 h-4 text-purple-600 dark:text-purple-400 rounded focus:ring-purple-500"
                       checked={selectedOffsets.includes(opt.value)}
                       onChange={(e) => {
                         if (e.target.checked) setSelectedOffsets(prev => [...prev, opt.value]);
                         else setSelectedOffsets(prev => prev.filter(v => v !== opt.value));
                       }}
                     />
-                    <span className="text-sm font-medium text-gray-800">{opt.label}</span>
+                    <span className="text-sm font-medium text-text-primary dark:text-slate-200">{opt.label}</span>
                   </label>
                 ))}
               </div>
               
               <div className="mt-6 flex gap-3">
-                <button onClick={() => setReminderModalOpen(false)} className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">
+                <button onClick={() => setReminderModalOpen(false)} className="flex-1 px-4 py-2 border border-border-theme dark:border-slate-800 text-text-secondary dark:text-slate-300 rounded-lg hover:bg-background font-medium">
                   Cancel
                 </button>
                 <button 
@@ -322,3 +335,4 @@ const DeadlineCalendar: React.FC = () => {
 };
 
 export default DeadlineCalendar;
+

@@ -308,30 +308,31 @@ Your response:`;
     <div className="w-full max-w-[1400px] mx-auto space-y-6 font-sans pb-16 px-2 sm:px-4">
 
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#f6efe2] via-[#fcf9f2] to-[#f6efe2] dark:from-slate-900 dark:to-slate-950 border border-[#e8ded1] dark:border-slate-800 p-6 md:p-8 shadow-sm">
+      <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white mb-8">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#f3e4bd] bg-[#603620] rounded-full flex items-center gap-1.5">
-                <Mic className="w-3.5 h-3.5 text-[#f3e4bd]" /> AI Mock Interview Room
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 rounded-full flex items-center gap-1.5 shadow-xs">
+                <Mic className="w-3.5 h-3.5 text-indigo-400" /> AI Mock Interview Room
               </span>
-              <span className="px-3 py-1 text-xs font-bold text-[#63703d] bg-[#63703d]/15 border border-[#63703d]/30 rounded-full flex items-center gap-1.5">
+              <span className="px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 rounded-full flex items-center gap-1.5">
                 <Volume2 className="w-3 h-3" /> Voice Enabled
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-              AI Mock <span className="text-[#b56b37] italic">Interview Room</span>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+              AI Mock <span className="text-primary-blue italic">Interview Room</span>
             </h1>
-            <p className="text-[#603620] dark:text-slate-400 text-xs md:text-sm max-w-2xl font-medium">
+            <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
               Practice real voice-based technical and behavioral interviews with an AI interviewer. Speak naturally — get instant follow-up questions and a final score.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl shadow-xs">
-            <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-[#63703d]' : 'bg-amber-500'}`} />
+          <div className="flex items-center gap-3 bg-slate-900/50 backdrop-blur-md border border-cyan-800/40 p-4 rounded-2xl shadow-xs">
+            <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]'}`} />
             <div>
-              <div className="text-[10px] uppercase font-bold text-[#8c7569] tracking-wider">AI Backend</div>
-              <div className="text-xs font-extrabold text-[#231f20] dark:text-white">{isConnected ? 'Connected' : 'Offline Fallback Mode'}</div>
+              <div className="text-[10px] uppercase font-bold text-cyan-400 tracking-wider">AI Backend</div>
+              <div className="text-xs font-extrabold text-white">{isConnected ? 'Connected' : 'Offline Fallback Mode'}</div>
             </div>
           </div>
         </div>
@@ -341,12 +342,12 @@ Your response:`;
       {!isSessionActive && !feedback && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Setup Form */}
-          <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-5 shadow-2xs">
-            <div className="border-b border-[#e8ded1] dark:border-slate-800 pb-4">
-              <h2 className="text-lg font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-[#b56b37]" /> Interview Setup
+          <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-5 shadow-2xs">
+            <div className="border-b border-border-theme dark:border-slate-800 pb-4">
+              <h2 className="text-lg font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary-blue" /> Interview Setup
               </h2>
-              <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">Provide the job description and your background for personalized interview questions.</p>
+              <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">Provide the job description and your background for personalized interview questions.</p>
             </div>
 
             {setupError && (
@@ -356,7 +357,7 @@ Your response:`;
             )}
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#603620] uppercase tracking-wider block">
+              <label className="text-xs font-bold text-text-secondary uppercase tracking-wider block">
                 Target Job Description <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -364,36 +365,36 @@ Your response:`;
                 placeholder="Paste the full job description here... (e.g. Senior Software Engineer at Stripe...)"
                 value={jobDescription}
                 onChange={e => { setJobDescription(e.target.value); setSetupError(''); }}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3.5 text-xs text-[#231f20] dark:text-white outline-none resize-none focus:border-[#b56b37] transition-colors"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3.5 text-xs text-text-primary dark:text-white outline-none resize-none focus:border-primary-blue transition-colors"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#603620] uppercase tracking-wider block">
-                Resume / Background Context <span className="text-[#8c7569] font-normal">(optional)</span>
+              <label className="text-xs font-bold text-text-secondary uppercase tracking-wider block">
+                Resume / Background Context <span className="text-text-muted font-normal">(optional)</span>
               </label>
               <textarea
                 rows={4}
                 placeholder="Paste key resume highlights or background context... (e.g. 3 years of React, TypeScript, Node.js...)"
                 value={resumeContext}
                 onChange={e => setResumeContext(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3.5 text-xs text-[#231f20] dark:text-white outline-none resize-none focus:border-[#b56b37] transition-colors"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3.5 text-xs text-text-primary dark:text-white outline-none resize-none focus:border-primary-blue transition-colors"
               />
             </div>
 
             <button
               onClick={startSession}
-              className="w-full py-3.5 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-sm rounded-2xl shadow-md cursor-pointer flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3.5 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-sm rounded-2xl shadow-md cursor-pointer flex items-center justify-center gap-2 transition-colors"
             >
               <Play className="w-4 h-4" /> Begin AI Interview Session
             </button>
           </div>
 
           {/* Instructions Panel */}
-          <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xs space-y-5">
-            <div className="border-b border-[#e8ded1] dark:border-slate-800 pb-4">
-              <h2 className="text-lg font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-                <Brain className="w-5 h-5 text-[#b56b37]" /> How It Works
+          <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xs space-y-5">
+            <div className="border-b border-border-theme dark:border-slate-800 pb-4">
+              <h2 className="text-lg font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+                <Brain className="w-5 h-5 text-primary-blue" /> How It Works
               </h2>
             </div>
 
@@ -406,20 +407,20 @@ Your response:`;
                 { step: '05', title: 'End & Score', desc: 'Click "End Interview" to receive your performance score and personalized feedback.' }
               ].map(item => (
                 <div key={item.step} className="flex items-start gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#f3e4bd] text-[#603620] font-serif font-extrabold text-xs flex items-center justify-center border border-[#e8ded1]">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#f3e4bd] text-text-secondary font-serif font-extrabold text-xs flex items-center justify-center border border-border-theme">
                     {item.step}
                   </span>
                   <div>
-                    <h4 className="font-bold text-xs text-[#231f20] dark:text-white">{item.title}</h4>
-                    <p className="text-[11px] text-[#603620] dark:text-slate-400 font-medium mt-0.5">{item.desc}</p>
+                    <h4 className="font-bold text-xs text-text-primary dark:text-white">{item.title}</h4>
+                    <p className="text-[11px] text-text-secondary dark:text-slate-400 font-medium mt-0.5">{item.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="pt-4 border-t border-[#e8ded1] dark:border-slate-800">
-              <div className="flex items-center gap-2 text-[11px] font-semibold text-[#8c7569]">
-                <Sparkles className="w-3.5 h-3.5 text-[#b56b37]" /> Works best in Google Chrome with microphone permission enabled.
+            <div className="pt-4 border-t border-border-theme dark:border-slate-800">
+              <div className="flex items-center gap-2 text-[11px] font-semibold text-text-muted">
+                <Sparkles className="w-3.5 h-3.5 text-primary-blue" /> Works best in Google Chrome with microphone permission enabled.
               </div>
             </div>
           </div>
@@ -431,14 +432,14 @@ Your response:`;
         <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-4 items-start">
 
           {/* ── LEFT: Orb + Controls ──────────────────────────────────── */}
-          <div className="flex flex-col bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm" style={{ height: '560px' }}>
+          <div className="flex flex-col bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm" style={{ height: '560px' }}>
 
             {/* Status bar */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[#e8ded1] dark:border-slate-800 flex-shrink-0">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border-theme dark:border-slate-800 flex-shrink-0">
               <div className="flex items-center gap-2">
                 {isListening && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 bg-[#b56b37]/10 text-[#b56b37] border border-[#b56b37]/30 rounded-full text-[10px] font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#b56b37] animate-pulse" />
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 bg-primary-blue/10 text-primary-blue border border-primary-blue/30 rounded-full text-[10px] font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary-blue animate-pulse" />
                     Listening...
                   </span>
                 )}
@@ -448,7 +449,7 @@ Your response:`;
                   </span>
                 )}
                 {!isListening && !isSpeaking && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 bg-[#f6efe2] text-[#8c7569] border border-[#e8ded1] rounded-full text-[10px] font-bold">
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 bg-surface-secondary text-text-muted border border-border-theme rounded-full text-[10px] font-bold">
                     <Mic className="w-3 h-3" /> Ready
                   </span>
                 )}
@@ -486,7 +487,7 @@ Your response:`;
                 >
                   {isSpeaking ? 'AI Interviewer' : isListening ? 'You' : 'Standby'}
                 </p>
-                <p className="text-[10px] text-[#8c7569] font-medium">
+                <p className="text-[10px] text-text-muted font-medium">
                   {isSpeaking
                     ? 'Generating your next question…'
                     : isListening
@@ -499,7 +500,7 @@ Your response:`;
               {!isListening && !isSpeaking && (
                 <button
                   onClick={() => { try { recognitionRef.current?.start(); } catch (e) {} }}
-                  className="mt-2 px-5 py-2.5 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-2xl cursor-pointer flex items-center gap-2 transition-colors shadow-md"
+                  className="mt-2 px-5 py-2.5 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-2xl cursor-pointer flex items-center gap-2 transition-colors shadow-md"
                 >
                   <Mic className="w-4 h-4" /> Press to Speak
                 </button>
@@ -509,26 +510,26 @@ Your response:`;
 
           {/* ── RIGHT: Transcript Chat ────────────────────────────────── */}
           <div
-            className="flex flex-col bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm"
+            className="flex flex-col bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm"
             style={{ height: '560px' }}
           >
             {/* Header */}
-            <div className="px-5 py-3.5 border-b border-[#e8ded1] dark:border-slate-800 flex items-center justify-between flex-shrink-0">
+            <div className="px-5 py-3.5 border-b border-border-theme dark:border-slate-800 flex items-center justify-between flex-shrink-0">
               <div className="flex gap-4">
                 <button
                   onClick={() => setActiveTab('chat')}
-                  className={`font-serif font-bold text-sm flex items-center gap-1.5 transition-colors ${activeTab === 'chat' ? 'text-[#231f20] dark:text-white border-b-2 border-[#b56b37] pb-1' : 'text-[#8c7569] dark:text-slate-500 hover:text-[#231f20] dark:hover:text-slate-300 pb-1'}`}
+                  className={`font-serif font-bold text-sm flex items-center gap-1.5 transition-colors ${activeTab === 'chat' ? 'text-text-primary dark:text-white border-b-2 border-primary-blue pb-1' : 'text-text-muted dark:text-slate-500 hover:text-text-primary dark:hover:text-slate-300 pb-1'}`}
                 >
                   <MessageSquare className="w-4 h-4" /> Transcript
                 </button>
                 <button
                   onClick={() => setActiveTab('whiteboard')}
-                  className={`font-serif font-bold text-sm flex items-center gap-1.5 transition-colors ${activeTab === 'whiteboard' ? 'text-[#231f20] dark:text-white border-b-2 border-[#b56b37] pb-1' : 'text-[#8c7569] dark:text-slate-500 hover:text-[#231f20] dark:hover:text-slate-300 pb-1'}`}
+                  className={`font-serif font-bold text-sm flex items-center gap-1.5 transition-colors ${activeTab === 'whiteboard' ? 'text-text-primary dark:text-white border-b-2 border-primary-blue pb-1' : 'text-text-muted dark:text-slate-500 hover:text-text-primary dark:hover:text-slate-300 pb-1'}`}
                 >
                   <PenTool className="w-4 h-4" /> Whiteboard
                 </button>
               </div>
-              <span className="text-[10px] font-bold text-[#8c7569] uppercase tracking-wider">{history.length} exchanges</span>
+              <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{history.length} exchanges</span>
             </div>
 
             {/* Messages — scrolls internally */}
@@ -537,20 +538,20 @@ Your response:`;
                 {history.length === 0 && (
                   <div className="h-full flex flex-col items-center justify-center gap-2 text-center">
                     <Brain className="w-8 h-8 text-[#e8ded1]" />
-                    <p className="text-xs text-[#8c7569] font-medium">The interviewer will speak first.<br />Your responses will appear here.</p>
+                    <p className="text-xs text-text-muted font-medium">The interviewer will speak first.<br />Your responses will appear here.</p>
                   </div>
                 )}
 
                 {history.map((msg, idx) => (
                   <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} animate-fade-in`}>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${msg.role === 'user' ? 'text-[#b56b37]' : 'text-[#63703d]'}`}>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${msg.role === 'user' ? 'text-primary-blue' : 'text-[#63703d]'}`}>
                       {msg.role === 'user' ? 'You' : 'AI Interviewer'}
                     </span>
                     <div
                       className={`max-w-[85%] px-4 py-3 rounded-2xl text-xs font-medium leading-relaxed ${
                         msg.role === 'user'
-                          ? 'bg-[#b56b37] text-white rounded-br-sm'
-                          : 'bg-[#fcf9f2] dark:bg-slate-800 text-[#231f20] dark:text-slate-200 border border-[#e8ded1] dark:border-slate-700 rounded-bl-sm'
+                          ? 'bg-primary-blue text-white rounded-br-sm'
+                          : 'bg-background dark:bg-slate-800 text-text-primary dark:text-slate-200 border border-border-theme dark:border-slate-700 rounded-bl-sm'
                       }`}
                     >
                       {msg.content}
@@ -561,8 +562,8 @@ Your response:`;
                 {/* Live interim speech preview */}
                 {currentSpeech && (
                   <div className="flex flex-col items-end animate-fade-in">
-                    <span className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#b56b37]">You (Speaking...)</span>
-                    <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-br-sm text-xs font-medium bg-[#b56b37]/50 text-white italic">
+                    <span className="text-[10px] font-bold uppercase tracking-wider mb-1 text-primary-blue">You (Speaking...)</span>
+                    <div className="max-w-[85%] px-4 py-3 rounded-2xl rounded-br-sm text-xs font-medium bg-primary-blue/50 text-white italic">
                       {currentSpeech}
                     </div>
                   </div>
@@ -572,7 +573,7 @@ Your response:`;
                 {isAiThinking && (
                   <div className="flex flex-col items-start animate-fade-in">
                     <span className="text-[10px] font-bold uppercase tracking-wider mb-1 text-[#63703d]">AI Interviewer</span>
-                    <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-[#fcf9f2] border border-[#e8ded1] flex items-center gap-1.5">
+                    <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-background border border-border-theme flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#63703d] animate-bounce" style={{ animationDelay: '0ms' }} />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#63703d] animate-bounce" style={{ animationDelay: '150ms' }} />
                       <span className="w-1.5 h-1.5 rounded-full bg-[#63703d] animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -597,7 +598,7 @@ Your response:`;
                         value={textAnswer}
                         onChange={e => setTextAnswer(e.target.value)}
                         placeholder="Type your answer and press Enter or Send..."
-                        className="flex-1 bg-white border border-amber-200 rounded-xl p-2.5 text-xs text-[#231f20] outline-none resize-none focus:border-[#b56b37] transition-colors"
+                        className="flex-1 bg-surface border border-amber-200 rounded-xl p-2.5 text-xs text-text-primary outline-none resize-none focus:border-primary-blue transition-colors"
                         onKeyDown={e => {
                           if (e.key === 'Enter' && !e.shiftKey && textAnswer.trim()) {
                             e.preventDefault();
@@ -614,7 +615,7 @@ Your response:`;
                             setTextAnswer('');
                           }
                         }}
-                        className="px-3 py-2 bg-[#b56b37] hover:bg-[#96552a] disabled:opacity-40 text-white font-bold text-xs rounded-xl cursor-pointer self-end transition-colors"
+                        className="px-3 py-2 bg-primary-blue hover:bg-[#96552a] disabled:opacity-40 text-white font-bold text-xs rounded-xl cursor-pointer self-end transition-colors"
                       >
                         Send
                       </button>
@@ -636,30 +637,30 @@ Your response:`;
       {/* Feedback / Score View */}
       {feedback && (
         <div className="space-y-6 max-w-2xl mx-auto">
-          <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-8 shadow-2xs space-y-6 text-center">
+          <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-8 shadow-2xs space-y-6 text-center">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-24 h-24 rounded-full border-4 border-[#b56b37] bg-[#fcf9f2] flex items-center justify-center">
-                <span className="font-serif font-extrabold text-3xl text-[#b56b37]">{feedback.score}</span>
+              <div className="w-24 h-24 rounded-full border-4 border-primary-blue bg-background flex items-center justify-center">
+                <span className="font-serif font-extrabold text-3xl text-primary-blue">{feedback.score}</span>
               </div>
               <div>
-                <div className="text-[10px] uppercase font-bold text-[#8c7569] tracking-wider">Interview Score</div>
-                <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white mt-0.5">
+                <div className="text-[10px] uppercase font-bold text-text-muted tracking-wider">Interview Score</div>
+                <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white mt-0.5">
                   {feedback.score >= 85 ? 'Excellent Performance' : feedback.score >= 70 ? 'Good Performance' : 'Needs Improvement'}
                 </h2>
               </div>
             </div>
 
-            <div className="bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-2xl p-5 text-left">
+            <div className="bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-2xl p-5 text-left">
               <h3 className="font-bold text-xs text-[#63703d] uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5" /> AI Feedback & Recommendations
               </h3>
-              <p className="text-xs text-[#231f20] dark:text-slate-200 font-medium leading-relaxed">{feedback.feedback}</p>
+              <p className="text-xs text-text-primary dark:text-slate-200 font-medium leading-relaxed">{feedback.feedback}</p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               <button
                 onClick={() => { setFeedback(null); setHistory([]); setCurrentSpeech(''); setIsSessionActive(false); }}
-                className="px-6 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl cursor-pointer flex items-center justify-center gap-2 shadow-sm transition-colors"
+                className="px-6 py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl cursor-pointer flex items-center justify-center gap-2 shadow-sm transition-colors"
               >
                 <RotateCcw className="w-4 h-4" /> Try Another Session
               </button>

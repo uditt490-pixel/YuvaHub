@@ -172,9 +172,9 @@ export default function Cookies() {
     <div className="max-w-6xl mx-auto space-y-12">
       {/* Header banner */}
       <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-indigo-600 to-indigo-850 p-8 md:p-12 text-white shadow-lg">
-        <div className="absolute top-0 right-0 -translate-y-6 translate-x-6 w-96 h-96 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 -translate-y-6 translate-x-6 w-96 h-96 rounded-full bg-surface/10 blur-3xl pointer-events-none" />
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/15 border border-white/20 text-xs font-semibold uppercase tracking-wider mb-4">
             <Cookie className="w-3.5 h-3.5" /> Storage Compliance Center
           </div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">
@@ -405,7 +405,7 @@ export default function Cookies() {
                   <h4 className="font-bold text-sm text-gray-900 dark:text-white">Opt-Out Preference Registered</h4>
                   <p className="text-[11px] text-gray-450 dark:text-gray-500 mt-1">Your marketing identifier has been blacklisted on partner subprocessor routes.</p>
                 </div>
-                <div className="max-w-xs mx-auto bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-850 rounded-lg p-2.5 text-xs text-left">
+                <div className="max-w-xs mx-auto bg-surface dark:bg-gray-900 border border-gray-100 dark:border-gray-850 rounded-lg p-2.5 text-xs text-left">
                   <span className="text-gray-400">Registry Token:</span>
                   <span className="font-mono font-bold text-blue-600 dark:text-blue-400 block mt-0.5 break-all">GOP-REG-9477218B</span>
                 </div>
@@ -483,7 +483,7 @@ export default function Cookies() {
                       />
                     </button>
                     {isOpen && (
-                      <div className="p-4 bg-white dark:bg-gray-850 border-t border-gray-150 dark:border-gray-700/60 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                      <div className="p-4 bg-surface dark:bg-gray-850 border-t border-gray-150 dark:border-gray-700/60 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                         {faq.a}
                       </div>
                     )}

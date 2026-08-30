@@ -45,9 +45,28 @@ const envSchema = z.object({
 const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {
-  console.error('â Œ Invalid environment variables:');
-  console.error(_env.error.format());
-  process.exit(1);
+  if (process.env.SKIP_ENV_VALIDATION === 'true' || process.env.NODE_ENV === 'test') {
+    console.warn('⚠️ Environment validation skipped. Using fallback mock config for test environment.');
+  } else {
+    console.error('❌ Invalid environment variables:');
+    console.error(_env.error.format());
+    process.exit(1);
+  }
 }
 
-export const config = _env.data;
+export const config = _env.success
+  ? _env.data
+  : ({
+      NODE_ENV: (process.env.NODE_ENV as any) || 'test',
+      PORT: '3000',
+      APP_URL: 'http://localhost:5173',
+      FRONTEND_URL: 'http://localhost:5173',
+      MONGODB_URI: 'mongodb://localhost:27017/yuvahub_test',
+      MONGODB_DB_NAME: 'yuvahub_test',
+      GEMINI_API_KEY: 'mock_gemini_key',
+      JWT_SECRET: 'mock_jwt_secret',
+      JWT_REFRESH_SECRET: 'mock_jwt_refresh_secret',
+      FIREBASE_SERVICE_ACCOUNT_BASE64: 'mock_base64',
+      ENABLE_MOCK_AUTH: 'true',
+      MOCK_VALID_TOKEN: 'MOCK_VALID_TOKEN',
+    } as any);

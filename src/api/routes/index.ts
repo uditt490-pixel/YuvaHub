@@ -5,7 +5,7 @@ import bookmarkRoutes from "./bookmarkRoutes.js";
 import karmaRoutes from "./karmaRoutes.js";
 import bountyRoutes from "./bountyRoutes.js";
 import storageRoutes from "./storageRoutes.js";
-import resumeRoutes from "./resumeRoutes.js";
+import resumeBuilderRoutes from "./resumeBuilderRoutes.js";
 import opportunityRoutes from "./opportunityRoutes.js";
 import aiRoutes from "./aiRoutes.js";
 import searchRoutes from "./searchRoutes.js";
@@ -13,6 +13,7 @@ import notificationRoutes from "./notificationRoutes.js";
 import applicationRoutes from "./applicationRoutes.js";
 import adminRoutes from "./adminRoutes.js";
 import communityRoutes from "./communityRoutes.js";
+import forumReplyRoutes from "./forumReplyRoutes.js";
 import teamRoutes from "./teamRoutes.js";
 import scholarshipRoutes from "./scholarshipRoutes.js";
 import mentorshipRoutes from "./mentorshipRoutes.js";
@@ -44,7 +45,7 @@ const routes = [
   karmaRoutes,
   bountyRoutes,
   storageRoutes,
-  resumeRoutes,
+  resumeBuilderRoutes,
   opportunityRoutes,
   aiRoutes,
   searchRoutes,
@@ -52,6 +53,7 @@ const routes = [
   applicationRoutes,
   adminRoutes,
   communityRoutes,
+  forumReplyRoutes,
   teamRoutes,
   scholarshipRoutes,
   mentorshipRoutes,

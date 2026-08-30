@@ -16,11 +16,11 @@ interface Props {
 }
 
 const RISK_CONFIG: Record<RiskLevel, { bg: string; text: string; border: string; color: string; label: string }> = {
-  critical: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', color: '#ef4444', label: 'Critical' },
-  high: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', color: '#f97316', label: 'High' },
-  medium: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', color: '#f59e0b', label: 'Medium' },
-  low: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', color: '#3b82f6', label: 'Low' },
-  minimal: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', color: '#10b981', label: 'Minimal' }
+  critical: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30', color: '#ef4444', label: 'Critical' },
+  high: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30', color: '#f97316', label: 'High' },
+  medium: { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30', color: '#f59e0b', label: 'Medium' },
+  low: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', color: '#3b82f6', label: 'Low' },
+  minimal: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30', color: '#10b981', label: 'Minimal' }
 };
 
 function Sparkline({ data, color }: { data: number[]; color: string }) {
@@ -57,27 +57,27 @@ export const AnomalyDetectionPanel: React.FC<Props> = ({ profiles, isLoading }) 
   });
 
   if (isLoading) {
-    return <div className="bg-white rounded-2xl border border-slate-100 p-6 animate-pulse"><div className="h-6 bg-slate-200 rounded w-48 mb-4" />{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-slate-100 rounded-xl mb-3" />)}</div>;
+    return <div className="bg-surface rounded-2xl border border-border-theme p-6 animate-pulse"><div className="h-6 bg-border-theme rounded w-48 mb-4" />{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-24 bg-surface-secondary rounded-xl mb-3" />)}</div>;
   }
 
   const criticalUsers = profiles.filter(p => p.riskLevel === 'critical' || p.riskLevel === 'high').length;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div className="bg-surface rounded-2xl border border-border-theme overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-100">
+      <div className="px-6 py-4 border-b border-border-theme">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-orange-50"><ShieldAlert className="h-5 w-5 text-orange-600" /></div>
+            <div className="p-2 rounded-xl bg-orange-500/20"><ShieldAlert className="h-5 w-5 text-orange-400" /></div>
             <div>
-              <h3 className="text-lg font-bold text-slate-800">Anomaly Detection</h3>
-              <p className="text-xs text-slate-500">{profiles.length} users · {criticalUsers} high-risk</p>
+              <h3 className="text-lg font-bold text-text-primary">Anomaly Detection</h3>
+              <p className="text-xs text-text-muted">{profiles.length} users · {criticalUsers} high-risk</p>
             </div>
           </div>
-          <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-0.5">
+          <div className="flex items-center gap-1 bg-surface-secondary rounded-xl p-0.5">
             {(['risk', 'flagged', 'amount'] as const).map(s => (
               <button key={s} onClick={() => setSortBy(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${sortBy === s ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${sortBy === s ? 'bg-surface text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'}`}>
                 {s === 'risk' ? 'Risk Score' : s === 'flagged' ? 'Flagged Txns' : 'Total Volume'}
               </button>
             ))}
@@ -94,7 +94,7 @@ export const AnomalyDetectionPanel: React.FC<Props> = ({ profiles, isLoading }) 
           const trendDir = trend[trend.length - 1] > trend[0] ? 'up' : 'down';
 
           return (
-            <div key={user.userId} className={`transition-all ${isExpanded ? cfg.bg : 'hover:bg-slate-50'}`}>
+            <div key={user.userId} className={`transition-all ${isExpanded ? cfg.bg : 'hover:bg-surface'}`}>
               <div className="flex items-center gap-4 px-6 py-4 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : user.userId)}>
                 {/* Risk Score Ring */}
                 <div className="relative w-12 h-12 flex-shrink-0">
@@ -111,11 +111,11 @@ export const AnomalyDetectionPanel: React.FC<Props> = ({ profiles, isLoading }) 
                 {/* User Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-slate-800">{user.userName}</h4>
+                    <h4 className="text-sm font-bold text-text-primary">{user.userName}</h4>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${cfg.bg} ${cfg.text}`}>{cfg.label}</span>
-                    {!user.kycVerified && <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-600 text-[10px] font-bold">No KYC</span>}
+                    {!user.kycVerified && <span className="px-1.5 py-0.5 rounded bg-red-500/200/20 text-red-400 text-[10px] font-bold">No KYC</span>}
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                  <div className="flex items-center gap-3 mt-1 text-xs text-text-muted">
                     <span>{user.totalTransactions} txns</span>
                     <span>{user.flaggedTransactions} flagged</span>
                     <span>{user.devicesUsed} devices</span>
@@ -130,11 +130,11 @@ export const AnomalyDetectionPanel: React.FC<Props> = ({ profiles, isLoading }) 
 
                 {/* Amount */}
                 <div className="text-right flex-shrink-0">
-                  <div className="text-sm font-bold text-slate-700">{formatMoney(user.totalAmount30d)}</div>
-                  <div className="text-[10px] text-slate-400">30d volume</div>
+                  <div className="text-sm font-bold text-text-primary">{formatMoney(user.totalAmount30d)}</div>
+                  <div className="text-[10px] text-text-muted">30d volume</div>
                 </div>
 
-                <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-5 w-5 text-text-muted transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
               </div>
 
               {/* Expanded Detail */}
@@ -148,9 +148,9 @@ export const AnomalyDetectionPanel: React.FC<Props> = ({ profiles, isLoading }) 
                       { label: 'Account Age', value: `${user.accountAge} days` },
                       { label: 'Prev Incidents', value: user.previousIncidents.toString() }
                     ].map((stat, i) => (
-                      <div key={i} className="bg-white rounded-xl p-3 border border-slate-200">
-                        <div className="text-[10px] text-slate-400">{stat.label}</div>
-                        <div className="text-sm font-bold text-slate-700">{stat.value}</div>
+                      <div key={i} className="bg-surface rounded-xl p-3 border border-border-theme">
+                        <div className="text-[10px] text-text-muted">{stat.label}</div>
+                        <div className="text-sm font-bold text-text-primary">{stat.value}</div>
                       </div>
                     ))}
                   </div>
@@ -158,11 +158,11 @@ export const AnomalyDetectionPanel: React.FC<Props> = ({ profiles, isLoading }) 
                   {/* Location & Device Info */}
                   <div className="flex flex-wrap gap-2">
                     {user.countriesAccessed.map(c => (
-                      <span key={c} className="inline-flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-600">
+                      <span key={c} className="inline-flex items-center gap-1 px-2 py-1 bg-surface border border-border-theme rounded-lg text-xs text-text-secondary">
                         <Globe className="h-3 w-3" />{c}
                       </span>
                     ))}
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs text-slate-600">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-surface border border-border-theme rounded-lg text-xs text-text-secondary">
                       <Smartphone className="h-3 w-3" />{user.devicesUsed} devices
                     </span>
                   </div>
@@ -170,16 +170,16 @@ export const AnomalyDetectionPanel: React.FC<Props> = ({ profiles, isLoading }) 
                   {/* Risk Factors */}
                   {user.riskFactors.length > 0 && (
                     <div>
-                      <h5 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Risk Factors</h5>
+                      <h5 className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2">Risk Factors</h5>
                       <div className="space-y-1.5">
                         {user.riskFactors.map(rf => (
-                          <div key={rf.id} className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-slate-200 text-xs">
+                          <div key={rf.id} className="flex items-center gap-3 px-3 py-2 bg-surface rounded-lg border border-border-theme text-xs">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold capitalize ${
-                              rf.status === 'active' ? 'bg-red-100 text-red-700' : rf.status === 'mitigated' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                              rf.status === 'active' ? 'bg-red-500/200/20 text-red-400' : rf.status === 'mitigated' ? 'bg-emerald-500/200/20 text-emerald-400' : 'bg-surface-secondary text-text-muted'
                             }`}>{rf.status}</span>
-                            <span className="text-slate-500 capitalize">{rf.category}</span>
-                            <span className="flex-1 text-slate-700">{rf.description}</span>
-                            <span className="font-mono font-semibold text-slate-500">{rf.impact}pts</span>
+                            <span className="text-text-muted capitalize">{rf.category}</span>
+                            <span className="flex-1 text-text-primary">{rf.description}</span>
+                            <span className="font-mono font-semibold text-text-muted">{rf.impact}pts</span>
                           </div>
                         ))}
                       </div>

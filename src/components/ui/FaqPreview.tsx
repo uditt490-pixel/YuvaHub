@@ -85,7 +85,7 @@ export function FaqPreview() {
           </div>
           <button
             onClick={handleViewAll}
-            className="group flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 hover:scale-105 active:scale-95 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md animate-in fade-in slide-in-from-right-4 duration-700 delay-100"
+            className="group flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 hover:scale-105 active:scale-95 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md animate-in fade-in slide-in-from-right-4 duration-700 delay-100"
           >
             View All FAQs
             <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />

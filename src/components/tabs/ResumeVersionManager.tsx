@@ -253,23 +253,23 @@ export default function ResumeVersionManager() {
 
   return (
     <div className="space-y-6 font-sans">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-3 border-b border-[#e8ded1]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-3 border-b border-border-theme">
         <div>
-          <h3 className="text-base md:text-lg font-serif font-bold text-[#231f20] flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[#b56b37]" /> Resume Version History
+          <h3 className="text-base md:text-lg font-serif font-bold text-text-primary flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary-blue" /> Resume Version History
           </h3>
-          <p className="text-xs text-[#603620] mt-0.5">Manage multiple resumes and assign your primary default resume.</p>
+          <p className="text-xs text-text-secondary mt-0.5">Manage multiple resumes and assign your primary default resume.</p>
         </div>
 
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <input
             type="text"
             placeholder="Custom Name (Optional)"
-            className="w-44 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl text-xs text-[#231f20] p-2.5 outline-none focus:border-[#b56b37] hidden md:block"
+            className="w-44 bg-background border border-border-theme rounded-xl text-xs text-text-primary p-2.5 outline-none focus:border-primary-blue hidden md:block"
             value={customUploadName}
             onChange={(e) => setCustomUploadName(e.target.value)}
           />
-          <label className="cursor-pointer text-xs font-extrabold uppercase tracking-wider bg-[#b56b37] hover:bg-[#603620] text-white px-4 py-2.5 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none">
+          <label className="cursor-pointer text-xs font-extrabold uppercase tracking-wider bg-primary-blue hover:bg-[#603620] text-white px-4 py-2.5 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none">
             <Upload className="w-4 h-4" />
             {uploading ? "Uploading..." : "Upload New Resume"}
             <input
@@ -298,14 +298,14 @@ export default function ResumeVersionManager() {
       )}
 
       {loading ? (
-        <div className="text-center py-8 text-xs font-bold text-[#b56b37] animate-pulse">
+        <div className="text-center py-8 text-xs font-bold text-primary-blue animate-pulse">
           Loading resume versions...
         </div>
       ) : resumes.length === 0 ? (
-        <div className="text-center py-10 bg-[#fcf9f2] rounded-2xl border border-dashed border-[#e8ded1] p-6">
-          <FileText className="w-10 h-10 text-[#8c7569] mx-auto mb-2" />
-          <p className="text-sm font-serif font-bold text-[#231f20]">No resumes uploaded yet</p>
-          <p className="text-xs text-[#603620] mt-1">Upload your first resume version to set your default profile resume.</p>
+        <div className="text-center py-10 bg-background rounded-2xl border border-dashed border-border-theme p-6">
+          <FileText className="w-10 h-10 text-text-muted mx-auto mb-2" />
+          <p className="text-sm font-serif font-bold text-text-primary">No resumes uploaded yet</p>
+          <p className="text-xs text-text-secondary mt-1">Upload your first resume version to set your default profile resume.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -314,8 +314,8 @@ export default function ResumeVersionManager() {
               key={resume.id}
               className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${
                 resume.isDefault
-                  ? 'bg-[#f6efe2] border-[#e8ded1] shadow-xs'
-                  : 'bg-white border-[#e8ded1] hover:border-[#b56b37]'
+                  ? 'bg-surface-secondary border-border-theme shadow-xs'
+                  : 'bg-surface border-border-theme hover:border-primary-blue'
               }`}
             >
               <div className="space-y-1 flex-1 min-w-0">
@@ -324,30 +324,30 @@ export default function ResumeVersionManager() {
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
-                        className="bg-white border border-[#e8ded1] rounded-xl text-xs p-1.5 w-48 font-bold text-[#231f20] outline-none focus:border-[#b56b37]"
+                        className="bg-surface border border-border-theme rounded-xl text-xs p-1.5 w-48 font-bold text-text-primary outline-none focus:border-primary-blue"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
                         autoFocus
                       />
                       <button
                         onClick={() => handleRename(resume.id)}
-                        className="text-xs font-extrabold uppercase tracking-wider bg-[#b56b37] text-white px-3 py-1 rounded-lg cursor-pointer"
+                        className="text-xs font-extrabold uppercase tracking-wider bg-primary-blue text-white px-3 py-1 rounded-lg cursor-pointer"
                       >
                         Save
                       </button>
                       <button
                         onClick={() => { setEditingId(null); setEditName(''); }}
-                        className="text-xs text-[#8c7569] hover:text-[#231f20] cursor-pointer"
+                        className="text-xs text-text-muted hover:text-text-primary cursor-pointer"
                       >
                         Cancel
                       </button>
                     </div>
                   ) : (
-                    <h4 className="text-xs md:text-sm font-serif font-bold text-[#231f20] truncate flex items-center gap-2">
+                    <h4 className="text-xs md:text-sm font-serif font-bold text-text-primary truncate flex items-center gap-2">
                       {resume.displayName}
                       <button
                         onClick={() => { setEditingId(resume.id); setEditName(resume.displayName); }}
-                        className="text-[#8c7569] hover:text-[#b56b37] transition-colors cursor-pointer"
+                        className="text-text-muted hover:text-primary-blue transition-colors cursor-pointer"
                         title="Rename resume"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -362,13 +362,13 @@ export default function ResumeVersionManager() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3 text-xs text-[#603620] flex-wrap">
+                <div className="flex items-center gap-3 text-xs text-text-secondary flex-wrap">
                   <span className="truncate max-w-[200px]" title={resume.originalFileName}>
                     File: {resume.originalFileName}
                   </span>
                   <span>•</span>
-                  <span className="flex items-center gap-1 text-[11px] text-[#8c7569]">
-                    <Clock className="w-3 h-3 text-[#8c7569]" /> Uploaded: {formatDate(resume.uploadedAt)}
+                  <span className="flex items-center gap-1 text-[11px] text-text-muted">
+                    <Clock className="w-3 h-3 text-text-muted" /> Uploaded: {formatDate(resume.uploadedAt)}
                   </span>
                 </div>
               </div>
@@ -378,7 +378,7 @@ export default function ResumeVersionManager() {
                   href={resume.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-bold bg-[#f6efe2] hover:bg-[#b56b37] hover:text-white text-[#603620] px-3.5 py-1.5 rounded-xl border border-[#e8ded1] transition-all flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-bold bg-surface-secondary hover:bg-primary-blue hover:text-white text-text-secondary px-3.5 py-1.5 rounded-xl border border-border-theme transition-all flex items-center gap-1 cursor-pointer"
                 >
                   Preview <ExternalLink className="w-3 h-3" />
                 </a>
@@ -386,9 +386,9 @@ export default function ResumeVersionManager() {
                 {!resume.isDefault && (
                   <button
                     onClick={() => handleSetDefault(resume)}
-                    className="text-xs font-extrabold uppercase tracking-wider bg-white hover:bg-[#f6efe2] text-[#b56b37] px-3.5 py-1.5 rounded-xl border border-[#e8ded1] transition-all flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-extrabold uppercase tracking-wider bg-surface hover:bg-surface-secondary text-primary-blue px-3.5 py-1.5 rounded-xl border border-border-theme transition-all flex items-center gap-1 cursor-pointer"
                   >
-                    <Star className="w-3 h-3 text-[#b56b37]" /> Make Default
+                    <Star className="w-3 h-3 text-primary-blue" /> Make Default
                   </button>
                 )}
 

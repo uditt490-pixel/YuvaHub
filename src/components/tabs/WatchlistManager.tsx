@@ -139,29 +139,33 @@ export default function WatchlistManager() {
 
   return (
     <div className="w-full max-w-[1400px] mx-auto space-y-8 font-sans pb-16 px-2 sm:px-4">
-      {/* Header */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#f6efe2] via-[#fcf9f2] to-[#f6efe2] dark:from-slate-900 dark:to-slate-950 border border-[#e8ded1] dark:border-slate-800 p-6 md:p-8 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+      {/* Header - Brand Theme */}
+      <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#f3e4bd] bg-[#603620] rounded-full flex items-center gap-1.5 shadow-xs">
-                <Target className="w-3.5 h-3.5 text-[#f3e4bd]" /> Watchlist Rules Engine
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1.5 shadow-xs">
+                <Target className="w-3.5 h-3.5 text-indigo-400" /> Watchlist Rules Engine
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-              Proactive <span className="text-[#b56b37] italic">Alerts</span>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+              Proactive <span className="text-primary-blue italic">Alerts</span>
             </h1>
-            <p className="text-[#603620] dark:text-slate-400 text-xs md:text-sm max-w-2xl font-medium">
+            <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
               Define custom watchlists and receive real-time notifications when new opportunities match your exact criteria.
             </p>
           </div>
-          <button
-            onClick={() => setIsCreating(!isCreating)}
-            className="px-5 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 transition-colors"
-          >
-            {isCreating ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {isCreating ? 'Cancel' : 'Create New Watchlist'}
-          </button>
+
+          <div className="flex items-center gap-4 w-full">
+            <button
+              onClick={() => setIsCreating(!isCreating)}
+              className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-6 py-4 bg-primary-blue hover:bg-blue-600 text-white text-sm font-bold rounded-2xl transition-all shadow-lg hover:shadow-primary-blue/20"
+            >
+              {isCreating ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+              {isCreating ? 'Cancel' : 'Create New Watchlist'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -180,62 +184,62 @@ export default function WatchlistManager() {
       )}
 
       {isCreating && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
-          <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white">New Watchlist Rule</h2>
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
+          <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white">New Watchlist Rule</h2>
           <form onSubmit={handleCreateRule} className="space-y-4 max-w-2xl">
             <div>
-              <label className="block text-xs font-bold text-[#603620] dark:text-slate-300 mb-1">Rule Name</label>
+              <label className="block text-xs font-bold text-text-secondary dark:text-slate-300 mb-1">Rule Name</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Remote AI Internships"
                 value={ruleName}
                 onChange={e => setRuleName(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#603620] dark:text-slate-300 mb-1">Keywords (comma-separated)</label>
+              <label className="block text-xs font-bold text-text-secondary dark:text-slate-300 mb-1">Keywords (comma-separated)</label>
               <input
                 type="text"
                 placeholder="e.g. Machine Learning, NLP, Intern"
                 value={keywordsInput}
                 onChange={e => setKeywordsInput(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#603620] dark:text-slate-300 mb-1">Categories (comma-separated)</label>
+              <label className="block text-xs font-bold text-text-secondary dark:text-slate-300 mb-1">Categories (comma-separated)</label>
               <input
                 type="text"
                 placeholder="e.g. Internship, Hackathon"
                 value={categoriesInput}
                 onChange={e => setCategoriesInput(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#603620] dark:text-slate-300 mb-1">Location Match</label>
+              <label className="block text-xs font-bold text-text-secondary dark:text-slate-300 mb-1">Location Match</label>
               <input
                 type="text"
                 placeholder="e.g. Remote, Bangalore"
                 value={locationInput}
                 onChange={e => setLocationInput(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               />
             </div>
             <div className="flex gap-4 pt-2">
               <div className="flex-1">
-                <label className="block text-xs font-bold text-[#603620] dark:text-slate-300 mb-1">Notification Method</label>
-                <select value={notifyVia} onChange={e => setNotifyVia(e.target.value as any)} className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs outline-none">
+                <label className="block text-xs font-bold text-text-secondary dark:text-slate-300 mb-1">Notification Method</label>
+                <select value={notifyVia} onChange={e => setNotifyVia(e.target.value as any)} className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs outline-none">
                   <option value="push">Push Notification</option>
                   <option value="email">Email</option>
                   <option value="both">Both</option>
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-xs font-bold text-[#603620] dark:text-slate-300 mb-1">Frequency</label>
-                <select value={frequency} onChange={e => setFrequency(e.target.value as any)} className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs outline-none">
+                <label className="block text-xs font-bold text-text-secondary dark:text-slate-300 mb-1">Frequency</label>
+                <select value={frequency} onChange={e => setFrequency(e.target.value as any)} className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs outline-none">
                   <option value="immediate">Immediate</option>
                   <option value="daily">Daily Digest</option>
                   <option value="weekly">Weekly Digest</option>
@@ -243,7 +247,7 @@ export default function WatchlistManager() {
               </div>
             </div>
             <div className="pt-4">
-              <button type="submit" className="px-6 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-colors">
+              <button type="submit" className="px-6 py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer transition-colors">
                 Save Watchlist
               </button>
             </div>
@@ -254,25 +258,25 @@ export default function WatchlistManager() {
       {/* Active Watchlists List */}
       {!isCreating && (
         <div className="space-y-4">
-          <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white px-2">Your Active Watchlists</h2>
+          <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white px-2">Your Active Watchlists</h2>
           {loading ? (
-            <p className="text-xs text-[#8c7569] p-4">Loading watchlists...</p>
+            <p className="text-xs text-text-muted p-4">Loading watchlists...</p>
           ) : watchlists.length === 0 ? (
-            <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs">
-              <div className="w-16 h-16 bg-[#f6efe2] text-[#b56b37] flex items-center justify-center rounded-full mx-auto border border-[#e8ded1]">
-                <Bell className="w-8 h-8 text-[#b56b37]" />
+            <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs">
+              <div className="w-16 h-16 bg-surface-secondary text-primary-blue flex items-center justify-center rounded-full mx-auto border border-border-theme">
+                <Bell className="w-8 h-8 text-primary-blue" />
               </div>
-              <h3 className="text-lg font-serif font-bold text-[#231f20] dark:text-white">No Watchlists Yet</h3>
-              <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">Create a watchlist to get notified about relevant opportunities.</p>
+              <h3 className="text-lg font-serif font-bold text-text-primary dark:text-white">No Watchlists Yet</h3>
+              <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">Create a watchlist to get notified about relevant opportunities.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {watchlists.map(rule => (
-                <div key={rule.id} className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-2xl p-5 shadow-2xs space-y-4 hover:border-[#b56b37] transition-all">
+                <div key={rule.id} className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-2xl p-5 shadow-2xs space-y-4 hover:border-primary-blue transition-all">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white">{rule.name}</h3>
-                      <p className="text-[11px] text-[#8c7569] font-medium mt-1 uppercase tracking-wide">
+                      <h3 className="font-serif font-bold text-base text-text-primary dark:text-white">{rule.name}</h3>
+                      <p className="text-[11px] text-text-muted font-medium mt-1 uppercase tracking-wide">
                         {rule.frequency} • {rule.notifyVia}
                       </p>
                     </div>
@@ -281,31 +285,31 @@ export default function WatchlistManager() {
                     </button>
                   </div>
                   
-                  <div className="space-y-2 text-xs text-[#603620] dark:text-slate-300">
+                  <div className="space-y-2 text-xs text-text-secondary dark:text-slate-300">
                     {rule.filters.keywords?.length > 0 && (
                       <div className="flex items-start gap-2">
-                        <Tag className="w-3.5 h-3.5 mt-0.5 text-[#b56b37]" />
+                        <Tag className="w-3.5 h-3.5 mt-0.5 text-primary-blue" />
                         <span className="flex-1">{rule.filters.keywords.join(', ')}</span>
                       </div>
                     )}
                     {rule.filters.categories?.length > 0 && (
                       <div className="flex items-start gap-2">
-                        <Target className="w-3.5 h-3.5 mt-0.5 text-[#b56b37]" />
+                        <Target className="w-3.5 h-3.5 mt-0.5 text-primary-blue" />
                         <span className="flex-1">{rule.filters.categories.join(', ')}</span>
                       </div>
                     )}
                     {rule.filters.location && (
                       <div className="flex items-start gap-2">
-                        <MapPin className="w-3.5 h-3.5 mt-0.5 text-[#b56b37]" />
+                        <MapPin className="w-3.5 h-3.5 mt-0.5 text-primary-blue" />
                         <span className="flex-1">{rule.filters.location}</span>
                       </div>
                     )}
                   </div>
                   
-                  <div className="pt-3 border-t border-[#e8ded1] dark:border-slate-800">
+                  <div className="pt-3 border-t border-border-theme dark:border-slate-800">
                     <button 
                       onClick={() => handlePreviewMatches(rule.id)}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-[#fcf9f2] dark:bg-slate-800 text-[#b56b37] font-bold text-xs rounded-xl hover:bg-[#f6efe2] transition-colors"
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-background dark:bg-slate-800 text-primary-blue font-bold text-xs rounded-xl hover:bg-surface-secondary transition-colors"
                     >
                       <Eye className="w-3.5 h-3.5" /> Preview Matches
                     </button>
@@ -320,26 +324,26 @@ export default function WatchlistManager() {
       {/* Match Preview Modal */}
       {isPreviewing && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-[#e8ded1] dark:border-slate-800">
-            <div className="px-6 py-4 border-b border-[#e8ded1] dark:border-slate-800 flex items-center justify-between bg-[#fcf9f2] dark:bg-slate-800/50">
-              <h2 className="font-serif font-bold text-lg text-[#231f20] dark:text-white">Watchlist Matches</h2>
-              <button onClick={() => { setIsPreviewing(null); setPreviewMatches([]); }} className="p-1 rounded-full text-[#8c7569] hover:bg-[#e8ded1] dark:hover:bg-slate-700 transition-colors">
+          <div className="bg-surface dark:bg-slate-900 rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-border-theme dark:border-slate-800">
+            <div className="px-6 py-4 border-b border-border-theme dark:border-slate-800 flex items-center justify-between bg-background dark:bg-slate-800/50">
+              <h2 className="font-serif font-bold text-lg text-text-primary dark:text-white">Watchlist Matches</h2>
+              <button onClick={() => { setIsPreviewing(null); setPreviewMatches([]); }} className="p-1 rounded-full text-text-muted hover:bg-[#e8ded1] dark:hover:bg-slate-700 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 overflow-y-auto flex-1 bg-gray-50 dark:bg-slate-900">
               {previewMatches.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="text-sm text-[#8c7569] font-medium">No opportunities match this watchlist right now.</p>
+                  <p className="text-sm text-text-muted font-medium">No opportunities match this watchlist right now.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {previewMatches.map((opp: any) => (
-                    <div key={opp.id} className="bg-white dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 p-4 rounded-xl shadow-xs">
-                      <h3 className="font-bold text-sm text-[#231f20] dark:text-white mb-1 line-clamp-1">{opp.title}</h3>
-                      <p className="text-xs text-[#8c7569] mb-3">{opp.source_name || opp.source}</p>
+                    <div key={opp.id} className="bg-surface dark:bg-slate-800 border border-border-theme dark:border-slate-700 p-4 rounded-xl shadow-xs">
+                      <h3 className="font-bold text-sm text-text-primary dark:text-white mb-1 line-clamp-1">{opp.title}</h3>
+                      <p className="text-xs text-text-muted mb-3">{opp.source_name || opp.source}</p>
                       <div className="flex gap-2">
-                        {opp.category && <span className="px-2 py-0.5 bg-[#f6efe2] text-[#603620] text-[10px] font-bold rounded-md">{opp.category}</span>}
+                        {opp.category && <span className="px-2 py-0.5 bg-surface-secondary text-text-secondary text-[10px] font-bold rounded-md">{opp.category}</span>}
                         {opp.location && <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-md">{opp.location}</span>}
                       </div>
                     </div>

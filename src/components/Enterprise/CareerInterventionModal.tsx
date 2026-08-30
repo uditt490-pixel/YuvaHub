@@ -39,8 +39,8 @@ export const CareerInterventionModal: React.FC<CareerInterventionModalProps> = (
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700/50 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-blue/75 backdrop-blur-sm">
+      <div className="bg-surface dark:bg-primary-blue border border-amber-300 dark:border-amber-700/50 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="p-5 bg-gradient-to-r from-amber-500 to-orange-600 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="w-6 h-6 animate-pulse" />
@@ -49,14 +49,14 @@ export const CareerInterventionModal: React.FC<CareerInterventionModalProps> = (
               <p className="text-xs text-amber-100">Activate targeted student acceleration sprint</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/20 transition-colors">
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface/20 transition-colors">
             <X className="w-5 h-5 text-white" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 flex items-start gap-2.5">
-            <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-xl bg-amber-500/20 dark:bg-amber-950/40 border border-amber-500/30 dark:border-amber-900 flex items-start gap-2.5">
+            <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div className="text-xs text-amber-900 dark:text-amber-200">
               Intervention for <span className="font-bold">{student.fullName}</span> ({student.institution}).
               This writes an audited mitigation directive to the academic placement ledger.
@@ -64,13 +64,13 @@ export const CareerInterventionModal: React.FC<CareerInterventionModalProps> = (
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary dark:text-text-muted mb-1.5">
               Protocol Action Type:
             </label>
             <select
               value={protocolType}
               onChange={(e) => setProtocolType(e.target.value as any)}
-              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full p-2.5 rounded-xl border border-border-theme dark:border-border-theme bg-surface dark:bg-surface-secondary text-xs font-bold text-text-primary dark:text-slate-200 focus:ring-2 focus:ring-amber-500 outline-none"
             >
               <option value="SKILL_GAP_SPRINT">SKILL GAP ACCELERATION SPRINT</option>
               <option value="INTENSIVE_MENTORSHIP">1-ON-1 INTENSIVE MENTORSHIP</option>
@@ -80,7 +80,7 @@ export const CareerInterventionModal: React.FC<CareerInterventionModalProps> = (
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary dark:text-text-muted mb-1.5">
               Designated Senior Mentor:
             </label>
             <input
@@ -88,12 +88,12 @@ export const CareerInterventionModal: React.FC<CareerInterventionModalProps> = (
               value={assignedMentor}
               onChange={(e) => setAssignedMentor(e.target.value)}
               required
-              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full p-2.5 rounded-xl border border-border-theme dark:border-border-theme bg-surface dark:bg-surface-secondary text-xs font-semibold text-text-primary dark:text-slate-200 focus:ring-2 focus:ring-amber-500 outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary dark:text-text-muted mb-1.5">
               Intervention Rationale & Target Milestones:
             </label>
             <textarea
@@ -101,22 +101,22 @@ export const CareerInterventionModal: React.FC<CareerInterventionModalProps> = (
               value={justification}
               onChange={(e) => setJustification(e.target.value)}
               required
-              className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full p-3 rounded-xl border border-border-theme dark:border-border-theme bg-surface dark:bg-surface-secondary text-xs text-text-primary dark:text-slate-200 focus:ring-2 focus:ring-amber-500 outline-none"
             />
           </div>
 
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
+          <div className="pt-3 border-t border-border-theme dark:border-border-theme flex justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-text-secondary dark:text-slate-300 hover:bg-surface-secondary dark:hover:bg-surface-secondary transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isProcessing}
-              className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-amber-500/25 transition-all cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 rounded-xl bg-amber-500/200 hover:bg-amber-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-amber-500/25 transition-all cursor-pointer disabled:opacity-50"
             >
               <Check className="w-4 h-4" />
               {isProcessing ? 'Authorizing Protocol...' : 'Launch Intervention'}

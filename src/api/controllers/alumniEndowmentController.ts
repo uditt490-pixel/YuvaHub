@@ -66,7 +66,9 @@ export const contributeToAlumniEndowment = async (
   req: Request,
   res: Response
 ) => {
-  const fundId = (req.params.fundId as string) || (req.body.fundId as string);
+  const paramFundId = req.params.fundId;
+  const bodyFundId = req.body.fundId;
+  const fundId = (Array.isArray(paramFundId) ? paramFundId[0] : paramFundId) || (Array.isArray(bodyFundId) ? bodyFundId[0] : bodyFundId);
   const donationAmountUsd = Number(
     req.body.donationAmountUsd || req.body.amountUsd || 1000
   );

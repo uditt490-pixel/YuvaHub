@@ -3,89 +3,69 @@ import { AlumniMentorshipEngine } from "../../services/alumniMentorshipEngine.js
 import { AppError } from "../../lib/AppError.js";
 import { sendSuccess } from "../../lib/apiResponse.js";
 
-export const getAlumniMentorshipSlots = async (req: Request, res: Response) => {
-  const campusName = (req.query.campusName as string) || undefined;
-  const expertiseArea = (req.query.expertiseArea as string) || undefined;
-  const status = (req.query.status as string) || undefined;
-  const search = (req.query.search as string) || undefined;
+/**
+ * Controller for Enterprise Campus Alumni Mentorship & Career Guidance
+ */
+export const getAlumniMentors = async (req: Request, res: Response) => {
+  const { campusName, expertiseDomain, availabilityStatus, search } = req.query;
 
-  const slots = await AlumniMentorshipEngine.getSlots({
-    campusName,
-    expertiseArea,
-    status,
-    search,
-  });
+  const filters = {
+    campusName: typeof campusName === 'string' ? campusName : undefined,
+    expertiseDomain: typeof expertiseDomain === 'string' ? expertiseDomain : undefined,
+    availabilityStatus: typeof availabilityStatus === 'string' ? availabilityStatus : undefined,
+    search: typeof search === 'string' ? search : undefined,
+  };
 
-  return sendSuccess(res, { slots, count: slots.length });
+  const results = await AlumniMentorshipEngine.getMentors(filters);
+  return sendSuccess(res, { data: results, count: results.length });
 };
 
-export const registerAlumniMentorshipSlot = async (req: Request, res: Response) => {
+export const registerAlumniMentor = async (req: Request, res: Response) => {
   const {
     mentorName,
-    mentorAlumniBatchYear,
-    mentorCurrentCompany,
-    mentorCurrentRole,
     campusName,
-    expertiseArea,
-    availableSessionsCount,
-    sessionTopics,
-    matchingCompatibilityPercent,
+    alumniGraduationYear,
+    currentJobTitle,
+    currentCompany,
+    expertiseDomain,
+    maxMenteesCapacity,
+    bioSummary,
   } = req.body;
 
-  if (
-    !mentorName ||
-    !mentorAlumniBatchYear ||
-    !mentorCurrentCompany ||
-    !mentorCurrentRole ||
-    !campusName ||
-    !expertiseArea ||
-    !availableSessionsCount ||
-    !sessionTopics
-  ) {
-    throw AppError.badRequest("Missing required mentor slot registration fields");
+  if (!mentorName || !campusName || !currentJobTitle || !currentCompany || !expertiseDomain) {
+    throw AppError.badRequest("Missing required alumni mentor fields");
   }
 
-  const slot = await AlumniMentorshipEngine.registerSlot({
+  const created = await AlumniMentorshipEngine.registerMentor({
     mentorName,
-    mentorAlumniBatchYear: Number(mentorAlumniBatchYear),
-    mentorCurrentCompany,
-    mentorCurrentRole,
     campusName,
-    expertiseArea,
-    availableSessionsCount: Number(availableSessionsCount),
-    sessionTopics,
-    matchingCompatibilityPercent:
-      matchingCompatibilityPercent !== undefined
-        ? Number(matchingCompatibilityPercent)
-        : undefined,
+    alumniGraduationYear: Number(alumniGraduationYear) || new Date().getFullYear() - 5,
+    currentJobTitle,
+    currentCompany,
+    expertiseDomain,
+    maxMenteesCapacity: Number(maxMenteesCapacity) || 3,
+    bioSummary: bioSummary || "",
   });
 
-  return sendSuccess(res, { slot }, 201);
+  return sendSuccess(res, { data: created }, 201);
 };
 
 export const bookAlumniMentorshipSession = async (req: Request, res: Response) => {
-  const slotId = (req.params.slotId as string) || (req.body.slotId as string);
-  const studentId =
-    (req.user?.uid as string) || (req.body.studentId as string) || "STU-DEMO";
-  const studentName =
-    (req.user?.name as string) || (req.body.studentName as string) || "Student";
+  const paramId = req.params.id;
+  const id = Array.isArray(paramId) ? paramId[0] : paramId;
+  const { studentName, sessionTopic } = req.body;
 
-  if (!slotId) {
-    throw AppError.badRequest("Missing slotId parameter");
-  }
+  if (!id) throw AppError.badRequest("Mentor ID is required");
 
-  const bookedSlot = await AlumniMentorshipEngine.bookSession(
-    slotId as string,
-    studentId,
-    studentName
+  const updated = await AlumniMentorshipEngine.requestSession(
+    id,
+    studentName || "Undergraduate Student",
+    sessionTopic || "Career Guidance & Technical Resume Review"
   );
 
-  if (!bookedSlot) {
-    throw AppError.badRequest("Mentorship slot not found or no available sessions");
+  if (!updated) {
+    throw AppError.badRequest("Mentor not available or capacity exceeded");
   }
 
-  return sendSuccess(res, {
-    slot: bookedSlot,
-    message: "Mentorship session booked successfully",
-  });
+  return sendSuccess(res, { data: updated });
 };

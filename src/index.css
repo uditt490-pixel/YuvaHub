@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
+
+/* Enable class-based dark mode in Tailwind v4 */
+@custom-variant dark (&:is(.dark *));
+
 @theme {
   --color-primary: var(--primary-blue);
   --color-primary-light: #EFF6FF;
@@ -105,20 +108,21 @@
   }
 }
 
+/* Updated Utilities to respect Dark Mode variables */
 @utility clean-card {
-  @apply bg-white border border-[var(--color-border)] rounded-xl shadow-sm overflow-hidden transition-all duration-300 ease-out hover:shadow-md hover:border-gray-300;
+  @apply bg-surface border border-border-theme rounded-xl shadow-sm overflow-hidden transition-all duration-300 ease-out hover:shadow-md;
 }
 
 @utility clean-btn {
-  @apply bg-[var(--color-primary)] text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-primary-blue text-white font-medium rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 @utility clean-btn-outline {
-  @apply bg-white text-[var(--color-primary)] border border-[var(--color-primary)] font-medium rounded-lg hover:bg-[var(--color-primary-light)] transition-colors disabled:opacity-50;
+  @apply bg-surface text-primary-blue border border-primary-blue font-medium rounded-lg hover:bg-surface-secondary transition-colors disabled:opacity-50;
 }
 
 @utility clean-input {
-  @apply bg-white border border-[var(--color-border)] text-gray-900 rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent outline-none transition-all;
+  @apply bg-surface border border-border-theme text-text-primary rounded-lg focus:ring-2 focus:ring-focus-ring focus:border-transparent outline-none transition-all;
 }
 
 @keyframes karma-bounce {
@@ -128,4 +132,24 @@
 
 .animate-karma-bounce {
   animation: karma-bounce 0.4s ease-out;
+}
+
+/* Custom Global Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--surface);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-theme);
 }

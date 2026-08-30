@@ -73,7 +73,7 @@ export const FocusRoom: React.FC = () => {
             rotate: [0, 90, 0]
           }}
           transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-white blur-[100px]"
+          className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-surface blur-[100px]"
         />
         <motion.div 
           animate={{ 
@@ -81,7 +81,7 @@ export const FocusRoom: React.FC = () => {
             rotate: [0, -90, 0]
           }}
           transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-[30%] -right-[10%] w-[80%] h-[80%] rounded-full bg-white blur-[120px]"
+          className="absolute -bottom-[30%] -right-[10%] w-[80%] h-[80%] rounded-full bg-surface blur-[120px]"
         />
       </div>
 
@@ -91,7 +91,7 @@ export const FocusRoom: React.FC = () => {
           <motion.div 
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="flex items-center gap-3 px-6 py-3 bg-white/10 backdrop-blur-md rounded-full border border-white/20"
+            className="flex items-center gap-3 px-6 py-3 bg-surface/10 backdrop-blur-md rounded-full border border-white/20"
           >
             <Users className="w-5 h-5 text-white" />
             <span className="text-white font-bold tracking-wide">

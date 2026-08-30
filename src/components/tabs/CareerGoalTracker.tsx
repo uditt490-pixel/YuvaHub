@@ -154,7 +154,7 @@ const CareerGoalTracker: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-8"
+          className="bg-surface dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 mb-8"
         >
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Create New Goal</h2>
           <form onSubmit={handleCreateGoal} className="space-y-6">
@@ -168,7 +168,7 @@ const CareerGoalTracker: React.FC = () => {
                 value={goalTitle}
                 onChange={e => setGoalTitle(e.target.value)}
                 placeholder="e.g. Land a SDE-1 role at a FAANG"
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-surface dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               />
             </div>
             
@@ -187,7 +187,7 @@ const CareerGoalTracker: React.FC = () => {
                     value={targetRole}
                     onChange={e => setTargetRole(e.target.value)}
                     placeholder="e.g. Software Engineer"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-surface dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
                 </div>
               </div>
@@ -200,7 +200,7 @@ const CareerGoalTracker: React.FC = () => {
                   required
                   value={targetDate}
                   onChange={e => setTargetDate(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-surface dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
             </div>
@@ -234,7 +234,7 @@ const CareerGoalTracker: React.FC = () => {
 
       <div className="space-y-8">
         {goals.map((goal) => (
-          <div key={goal._id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div key={goal._id} className="bg-surface dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <div className="flex justify-between items-start">
                 <div>
@@ -284,10 +284,10 @@ const CareerGoalTracker: React.FC = () => {
                       {/* Timeline Dot/Icon */}
                       <button 
                         onClick={() => toggleMilestone(goal._id, milestone.id, milestone.status)}
-                        className="absolute -left-[21px] top-1 bg-white dark:bg-gray-800 rounded-full p-1"
+                        className="absolute -left-[21px] top-1 bg-surface dark:bg-gray-800 rounded-full p-1"
                       >
                         {isCompleted ? (
-                          <CheckCircle2 className="w-8 h-8 text-emerald-500 bg-white dark:bg-gray-800" />
+                          <CheckCircle2 className="w-8 h-8 text-emerald-500 bg-surface dark:bg-gray-800" />
                         ) : (
                           <Circle className="w-8 h-8 text-gray-300 dark:text-gray-600 hover:text-blue-500 transition-colors" />
                         )}
@@ -304,7 +304,7 @@ const CareerGoalTracker: React.FC = () => {
                             </p>
                           </div>
                           {milestone.dueDate && (
-                            <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300">
+                            <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-surface dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300">
                               <Clock className="w-3.5 h-3.5" />
                               {new Date(milestone.dueDate).toLocaleDateString()}
                             </span>
@@ -320,7 +320,7 @@ const CareerGoalTracker: React.FC = () => {
         ))}
 
         {!loading && goals.length === 0 && !isCreating && (
-          <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 border-dashed">
+          <div className="text-center py-20 bg-surface dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 border-dashed">
             <Target className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No career goals set</h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto">

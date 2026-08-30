@@ -30,7 +30,7 @@ type ReinitCallback = () => Promise<void>;
 const reinitCallbacks: ReinitCallback[] = [];
 
 let reconnectTimer: ReturnType<typeof setInterval> | null = null;
-let activeDispatcher: DNLDispatcher | null = null;
+export let activeDispatcher: DNLDispatcher | null = null;
 let activeClients: MongoClient[] = [];
 
 /**
@@ -409,6 +409,24 @@ export async function initializeDatabase(): Promise<void> {
       dbCommand.collection("users").createIndex({ firebaseUid: 1 }, { unique: true, sparse: true })
         .then(() => console.log(`[Database] Created unique sparse index on users.firebaseUid`))
         .catch((err: any) => console.error(`[Database] Failed to create unique index:`, err));
+
+      dbCommand.collection("opportunity_notes").createIndex({ userId: 1, opportunityId: 1 }, { unique: true })
+        .then(() => console.log(`[Database] Created compound unique index on opportunity_notes`))
+        .catch((err: any) => console.error(`[Database] Failed to create index on opportunity_notes:`, err));
+
+      // Deadline reminders must be claimed by a unique, process-independent key.
+      // The partial filter preserves compatibility with legacy notifications
+      // that were created before dedupeKey existed.
+      dbCommand.collection("notifications").createIndex(
+        { dedupeKey: 1 },
+        {
+          name: "deadline_reminder_dedupe_key_unique",
+          unique: true,
+          partialFilterExpression: { dedupeKey: { $exists: true } },
+        },
+      )
+        .then(() => console.log(`[Database] Created unique index on notifications.dedupeKey`))
+        .catch((err: any) => console.error(`[Database] Failed to create unique index on notifications.dedupeKey:`, err));
 
       // Paginated list endpoints — sort-field indexes (created_at / uploaded_at)
       const paginatedIndexes: [string, string][] = [

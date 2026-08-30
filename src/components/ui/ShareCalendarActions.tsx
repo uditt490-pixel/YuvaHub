@@ -229,7 +229,7 @@ export default function ShareCalendarActions({
         <button
           type="button"
           onClick={handleNativeShare}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-surface px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           aria-label={`Share ${title}`}
         >
           <Share2 className="h-4 w-4" aria-hidden="true" />
@@ -239,7 +239,7 @@ export default function ShareCalendarActions({
         <button
           type="button"
           onClick={handleCopyLink}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-surface px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
           aria-label={`Copy link for ${title}`}
         >
           {copied ? (
@@ -254,7 +254,7 @@ export default function ShareCalendarActions({
           type="button"
           onClick={handleGoogleCalendar}
           disabled={!hasValidDeadline}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:bg-white disabled:hover:text-gray-700"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-surface px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:bg-surface disabled:hover:text-gray-700"
           aria-label={
             hasValidDeadline
               ? `Add ${title} deadline to Google Calendar`
@@ -275,7 +275,7 @@ export default function ShareCalendarActions({
           type="button"
           onClick={handleDownloadIcs}
           disabled={!hasValidDeadline}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:bg-white disabled:hover:text-gray-700"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-surface px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-gray-200 disabled:hover:bg-surface disabled:hover:text-gray-700"
           aria-label={
             hasValidDeadline
               ? `Download calendar file for ${title}`

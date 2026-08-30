@@ -37,20 +37,20 @@ const CHANNEL_ICONS: Record<NotificationChannel, React.ReactNode> = {
 
 const PRIORITY_DOT: Record<NotificationPriority, string> = {
   LOW: 'bg-slate-400',
-  MEDIUM: 'bg-blue-500',
-  HIGH: 'bg-amber-500',
-  CRITICAL: 'bg-red-500',
+  MEDIUM: 'bg-blue-500/200',
+  HIGH: 'bg-amber-500/200',
+  CRITICAL: 'bg-red-500/200',
   URGENT: 'bg-rose-600',
 };
 
 const STATUS_LABELS: Record<NotificationStatus, { label: string; color: string }> = {
-  PENDING: { label: 'Pending', color: 'text-slate-500' },
+  PENDING: { label: 'Pending', color: 'text-text-muted' },
   SENT: { label: 'Sent', color: 'text-blue-500' },
   DELIVERED: { label: 'Delivered', color: 'text-emerald-500' },
   READ: { label: 'Read', color: 'text-indigo-500' },
   FAILED: { label: 'Failed', color: 'text-red-500' },
-  EXPIRED: { label: 'Expired', color: 'text-slate-400' },
-  CANCELLED: { label: 'Cancelled', color: 'text-slate-400' },
+  EXPIRED: { label: 'Expired', color: 'text-text-muted' },
+  CANCELLED: { label: 'Cancelled', color: 'text-text-muted' },
 };
 
 const DATE_RANGES = [
@@ -98,14 +98,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[800px]">
+    <div className="bg-surface rounded-2xl border border-border-theme shadow-sm overflow-hidden flex flex-col h-[800px]">
       {/* Header */}
-      <div className="p-4 border-b border-slate-100 bg-slate-50/50 space-y-3">
+      <div className="p-4 border-b border-border-theme bg-surface/50 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-black text-slate-800">Notifications</h3>
+            <h3 className="text-sm font-black text-text-primary">Notifications</h3>
             {unreadCount > 0 && (
-              <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black border border-indigo-200">
+              <span className="px-2 py-0.5 bg-indigo-500/200/20 text-indigo-400 rounded-full text-[10px] font-black border border-indigo-500/30">
                 {unreadCount} unread
               </span>
             )}
@@ -113,14 +113,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={onMarkAllAsRead}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-indigo-400 hover:bg-indigo-500/20 rounded-lg transition-colors"
               title="Mark all as read"
             >
               <CheckCheck className="h-3.5 w-3.5" /> Read All
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`p-1.5 rounded-lg transition-colors ${showFilters ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:bg-slate-100'}`}
+              className={`p-1.5 rounded-lg transition-colors ${showFilters ? 'bg-indigo-500/200/20 text-indigo-400' : 'text-text-muted hover:bg-surface-secondary'}`}
             >
               <Filter className="h-4 w-4" />
             </button>
@@ -129,13 +129,13 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-muted" />
           <input
             type="text"
             placeholder="Search notifications..."
             value={filters.searchQuery}
             onChange={e => onFilterChange({ searchQuery: e.target.value })}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-9 pr-4 py-2 bg-surface border border-border-theme rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
@@ -146,7 +146,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             <button
               onClick={() => onFilterChange({ showUnreadOnly: !filters.showUnreadOnly })}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${
-                filters.showUnreadOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-600'
+                filters.showUnreadOnly ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-surface border-border-theme text-text-secondary'
               }`}
             >
               {filters.showUnreadOnly ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
@@ -160,7 +160,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   key={dr.value}
                   onClick={() => onFilterChange({ dateRange: dr.value })}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                    filters.dateRange === dr.value ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    filters.dateRange === dr.value ? 'bg-primary-blue text-white' : 'bg-surface-secondary text-text-muted hover:bg-border-theme'
                   }`}
                 >
                   {dr.label}
@@ -175,7 +175,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   key={sort}
                   onClick={() => onFilterChange({ sortBy: sort })}
                   className={`px-2.5 py-1 rounded-lg text-[10px] font-bold capitalize transition-all ${
-                    filters.sortBy === sort ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-slate-50 text-slate-500 border border-transparent hover:bg-slate-100'
+                    filters.sortBy === sort ? 'bg-indigo-500/200/20 text-indigo-400 border border-indigo-500/30' : 'bg-surface text-text-muted border border-transparent hover:bg-surface-secondary'
                   }`}
                 >
                   {sort}
@@ -188,9 +188,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
       {/* Bulk Actions */}
       {selectedIds.size > 0 && (
-        <div className="px-4 py-2 bg-indigo-50 border-b border-indigo-100 flex items-center gap-3">
-          <span className="text-xs font-bold text-indigo-700">{selectedIds.size} selected</span>
-          <button onClick={() => setSelectedIds(new Set())} className="text-xs font-bold text-indigo-500 hover:text-indigo-700">Clear</button>
+        <div className="px-4 py-2 bg-indigo-500/20 border-b border-indigo-100 flex items-center gap-3">
+          <span className="text-xs font-bold text-indigo-400">{selectedIds.size} selected</span>
+          <button onClick={() => setSelectedIds(new Set())} className="text-xs font-bold text-indigo-500 hover:text-indigo-400">Clear</button>
         </div>
       )}
 
@@ -200,10 +200,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           <div className="p-8 space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex items-start gap-3 p-3 animate-pulse">
-                <div className="w-8 h-8 rounded-full bg-slate-100" />
+                <div className="w-8 h-8 rounded-full bg-surface-secondary" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-3 w-3/4 bg-slate-100 rounded" />
-                  <div className="h-3 w-1/2 bg-slate-100 rounded" />
+                  <div className="h-3 w-3/4 bg-surface-secondary rounded" />
+                  <div className="h-3 w-1/2 bg-surface-secondary rounded" />
                 </div>
               </div>
             ))}
@@ -211,8 +211,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         ) : notifications.length === 0 ? (
           <div className="p-16 text-center">
             <Bell className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-slate-600">No notifications</p>
-            <p className="text-xs text-slate-400 mt-1">Try adjusting your filters</p>
+            <p className="text-sm font-bold text-text-secondary">No notifications</p>
+            <p className="text-xs text-text-muted mt-1">Try adjusting your filters</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-50">
@@ -223,9 +223,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               return (
                 <div
                   key={notification.id}
-                  className={`flex items-start gap-3 p-4 cursor-pointer transition-all hover:bg-slate-50/50 ${
-                    isUnread ? 'bg-indigo-50/10' : ''
-                  } ${isSelected ? 'bg-indigo-50/30' : ''}`}
+                  className={`flex items-start gap-3 p-4 cursor-pointer transition-all hover:bg-surface/50 ${
+                    isUnread ? 'bg-indigo-500/20/10' : ''
+                  } ${isSelected ? 'bg-indigo-500/20/30' : ''}`}
                   onClick={() => onSelectNotification(notification)}
                 >
                   {/* Priority Dot */}
@@ -235,20 +235,20 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
                       {notification.pinned && <Pin className="h-3 w-3 text-amber-500" />}
-                      <span className={`text-xs font-bold truncate ${isUnread ? 'text-slate-900' : 'text-slate-700'}`}>
+                      <span className={`text-xs font-bold truncate ${isUnread ? 'text-text-primary' : 'text-text-primary'}`}>
                         {notification.title}
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 truncate">{notification.shortBody}</p>
+                    <p className="text-[11px] text-text-muted truncate">{notification.shortBody}</p>
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className={`text-[10px] font-bold ${STATUS_LABELS[notification.status].color}`}>
                         {STATUS_LABELS[notification.status].label}
                       </span>
-                      <span className="text-[10px] text-slate-400">·</span>
-                      <span className="text-[10px] text-slate-400">{formatTimeAgo(notification.createdAt)}</span>
+                      <span className="text-[10px] text-text-muted">·</span>
+                      <span className="text-[10px] text-text-muted">{formatTimeAgo(notification.createdAt)}</span>
                       <div className="flex items-center gap-0.5 ml-auto">
                         {notification.channels.slice(0, 3).map(ch => (
-                          <span key={ch} className="p-0.5 rounded bg-slate-100 text-slate-500" title={ch}>
+                          <span key={ch} className="p-0.5 rounded bg-surface-secondary text-text-muted" title={ch}>
                             {CHANNEL_ICONS[ch]}
                           </span>
                         ))}

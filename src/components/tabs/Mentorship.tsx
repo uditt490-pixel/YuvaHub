@@ -46,27 +46,27 @@ export default function Mentorship() {
   return (
     <div className="w-full max-w-[1400px] mx-auto space-y-8 font-sans pb-16 px-2 sm:px-4">
       {/* Top Banner Navigation Header */}
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-[#e8ded1] dark:border-slate-800 shadow-2xs">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface dark:bg-slate-900 p-6 rounded-3xl border border-border-theme dark:border-slate-800 shadow-2xs">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#603620] text-[#f3e4bd] text-xs font-bold uppercase tracking-wider mb-2">
             <User className="w-3.5 h-3.5 text-[#f3e4bd]" />
             <span>1-on-1 Guidance & Advisory</span>
           </div>
-          <h1 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-            Mentorship <span className="text-[#b56b37] italic">Scheduler</span>
+          <h1 className="text-2xl font-serif font-bold text-text-primary dark:text-white tracking-tight">
+            Mentorship <span className="text-primary-blue italic">Scheduler</span>
           </h1>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">
+          <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">
             Book interactive 1-on-1 sessions with verified industry engineers, manage availability, and export to Google Calendar.
           </p>
         </div>
         
-        <div className="flex bg-[#fcf9f2] dark:bg-slate-800 p-1.5 rounded-2xl border border-[#e8ded1] dark:border-slate-700 shrink-0">
+        <div className="flex bg-background dark:bg-slate-800 p-1.5 rounded-2xl border border-border-theme dark:border-slate-700 shrink-0">
           <button 
             onClick={() => setView('human')}
             className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               view === 'human' 
-                ? 'bg-[#b56b37] text-white shadow-xs' 
-                : 'text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]'
+                ? 'bg-primary-blue text-white shadow-xs' 
+                : 'text-text-secondary dark:text-slate-300 hover:bg-surface-secondary'
             }`}
           >
             <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Industry Mentors</span>
@@ -75,8 +75,8 @@ export default function Mentorship() {
             onClick={() => setView('bookings')}
             className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               view === 'bookings' 
-                ? 'bg-[#b56b37] text-white shadow-xs' 
-                : 'text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]'
+                ? 'bg-primary-blue text-white shadow-xs' 
+                : 'text-text-secondary dark:text-slate-300 hover:bg-surface-secondary'
             }`}
           >
             <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> My Bookings</span>
@@ -85,8 +85,8 @@ export default function Mentorship() {
             onClick={() => setView('ai')}
             className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
               view === 'ai' 
-                ? 'bg-[#b56b37] text-white shadow-xs' 
-                : 'text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]'
+                ? 'bg-primary-blue text-white shadow-xs' 
+                : 'text-text-secondary dark:text-slate-300 hover:bg-surface-secondary'
             }`}
           >
             <span className="flex items-center gap-1.5"><Bot className="w-3.5 h-3.5" /> AI Mentor</span>
@@ -109,7 +109,7 @@ function HumanMain({ user, onBookingCreated }: { user: any; onBookingCreated: ()
     <div className="space-y-8 animate-fade-in">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {DUMMY_MENTORS.map(m => (
-          <div key={m.id} className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-[#e8ded1] dark:border-slate-800 shadow-2xs flex flex-col justify-between h-full hover:border-[#b56b37] transition-all">
+          <div key={m.id} className="bg-surface dark:bg-slate-900 p-6 rounded-3xl border border-border-theme dark:border-slate-800 shadow-2xs flex flex-col justify-between h-full hover:border-primary-blue transition-all">
             <div>
               <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-3">
@@ -117,17 +117,17 @@ function HumanMain({ user, onBookingCreated }: { user: any; onBookingCreated: ()
                       {m.name.charAt(0)}
                    </div>
                    <div>
-                     <h3 className="text-base font-serif font-bold text-[#231f20] dark:text-white leading-tight">{m.name}</h3>
-                     <p className="text-xs font-bold text-[#b56b37] mt-0.5">{m.org}</p>
+                     <h3 className="text-base font-serif font-bold text-text-primary dark:text-white leading-tight">{m.name}</h3>
+                     <p className="text-xs font-bold text-primary-blue mt-0.5">{m.org}</p>
                    </div>
                 </div>
                 <span className="px-2.5 py-1 bg-[#63703d]/15 text-[#63703d] text-[10px] font-extrabold rounded-lg border border-[#63703d]/30">{m.exp} Yrs Exp</span>
               </div>
-              <p className="text-xs text-[#603620] dark:text-slate-300 font-medium mb-4">{m.field}</p>
+              <p className="text-xs text-text-secondary dark:text-slate-300 font-medium mb-4">{m.field}</p>
               
               <div className="flex flex-wrap gap-1.5 mt-4">
                  {m.tags.map(t => (
-                   <span key={t} className="px-2.5 py-1 bg-[#f6efe2] dark:bg-slate-800 text-[#603620] dark:text-slate-300 text-[10px] font-bold rounded-lg border border-[#e8ded1] dark:border-slate-700">
+                   <span key={t} className="px-2.5 py-1 bg-surface-secondary dark:bg-slate-800 text-text-secondary dark:text-slate-300 text-[10px] font-bold rounded-lg border border-border-theme dark:border-slate-700">
                      #{t}
                    </span>
                  ))}
@@ -136,7 +136,7 @@ function HumanMain({ user, onBookingCreated }: { user: any; onBookingCreated: ()
             
             <button 
               onClick={() => setSelectedMentor(m)}
-              className="w-full py-3 mt-6 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 mt-6 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5" /> Schedule 1-on-1 Session
             </button>
@@ -158,12 +158,12 @@ function HumanMain({ user, onBookingCreated }: { user: any; onBookingCreated: ()
       )}
 
       {/* Mentor Application Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#603620] via-[#482817] to-[#231f20] text-white rounded-3xl p-8 md:p-10 text-center flex flex-col items-center shadow-md border border-[#e8ded1]">
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#603620] via-[#482817] to-[#231f20] text-white rounded-3xl p-8 md:p-10 text-center flex flex-col items-center shadow-md border border-border-theme">
          <div className="relative z-10 max-w-xl space-y-3">
            <h3 className="text-2xl font-serif font-bold text-[#f3e4bd]">Want to guide the next generation?</h3>
            <p className="text-xs text-[#e8ded1] font-medium">Share your engineering expertise and mentor ambitious student developers on YuvaHub.</p>
            {!showApply ? (
-             <button onClick={() => setShowApply(true)} className="bg-[#b56b37] hover:bg-[#96552a] text-white px-6 py-3 rounded-xl font-bold text-xs transition-all shadow-md mt-2 inline-block cursor-pointer">
+             <button onClick={() => setShowApply(true)} className="bg-primary-blue hover:bg-[#96552a] text-white px-6 py-3 rounded-xl font-bold text-xs transition-all shadow-md mt-2 inline-block cursor-pointer">
                Apply to Become a Mentor
              </button>
            ) : (
@@ -220,15 +220,15 @@ function BookingModal({ mentor, user, onClose, onSuccess }: { mentor: Mentor; us
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-[#e8ded1] dark:border-slate-800 shadow-2xl space-y-4">
-        <div className="flex justify-between items-center pb-3 border-b border-[#e8ded1] dark:border-slate-800">
+      <div className="bg-surface dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-border-theme dark:border-slate-800 shadow-2xl space-y-4">
+        <div className="flex justify-between items-center pb-3 border-b border-border-theme dark:border-slate-800">
           <div>
-            <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[#b56b37]" /> Book Session with {mentor.name}
+            <h3 className="font-serif font-bold text-base text-text-primary dark:text-white flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary-blue" /> Book Session with {mentor.name}
             </h3>
-            <p className="text-[11px] text-[#603620] dark:text-slate-400 font-semibold">{mentor.org}</p>
+            <p className="text-[11px] text-text-secondary dark:text-slate-400 font-semibold">{mentor.org}</p>
           </div>
-          <button onClick={onClose} className="text-[#8c7569] hover:text-[#231f20] p-1">
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary p-1">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -242,18 +242,18 @@ function BookingModal({ mentor, user, onClose, onSuccess }: { mentor: Mentor; us
 
         <form onSubmit={handleBook} className="space-y-4 text-xs">
           <div>
-            <label className="font-bold text-[#603620] uppercase block mb-1">Select Date</label>
+            <label className="font-bold text-text-secondary uppercase block mb-1">Select Date</label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+              className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               required
             />
           </div>
 
           <div>
-            <label className="font-bold text-[#603620] uppercase block mb-1.5">Available Time Slot</label>
+            <label className="font-bold text-text-secondary uppercase block mb-1.5">Available Time Slot</label>
             <div className="grid grid-cols-3 gap-2">
               {TIME_SLOTS.map(slot => (
                 <button
@@ -262,8 +262,8 @@ function BookingModal({ mentor, user, onClose, onSuccess }: { mentor: Mentor; us
                   onClick={() => setSelectedTime(slot)}
                   className={`py-2 px-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                     selectedTime === slot
-                      ? 'bg-[#b56b37] text-white border-[#b56b37] shadow-xs'
-                      : 'bg-[#fcf9f2] text-[#603620] border-[#e8ded1] hover:bg-[#f6efe2]'
+                      ? 'bg-primary-blue text-white border-primary-blue shadow-xs'
+                      : 'bg-background text-text-secondary border-border-theme hover:bg-surface-secondary'
                   }`}
                 >
                   {slot}
@@ -273,12 +273,12 @@ function BookingModal({ mentor, user, onClose, onSuccess }: { mentor: Mentor; us
           </div>
 
           <div>
-            <label className="font-bold text-[#603620] uppercase block mb-1">Session Topic</label>
+            <label className="font-bold text-text-secondary uppercase block mb-1">Session Topic</label>
             <textarea
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. GSoC proposal review, mock system design interview..."
-              className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none resize-none h-20"
+              className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none resize-none h-20"
               required
             />
           </div>
@@ -287,14 +287,14 @@ function BookingModal({ mentor, user, onClose, onSuccess }: { mentor: Mentor; us
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 text-xs font-bold text-[#603620] bg-[#f6efe2] rounded-xl hover:bg-[#e8ded1]"
+              className="px-4 py-2.5 text-xs font-bold text-text-secondary bg-surface-secondary rounded-xl hover:bg-[#e8ded1]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 text-xs font-bold text-white bg-[#b56b37] hover:bg-[#96552a] rounded-xl shadow-xs disabled:opacity-50 cursor-pointer"
+              className="px-5 py-2.5 text-xs font-bold text-white bg-primary-blue hover:bg-[#96552a] rounded-xl shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {submitting ? 'Booking...' : 'Confirm Request'}
             </button>
@@ -319,34 +319,34 @@ function MentorApplyForm({ user, onClose }: { user: any; onClose: () => void }) 
 
   if (status === 'success') {
     return (
-      <div className="bg-white text-[#231f20] p-6 rounded-2xl border border-[#e8ded1] text-center space-y-3 animate-scale-up">
+      <div className="bg-surface text-text-primary p-6 rounded-2xl border border-border-theme text-center space-y-3 animate-scale-up">
         <CheckCircle className="w-8 h-8 text-[#63703d] mx-auto" />
         <h4 className="font-serif font-bold text-base">Application Submitted!</h4>
-        <p className="text-xs text-[#603620] font-medium">Our team will verify your credentials and reach out via email.</p>
-        <button onClick={onClose} className="px-4 py-2 bg-[#b56b37] text-white text-xs font-bold rounded-xl">Close</button>
+        <p className="text-xs text-text-secondary font-medium">Our team will verify your credentials and reach out via email.</p>
+        <button onClick={onClose} className="px-4 py-2 bg-primary-blue text-white text-xs font-bold rounded-xl">Close</button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white text-[#231f20] p-6 rounded-2xl border border-[#e8ded1] space-y-3 text-left w-full text-xs">
+    <form onSubmit={handleSubmit} className="bg-surface text-text-primary p-6 rounded-2xl border border-border-theme space-y-3 text-left w-full text-xs">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="font-bold text-[#603620] uppercase block mb-1">Company / Org</label>
-          <input required type="text" placeholder="e.g. Google" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} className="w-full bg-[#fcf9f2] border border-[#e8ded1] p-2.5 rounded-xl text-xs" />
+          <label className="font-bold text-text-secondary uppercase block mb-1">Company / Org</label>
+          <input required type="text" placeholder="e.g. Google" value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} className="w-full bg-background border border-border-theme p-2.5 rounded-xl text-xs" />
         </div>
         <div>
-          <label className="font-bold text-[#603620] uppercase block mb-1">Role Title</label>
-          <input required type="text" placeholder="e.g. Staff Engineer" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full bg-[#fcf9f2] border border-[#e8ded1] p-2.5 rounded-xl text-xs" />
+          <label className="font-bold text-text-secondary uppercase block mb-1">Role Title</label>
+          <input required type="text" placeholder="e.g. Staff Engineer" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full bg-background border border-border-theme p-2.5 rounded-xl text-xs" />
         </div>
       </div>
       <div>
-        <label className="font-bold text-[#603620] uppercase block mb-1">Brief Bio & Expertise</label>
-        <textarea required rows={2} placeholder="Explain what topics you can guide students on..." value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} className="w-full bg-[#fcf9f2] border border-[#e8ded1] p-2.5 rounded-xl text-xs resize-none" />
+        <label className="font-bold text-text-secondary uppercase block mb-1">Brief Bio & Expertise</label>
+        <textarea required rows={2} placeholder="Explain what topics you can guide students on..." value={formData.bio} onChange={e => setFormData({...formData, bio: e.target.value})} className="w-full bg-background border border-border-theme p-2.5 rounded-xl text-xs resize-none" />
       </div>
       <div className="flex justify-end gap-2 pt-2">
-        <button type="button" onClick={onClose} className="px-3 py-2 text-xs font-bold text-[#603620] bg-[#f6efe2] rounded-xl">Cancel</button>
-        <button type="submit" disabled={status === 'submitting'} className="px-5 py-2 text-xs font-bold text-white bg-[#b56b37] rounded-xl">Submit Application</button>
+        <button type="button" onClick={onClose} className="px-3 py-2 text-xs font-bold text-text-secondary bg-surface-secondary rounded-xl">Cancel</button>
+        <button type="submit" disabled={status === 'submitting'} className="px-5 py-2 text-xs font-bold text-white bg-primary-blue rounded-xl">Submit Application</button>
       </div>
     </form>
   );
@@ -380,10 +380,10 @@ function MyBookingsMain({ user }: { user: any }) {
 
   if (sessions.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-10 text-center space-y-4">
-        <Calendar className="w-10 h-10 text-[#b56b37] mx-auto" />
-        <h3 className="font-serif font-bold text-lg text-[#231f20] dark:text-white">No Upcoming Sessions</h3>
-        <p className="text-xs text-[#603620] font-medium max-w-sm mx-auto">Explore industry mentors to schedule your first 1-on-1 advisory call.</p>
+      <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-10 text-center space-y-4">
+        <Calendar className="w-10 h-10 text-primary-blue mx-auto" />
+        <h3 className="font-serif font-bold text-lg text-text-primary dark:text-white">No Upcoming Sessions</h3>
+        <p className="text-xs text-text-secondary font-medium max-w-sm mx-auto">Explore industry mentors to schedule your first 1-on-1 advisory call.</p>
       </div>
     );
   }
@@ -391,13 +391,13 @@ function MyBookingsMain({ user }: { user: any }) {
   return (
     <div className="space-y-4">
       {sessions.map(s => (
-        <div key={s.sessionId} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 shadow-2xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div key={s.sessionId} className="p-5 rounded-2xl bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 shadow-2xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <span className="text-[10px] font-bold uppercase text-[#63703d] bg-[#63703d]/15 px-2.5 py-0.5 rounded-md border border-[#63703d]/30">{s.status}</span>
-            <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white mt-1">{s.topic}</h3>
-            <p className="text-xs text-[#603620] font-semibold mt-0.5">Mentor: {s.mentorName} • {s.slotDateTime}</p>
+            <h3 className="font-serif font-bold text-base text-text-primary dark:text-white mt-1">{s.topic}</h3>
+            <p className="text-xs text-text-secondary font-semibold mt-0.5">Mentor: {s.mentorName} • {s.slotDateTime}</p>
           </div>
-          <a href={s.meetingUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-[#b56b37] text-white text-xs font-bold rounded-xl flex items-center gap-2">
+          <a href={s.meetingUrl} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-primary-blue text-white text-xs font-bold rounded-xl flex items-center gap-2">
             <Video className="w-3.5 h-3.5" /> Join Video Call
           </a>
         </div>
@@ -439,14 +439,14 @@ function AIMain({ user }: { user: any }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
-      <div className="border-b border-[#e8ded1] pb-4 flex items-center gap-3">
+    <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
+      <div className="border-b border-border-theme pb-4 flex items-center gap-3">
         <div className="p-2.5 rounded-xl bg-[#603620] text-[#f3e4bd]">
           <Bot className="w-5 h-5 text-[#f3e4bd]" />
         </div>
         <div>
-          <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white">YuvaHub AI Career Advisor</h3>
-          <p className="text-xs text-[#603620] font-medium">Instant guidance on resume review, GSoC proposals, and system design.</p>
+          <h3 className="font-serif font-bold text-base text-text-primary dark:text-white">YuvaHub AI Career Advisor</h3>
+          <p className="text-xs text-text-secondary font-medium">Instant guidance on resume review, GSoC proposals, and system design.</p>
         </div>
       </div>
 
@@ -455,25 +455,25 @@ function AIMain({ user }: { user: any }) {
           <div key={idx} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-lg p-4 rounded-2xl text-xs font-medium leading-relaxed ${
               m.sender === 'user' 
-                ? 'bg-[#b56b37] text-white shadow-xs' 
-                : 'bg-[#fcf9f2] text-[#231f20] border border-[#e8ded1]'
+                ? 'bg-primary-blue text-white shadow-xs' 
+                : 'bg-background text-text-primary border border-border-theme'
             }`}>
               {m.text}
             </div>
           </div>
         ))}
-        {loading && <div className="text-xs text-[#603620] font-bold animate-pulse">AI is typing...</div>}
+        {loading && <div className="text-xs text-text-secondary font-bold animate-pulse">AI is typing...</div>}
       </div>
 
-      <form onSubmit={handleSend} className="flex gap-2 pt-2 border-t border-[#e8ded1]">
+      <form onSubmit={handleSend} className="flex gap-2 pt-2 border-t border-border-theme">
         <input
           type="text"
           placeholder="Ask AI Mentor anything..."
           value={input}
           onChange={e => setInput(e.target.value)}
-          className="flex-1 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl px-4 py-3 text-xs text-[#231f20] outline-none"
+          className="flex-1 bg-background border border-border-theme rounded-xl px-4 py-3 text-xs text-text-primary outline-none"
         />
-        <button type="submit" disabled={loading} className="px-5 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white text-xs font-bold rounded-xl flex items-center gap-2 cursor-pointer">
+        <button type="submit" disabled={loading} className="px-5 py-3 bg-primary-blue hover:bg-[#96552a] text-white text-xs font-bold rounded-xl flex items-center gap-2 cursor-pointer">
           <Send className="w-4 h-4" /> Send
         </button>
       </form>

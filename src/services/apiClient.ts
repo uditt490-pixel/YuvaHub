@@ -1166,7 +1166,7 @@ export async function registerCampusPatent(payload: any) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.error || "Failed to register patent");
   }
-  return await response.json();
+  return response.json();
 }
 
 export async function licenseCampusPatent(id: string, commercialPartnerName: string) {

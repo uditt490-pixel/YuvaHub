@@ -1,8 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
   LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic, Trophy,
-  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket, Compass, Map, Swords
-} from 'lucide-react';
+  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Layers, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket, Compass, Map, Swords
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
 import { useAppContext } from './context/AppContext';
@@ -70,6 +69,7 @@ const ProjectShowcaseVault = lazy(() => import('./components/tabs/ProjectShowcas
 const StarInterviewStudio = lazy(() => import('./components/tabs/StarInterviewStudio'));
 const HelpCenter = lazy(() => import('./components/tabs/HelpCenter'));
 const FAQ = lazy(() => import('./components/tabs/FAQ'));
+const SystemDesignPrep = lazy(() => import("./components/tabs/SystemDesignPrep"));
 const Teams = lazy(() => import('./components/team-builder/HackathonTeamBuilderHub'));
 const MockInterviewRoom = lazy(() => import('./pages/MockInterviewRoom'));
 const ApplicationTracker = lazy(() => import('./pages/ApplicationTracker').then(m => ({ default: m.ApplicationTracker })));
@@ -322,6 +322,7 @@ function App() {
       items: [
         { id: 'degree_planner', label: 'Degree Planner Hub', icon: Target },
         { id: 'skill_gap', label: 'Skill Gap Analyzer', icon: Target },
+        { id: 'sys_design', label: 'System Design', icon: Layers },
         { id: 'coding_arena', label: 'Coding Challenge Arena', icon: Swords },
         { id: 'learning_path', label: 'Learning Path Builder', icon: Map },
         { id: 'ai_assistant', label: 'AI Assistant', icon: Brain },
@@ -426,7 +427,8 @@ function App() {
       case 'coding_arena': return <CodingChallengeArena />;
       case 'learning_path': return <LearningPathBuilder />;
       case 'interview_prep': return <InterviewPrepStudio />;
-      case 'career_sim': return <div className="p-8 text-center text-gray-500">Career Simulator Coming Soon</div>; // <CareerPathSimulator />;
+      case 'sys_design': return <SystemDesignPrep />;
+      case 'career_sim': return <div className="p-8 text-center text-gray-500">Career Simulator Coming Soon</div>;
       case 'opensource_bounties': return <OpenSourceBountyStudio />;
       case 'opportunity_match': return <OpportunityMatchStudio />;
       case 'tech_ecosystem': return <TechEcosystemStudio />;

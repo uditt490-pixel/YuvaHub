@@ -84,25 +84,25 @@ export const FeatureFlagManager: React.FC = () => {
     const filteredFlags = flags.filter(f => f.key.toLowerCase().includes(searchQuery.toLowerCase()) || f.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return (
-        <div className="min-h-screen bg-[#f8fafc] p-4 lg:p-8 font-sans">
+        <div className="min-h-screen bg-background p-4 lg:p-8 font-sans">
             <div className="max-w-[1500px] mx-auto space-y-8">
 
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-surface p-6 rounded-3xl border border-border-theme shadow-sm">
                     <div>
                         <div className="flex items-center gap-2 mb-3">
-                            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 border border-slate-200">
+                            <span className="px-3 py-1 rounded-full bg-surface-secondary text-text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-1.5 border border-border-theme">
                                 <ToggleLeft className="h-4 w-4" /> Release Toggles
                             </span>
                         </div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Feature Flag Management</h1>
+                        <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">Feature Flag Management</h1>
                     </div>
 
-                    <div className="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner w-full sm:w-auto">
+                    <div className="flex items-center bg-surface-secondary p-1.5 rounded-xl border border-border-theme shadow-inner w-full sm:w-auto">
                         {['PRODUCTION', 'STAGING', 'DEVELOPMENT'].map(env => (
                             <button
                                 key={env}
                                 onClick={() => setActiveEnv(env as Environment)}
-                                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all ${activeEnv === env ? 'bg-white text-slate-900 shadow-sm shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-lg text-sm font-bold transition-all ${activeEnv === env ? 'bg-surface text-text-primary shadow-sm shadow-slate-200' : 'text-text-muted hover:text-text-primary'}`}
                             >
                                 <Server className="h-4 w-4" /> {env === 'PRODUCTION' ? 'Prod' : env === 'STAGING' ? 'Staging' : 'Dev'}
                             </button>
@@ -113,25 +113,25 @@ export const FeatureFlagManager: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                     {/* Flag List Sidebar */}
-                    <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[800px]">
-                        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                    <div className="lg:col-span-4 bg-surface rounded-2xl border border-border-theme shadow-sm overflow-hidden flex flex-col h-[800px]">
+                        <div className="p-4 border-b border-border-theme bg-surface/50">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                                 <input
                                     type="text"
                                     placeholder="Search flag key..."
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                                    className="w-full pl-9 pr-4 py-2 border border-border-theme rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-surface"
                                 />
                             </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-3 space-y-2">
                             {isLoading ? (
-                                <div className="flex justify-center p-10"><div className="animate-spin h-6 w-6 border-2 border-slate-300 border-t-indigo-600 rounded-full" /></div>
+                                <div className="flex justify-center p-10"><div className="animate-spin h-6 w-6 border-2 border-border-theme border-t-indigo-600 rounded-full" /></div>
                             ) : filteredFlags.length === 0 ? (
-                                <div className="text-center p-6 text-slate-500 text-sm font-medium">No flags correspond to your search criteria.</div>
+                                <div className="text-center p-6 text-text-muted text-sm font-medium">No flags correspond to your search criteria.</div>
                             ) : (
                                 filteredFlags.map(flag => {
                                     const isEnabled = flag.environments[activeEnv].isEnabled;
@@ -141,18 +141,18 @@ export const FeatureFlagManager: React.FC = () => {
                                         <div
                                             key={flag.id}
                                             onClick={() => setSelectedFlagId(flag.id)}
-                                            className={`p-4 rounded-xl cursor-pointer transition-all border ${isSelected ? 'border-indigo-500 bg-indigo-50/30 shadow-sm' : 'border-slate-100 hover:border-slate-300 bg-white'}`}
+                                            className={`p-4 rounded-xl cursor-pointer transition-all border ${isSelected ? 'border-indigo-500 bg-indigo-500/20/30 shadow-sm' : 'border-border-theme hover:border-border-theme bg-surface'}`}
                                         >
                                             <div className="flex justify-between items-start gap-4">
                                                 <div className="max-w-[70%]">
-                                                    <h4 className={`font-bold text-sm truncate ${isSelected ? 'text-indigo-900' : 'text-slate-800'}`}>{flag.name}</h4>
-                                                    <code className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded mt-1 inline-block truncate max-w-full font-mono">{flag.key}</code>
+                                                    <h4 className={`font-bold text-sm truncate ${isSelected ? 'text-indigo-900' : 'text-text-primary'}`}>{flag.name}</h4>
+                                                    <code className="text-[10px] bg-surface-secondary text-text-muted px-1.5 py-0.5 rounded mt-1 inline-block truncate max-w-full font-mono">{flag.key}</code>
                                                 </div>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); handleToggle(flag.id, isEnabled); }}
-                                                    className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${isEnabled ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-slate-300 hover:bg-slate-400'}`}
+                                                    className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${isEnabled ? 'bg-emerald-500/200 hover:bg-emerald-600' : 'bg-slate-300 hover:bg-slate-400'}`}
                                                 >
-                                                    <span className={`absolute top-1 bg-white w-4 h-4 rounded-full transition-all shadow-sm ${isEnabled ? 'left-7' : 'left-1'}`} />
+                                                    <span className={`absolute top-1 bg-surface w-4 h-4 rounded-full transition-all shadow-sm ${isEnabled ? 'left-7' : 'left-1'}`} />
                                                 </button>
                                             </div>
                                         </div>
@@ -160,7 +160,7 @@ export const FeatureFlagManager: React.FC = () => {
                                 })
                             )}
                         </div>
-                        <div className="p-4 border-t border-slate-100 bg-slate-50">
+                        <div className="p-4 border-t border-border-theme bg-surface">
                             <button className="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-600/20 hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
                                 <Plus className="h-4 w-4" /> Create Flag
                             </button>
@@ -170,29 +170,29 @@ export const FeatureFlagManager: React.FC = () => {
                     {/* Detail Viewpane */}
                     <div className="lg:col-span-8 flex flex-col gap-6">
                         {!selectedFlagData || !currentEnvData ? (
-                            <div className="flex-1 bg-white rounded-2xl border border-slate-200 border-dashed flex flex-col items-center justify-center text-slate-400 p-12">
+                            <div className="flex-1 bg-surface rounded-2xl border border-border-theme border-dashed flex flex-col items-center justify-center text-text-muted p-12">
                                 <ToggleLeft className="h-16 w-16 mb-4 opacity-50" />
                                 <p className="font-medium">Select a feature flag from the index to view configurations</p>
                             </div>
                         ) : (
                             <>
-                                <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm relative overflow-hidden">
-                                    <div className={`absolute left-0 top-0 w-1.5 h-full ${currentEnvData.isEnabled ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                                <div className="bg-surface rounded-2xl border border-border-theme p-8 shadow-sm relative overflow-hidden">
+                                    <div className={`absolute left-0 top-0 w-1.5 h-full ${currentEnvData.isEnabled ? 'bg-emerald-500/200' : 'bg-slate-300'}`} />
 
                                     <div className="flex flex-col xl:flex-row justify-between gap-6">
                                         <div className="space-y-4">
                                             <div>
-                                                <h2 className="text-2xl font-black text-slate-900">{selectedFlagData.name}</h2>
-                                                <div className="flex items-center gap-3 mt-2 text-sm text-slate-500 font-medium">
+                                                <h2 className="text-2xl font-black text-text-primary">{selectedFlagData.name}</h2>
+                                                <div className="flex items-center gap-3 mt-2 text-sm text-text-muted font-medium">
                                                     <span className="flex items-center gap-1"><Tag className="h-4 w-4" /> {selectedFlagData.type} FLAG</span>
                                                     <span>•</span>
-                                                    <code className="text-xs bg-slate-100 px-2 py-0.5 rounded font-mono">{selectedFlagData.key}</code>
+                                                    <code className="text-xs bg-surface-secondary px-2 py-0.5 rounded font-mono">{selectedFlagData.key}</code>
                                                 </div>
                                             </div>
-                                            <p className="text-slate-600 max-w-xl">{selectedFlagData.description}</p>
+                                            <p className="text-text-secondary max-w-xl">{selectedFlagData.description}</p>
                                             <div className="flex gap-2">
                                                 {selectedFlagData.tags.map(tag => (
-                                                    <span key={tag} className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-bold uppercase border border-indigo-100">
+                                                    <span key={tag} className="px-2 py-1 bg-indigo-500/20 text-indigo-400 rounded text-xs font-bold uppercase border border-indigo-100">
                                                         {tag}
                                                     </span>
                                                 ))}
@@ -200,20 +200,20 @@ export const FeatureFlagManager: React.FC = () => {
                                         </div>
 
                                         <div className="w-full xl:w-72 space-y-6">
-                                            <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
+                                            <div className="bg-surface rounded-xl p-5 border border-border-theme">
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-widest">Traffic Rollout</label>
-                                                    <span className="text-indigo-600 font-black">{currentEnvData.rolloutPercentage}%</span>
+                                                    <label className="text-xs font-bold text-text-primary uppercase tracking-widest">Traffic Rollout</label>
+                                                    <span className="text-indigo-400 font-black">{currentEnvData.rolloutPercentage}%</span>
                                                 </div>
                                                 <input
                                                     type="range"
                                                     min="0" max="100" step="5"
-                                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                                    className="w-full h-2 bg-border-theme rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                                     value={currentEnvData.rolloutPercentage}
                                                     disabled={!currentEnvData.isEnabled}
                                                     onChange={(e) => handleRolloutChange(selectedFlagData.id, parseInt(e.target.value))}
                                                 />
-                                                <div className="flex justify-between text-[10px] font-bold text-slate-400 mt-1 uppercase">
+                                                <div className="flex justify-between text-[10px] font-bold text-text-muted mt-1 uppercase">
                                                     <span>0%</span>
                                                     <span>50%</span>
                                                     <span>100%</span>
@@ -229,11 +229,11 @@ export const FeatureFlagManager: React.FC = () => {
                                     {selectedFlagData.type === 'EXPERIMENT' ? (
                                         <ExperimentMetrics metrics={expMetrics} isLoading={isMetricsLoading} />
                                     ) : (
-                                        <div className="w-full bg-slate-50/50 rounded-2xl border border-slate-200 p-8 shadow-sm flex flex-col items-center justify-center text-center h-[300px]">
+                                        <div className="w-full bg-surface/50 rounded-2xl border border-border-theme p-8 shadow-sm flex flex-col items-center justify-center text-center h-[300px]">
                                             <Activity className="h-10 w-10 text-slate-300 mb-4" />
-                                            <h4 className="font-bold text-slate-700">Metrics Disengaged</h4>
-                                            <p className="text-sm text-slate-500 max-w-sm mt-1">This flag is not configured for A/B testing or multidimensional metrics evaluation.</p>
-                                            <button className="mt-4 text-sm font-bold text-indigo-600 hover:text-indigo-700">Upgrade to Experiment</button>
+                                            <h4 className="font-bold text-text-primary">Metrics Disengaged</h4>
+                                            <p className="text-sm text-text-muted max-w-sm mt-1">This flag is not configured for A/B testing or multidimensional metrics evaluation.</p>
+                                            <button className="mt-4 text-sm font-bold text-indigo-400 hover:text-indigo-400">Upgrade to Experiment</button>
                                         </div>
                                     )}
                                 </div>

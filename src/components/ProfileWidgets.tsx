@@ -24,7 +24,7 @@ export const ProfileWidgets: React.FC<ProfileWidgetsProps> = ({ githubStats, lee
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {/* GitHub Languages Pie Chart */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-surface dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Languages</h3>
                 <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
@@ -52,7 +52,7 @@ export const ProfileWidgets: React.FC<ProfileWidgetsProps> = ({ githubStats, lee
             </div>
 
             {/* LeetCode Stats Summary */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-surface dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">LeetCode Progress</h3>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg text-center">
@@ -75,7 +75,7 @@ export const ProfileWidgets: React.FC<ProfileWidgetsProps> = ({ githubStats, lee
             </div>
 
             {/* GitHub Contribution Heatmap (Simplified Grid) */}
-            <div className="md:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="md:col-span-2 bg-surface dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contribution Activity</h3>
                 <div className="flex flex-wrap gap-1">
                     {githubStats.contributionGraph.map((day, idx) => {

@@ -37,16 +37,16 @@ const InviteInboxModal: React.FC<InviteInboxModalProps> = ({ isOpen, onClose, in
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl z-50 overflow-hidden"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-surface border border-border-theme rounded-2xl shadow-2xl z-50 overflow-hidden"
           >
-            <div className="p-6 border-b border-gray-800 flex justify-between items-center">
+            <div className="p-6 border-b border-border-theme flex justify-between items-center">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <Users className="text-purple-400" />
                 Team Invites
               </h2>
               <button 
                 onClick={onClose}
-                className="text-gray-400 hover:text-white transition"
+                className="text-text-muted hover:text-white transition"
               >
                 ✕
               </button>
@@ -54,7 +54,7 @@ const InviteInboxModal: React.FC<InviteInboxModalProps> = ({ isOpen, onClose, in
             
             <div className="p-6 max-h-[60vh] overflow-y-auto">
               {invites.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
+                <div className="text-center text-text-muted py-8">
                   No pending invites right now.
                 </div>
               ) : (
@@ -65,11 +65,11 @@ const InviteInboxModal: React.FC<InviteInboxModalProps> = ({ isOpen, onClose, in
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
-                      className="bg-gray-800 rounded-xl p-4 border border-gray-700 flex flex-col gap-3"
+                      className="bg-surface-secondary rounded-xl p-4 border border-border-theme flex flex-col gap-3"
                     >
                       <div>
                         <h4 className="text-lg font-semibold text-white">{invite.teamName}</h4>
-                        <p className="text-sm text-gray-400">Wants you as: <span className="text-purple-400 font-medium">{invite.role}</span></p>
+                        <p className="text-sm text-text-muted">Wants you as: <span className="text-purple-400 font-medium">{invite.role}</span></p>
                       </div>
                       
                       <div className="flex gap-2 mt-2">

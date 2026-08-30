@@ -417,7 +417,7 @@ export default function MentorshipAdvisoryStudio() {
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 isActive
                   ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
+                  : 'bg-surface dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
               }`}
             >
               <Icon size={14} />
@@ -429,7 +429,7 @@ export default function MentorshipAdvisoryStudio() {
 
       {/* ─── TAB: MENTORS ─── */}
       {activeTab === 'mentors' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Verified Mentors</h3>
@@ -494,7 +494,7 @@ export default function MentorshipAdvisoryStudio() {
                     <div className="space-y-3">
                       <div className="flex flex-wrap gap-1">
                         {(m.skills || []).map((s) => (
-                          <span key={s} className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-semibold rounded-md">
+                          <span key={s} className="px-2 py-0.5 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-semibold rounded-md">
                             {s}
                           </span>
                         ))}
@@ -516,7 +516,7 @@ export default function MentorshipAdvisoryStudio() {
 
       {/* ─── TAB: BOOKING ─── */}
       {activeTab === 'booking' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Schedule Advisory Office Hours</h3>
@@ -604,7 +604,7 @@ export default function MentorshipAdvisoryStudio() {
 
       {/* ─── TAB: LEDGER ─── */}
       {activeTab === 'ledger' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Advisory Session History & Notes</h3>
@@ -696,7 +696,7 @@ export default function MentorshipAdvisoryStudio() {
 
                         {/* Feedback */}
                         {detail.status === 'completed' && iAmStudent && !detail.feedback && (
-                          <div className="space-y-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
+                          <div className="space-y-2 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
                             <div className="font-bold text-gray-700 dark:text-gray-300">Rate this session</div>
                             <div className="flex items-center gap-1">
                               {[1, 2, 3, 4, 5].map((n) => (
@@ -733,7 +733,7 @@ export default function MentorshipAdvisoryStudio() {
                           </div>
                           <div className="space-y-2">
                             {(detail.notes || []).map((n: any) => (
-                              <div key={n.noteId} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
+                              <div key={n.noteId} className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3">
                                 <div className="text-[10px] font-bold text-gray-400 uppercase">
                                   {n.authorName} • {n.authorRole} • {new Date(n.createdAt).toLocaleDateString()}
                                 </div>
@@ -764,7 +764,7 @@ export default function MentorshipAdvisoryStudio() {
                           </div>
                           <div className="space-y-2">
                             {(detail.actionItems || []).map((a: any) => (
-                              <label key={a.itemId} className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 cursor-pointer">
+                              <label key={a.itemId} className="flex items-center gap-2 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 cursor-pointer">
                                 <input
                                   type="checkbox"
                                   checked={a.status === 'done'}
@@ -811,7 +811,7 @@ export default function MentorshipAdvisoryStudio() {
 
       {/* ─── TAB: MENTOR STUDIO ─── */}
       {activeTab === 'studio' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           {!isMentor ? (
             <EmptyState
               title="Mentor Studio is locked"
@@ -843,15 +843,15 @@ export default function MentorshipAdvisoryStudio() {
                   </div>
                   {myProfile?.headline && <p className="text-xs text-gray-500 mt-2">{myProfile.headline}</p>}
                   <div className="grid grid-cols-3 gap-2 mt-4 text-center">
-                    <div className="p-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="p-2 bg-surface dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                       <div className="text-base font-black text-gray-900 dark:text-white">{myProfile?.stats?.sessionsCompleted || 0}</div>
                       <div className="text-[10px] font-bold text-gray-400 uppercase">Sessions</div>
                     </div>
-                    <div className="p-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="p-2 bg-surface dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                       <div className="text-base font-black text-gray-900 dark:text-white">{myProfile?.stats?.totalHoursMentored || 0}h</div>
                       <div className="text-[10px] font-bold text-gray-400 uppercase">Hours</div>
                     </div>
-                    <div className="p-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                    <div className="p-2 bg-surface dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                       <div className="text-base font-black text-gray-900 dark:text-white flex items-center justify-center gap-0.5">
                         <Star size={13} className="text-amber-500" fill="currentColor" />
                         {myProfile?.stats?.avgRating?.toFixed(1) || '—'}
@@ -871,20 +871,20 @@ export default function MentorshipAdvisoryStudio() {
                       value={slotForm.date}
                       min={new Date().toISOString().slice(0, 10)}
                       onChange={(e) => setSlotForm({ ...slotForm, date: e.target.value })}
-                      className="w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white outline-none"
+                      className="w-full p-2 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white outline-none"
                     />
                     <div className="grid grid-cols-2 gap-2">
                       <input
                         type="time"
                         value={slotForm.startTime}
                         onChange={(e) => setSlotForm({ ...slotForm, startTime: e.target.value })}
-                        className="w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white outline-none"
+                        className="w-full p-2 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white outline-none"
                       />
                       <input
                         type="time"
                         value={slotForm.endTime}
                         onChange={(e) => setSlotForm({ ...slotForm, endTime: e.target.value })}
-                        className="w-full p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white outline-none"
+                        className="w-full p-2 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white outline-none"
                       />
                     </div>
                     <button
@@ -943,7 +943,7 @@ export default function MentorshipAdvisoryStudio() {
 
       {/* ─── TAB: INSIGHTS ─── */}
       {activeTab === 'insights' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <h3 className="text-base font-bold text-gray-900 dark:text-white">Mentorship Insights</h3>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -989,7 +989,7 @@ export default function MentorshipAdvisoryStudio() {
                   <div className="font-bold text-gray-700 dark:text-gray-300 mb-2">Top Topics</div>
                   <div className="flex flex-wrap gap-2">
                     {analytics.mentor.topTopics.map(([topic, count]) => (
-                      <span key={topic} className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-bold rounded-lg">
+                      <span key={topic} className="px-2.5 py-1 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs font-bold rounded-lg">
                         {topic} <span className="text-teal-600 dark:text-teal-400">×{count}</span>
                       </span>
                     ))}
@@ -1003,7 +1003,7 @@ export default function MentorshipAdvisoryStudio() {
 
       {/* ─── TAB: APPLY ─── */}
       {activeTab === 'apply' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           {myApplication?.status === 'pending' ? (
             <EmptyState
               title="Application under review"

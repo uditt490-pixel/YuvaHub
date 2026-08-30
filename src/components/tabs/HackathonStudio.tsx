@@ -284,7 +284,7 @@ export default function HackathonStudio() {
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 isActive
                   ? 'bg-amber-600 text-white shadow-md shadow-amber-500/20'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
+                  : 'bg-surface dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
               }`}
             >
               <Icon size={14} />
@@ -300,7 +300,7 @@ export default function HackathonStudio() {
       {activeTab === 'builder' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm lg:col-span-2">
+          <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm lg:col-span-2">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Project Pitch Information</h3>
               <p className="text-xs text-gray-500 dark:text-gray-400">Fill in details for judges and community voting.</p>
@@ -388,7 +388,7 @@ export default function HackathonStudio() {
           </div>
 
           {/* AI Pre-Check Panel */}
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
+          <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
             <h3 className="text-base font-bold text-gray-900 dark:text-white">AI Judge Pre-Check</h3>
 
             <div className="space-y-3 text-xs">
@@ -421,7 +421,7 @@ export default function HackathonStudio() {
 
       {/* TAB 2: BOUNTIES */}
       {activeTab === 'bounties' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div>
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Sponsor Bounty Tracks</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">Claim prize tracks for bonus evaluation points.</p>
@@ -443,7 +443,7 @@ export default function HackathonStudio() {
                 <div className="space-y-3">
                   <div className="flex flex-wrap gap-1">
                     {b.tags.map(t => (
-                      <span key={t} className="px-2 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-semibold rounded-md">
+                      <span key={t} className="px-2 py-0.5 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-semibold rounded-md">
                         {t}
                       </span>
                     ))}
@@ -468,7 +468,7 @@ export default function HackathonStudio() {
 
       {/* TAB 3: LEADERBOARD */}
       {activeTab === 'leaderboard' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div>
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Community Showcase & Leaderboard</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">Upvote top submissions and review community rankings.</p>
@@ -494,7 +494,7 @@ export default function HackathonStudio() {
 
                 <button
                   onClick={() => handleUpvote(p.id)}
-                  className="px-4 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 border border-gray-200 dark:border-gray-700 font-bold rounded-xl transition flex items-center gap-1.5"
+                  className="px-4 py-2 bg-surface dark:bg-gray-800 hover:bg-gray-100 border border-gray-200 dark:border-gray-700 font-bold rounded-xl transition flex items-center gap-1.5"
                 >
                   <ThumbsUp size={14} className="text-amber-500" />
                   <span>{p.upvotes} Upvotes</span>
@@ -507,7 +507,7 @@ export default function HackathonStudio() {
 
       {/* TAB 4: KANBAN */}
       {activeTab === 'kanban' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Sprint Task Board</h3>
@@ -551,7 +551,7 @@ export default function HackathonStudio() {
 
       {/* TAB 5: MANIFEST */}
       {activeTab === 'manifest' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Submission Verification Manifest</h3>

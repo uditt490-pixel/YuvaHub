@@ -46,7 +46,7 @@ export default function FAQSearch({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           autoComplete="off"
-          className="w-full pl-12 pr-32 py-3.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600"
+          className="w-full pl-12 pr-32 py-3.5 text-sm bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm transition-all text-gray-900 dark:text-white hover:border-gray-300 dark:hover:border-gray-600"
           role="searchbox"
           aria-label="Search frequently asked questions"
         />

@@ -106,7 +106,7 @@ export default function CodeReviewExchange() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+    <div className="flex flex-col h-full bg-surface dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800 gap-4">
         <div>
@@ -120,13 +120,13 @@ export default function CodeReviewExchange() {
           <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => setActiveSubTab('feed')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeSubTab === 'feed' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeSubTab === 'feed' ? 'bg-surface dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
             >
               Feed
             </button>
             <button
               onClick={() => setActiveSubTab('mine')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeSubTab === 'mine' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${activeSubTab === 'mine' ? 'bg-surface dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
             >
               My Reviews
             </button>
@@ -194,13 +194,13 @@ export default function CodeReviewExchange() {
                 </div>
               </div>
               
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+              <div className="bg-surface dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Description</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{selectedRequest.description}</p>
               </div>
 
               {selectedRequest.prUrl && (
-                <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div className="bg-surface dark:bg-gray-800 p-4 rounded-xl border border-gray-100 dark:border-gray-700 flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-white">Pull Request</h4>
                     <a href={selectedRequest.prUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-sm flex items-center gap-1 mt-1">
@@ -229,7 +229,7 @@ export default function CodeReviewExchange() {
               )}
 
               {selectedRequest.status === 'in_review' && selectedRequest.reviewerId === user?.uid && (
-                <form onSubmit={handleSubmitFeedback} className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-blue-100 dark:border-blue-900/30 space-y-4">
+                <form onSubmit={handleSubmitFeedback} className="bg-surface dark:bg-gray-800 p-5 rounded-xl border border-blue-100 dark:border-blue-900/30 space-y-4">
                   <h3 className="font-bold text-lg text-gray-900 dark:text-white border-b pb-2">Provide Feedback</h3>
                   
                   <div className="grid grid-cols-1 gap-4">
@@ -258,7 +258,7 @@ export default function CodeReviewExchange() {
                       rows={4}
                       value={feedback.comments}
                       onChange={e => setFeedback({...feedback, comments: e.target.value})}
-                      className="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-2 text-sm"
+                      className="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-surface dark:bg-gray-700 p-2 text-sm"
                       placeholder="Detailed feedback..."
                     ></textarea>
                   </div>
@@ -288,7 +288,7 @@ export default function CodeReviewExchange() {
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface dark:bg-gray-900 rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-4">Submit Code for Review</h2>
             <form onSubmit={handleCreateRequest} className="space-y-4">
               <div>

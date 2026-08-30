@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import { redisClient } from '../config/redis';
+import { connection as redisClient } from '../queues/connection';
 import { DeveloperProfile } from '../models/DeveloperProfile';
 import { fetchGitHubStats } from '../services/githubService';
 import { fetchLeetCodeStats } from '../services/leetcodeService';
@@ -37,7 +37,7 @@ export const profileSyncWorker = new Worker(
 
             return { status: 'success', userId };
         } catch (error) {
-            logger.error(`Profile sync failed for user ${userId}:`, error);
+            logger.error({ err: error }, `Profile sync failed for user ${userId}:`);
             throw error;
         }
     },

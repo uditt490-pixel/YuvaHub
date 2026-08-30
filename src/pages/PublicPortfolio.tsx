@@ -127,7 +127,7 @@ export default function PublicPortfolio() {
   if (error || !profile) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4 font-sans">
-        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-3xl p-8 text-center shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="max-w-md w-full bg-surface dark:bg-gray-800 rounded-3xl p-8 text-center shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-2xl mx-auto flex items-center justify-center mb-4">
             <User className="w-8 h-8" />
           </div>
@@ -135,7 +135,7 @@ export default function PublicPortfolio() {
           <p className="text-gray-500 dark:text-gray-400">{error || "This profile is not accessible."}</p>
           <button 
             onClick={() => window.location.href = '/'}
-            className="mt-6 px-6 py-2.5 bg-[#b56b37] text-white rounded-xl font-bold hover:bg-[#603620] transition-colors cursor-pointer"
+            className="mt-6 px-6 py-2.5 bg-primary-blue text-white rounded-xl font-bold hover:bg-[#603620] transition-colors cursor-pointer"
           >
             Return to Home
           </button>
@@ -149,7 +149,7 @@ export default function PublicPortfolio() {
   const hasEducation = profile.college || profile.year || profile.field;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fcf9f2] to-white dark:from-gray-900 dark:to-gray-950 font-sans text-gray-900 dark:text-gray-100 selection:bg-[#b56b37] selection:text-white">
+    <div className="min-h-screen bg-gradient-to-b from-[#fcf9f2] to-white dark:from-gray-900 dark:to-gray-950 font-sans text-gray-900 dark:text-gray-100 selection:bg-primary-blue selection:text-white">
       <SEO 
         title={`${profile.name} | YuvaHub Portfolio`} 
         description={profile.bio || `Check out ${profile.name}'s YuvaHub portfolio.`}
@@ -157,18 +157,18 @@ export default function PublicPortfolio() {
       />
       
       {/* Navbar Minimal */}
-      <nav className="fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-[#e8ded1] dark:border-gray-800 z-50 flex items-center justify-between px-6">
+      <nav className="fixed top-0 left-0 right-0 h-16 bg-surface/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-border-theme dark:border-gray-800 z-50 flex items-center justify-between px-6">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = '/'}>
           <div className="w-8 h-8 rounded-full bg-[#603620] flex items-center justify-center shadow-md">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#f3e4bd]"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           </div>
-          <span className="font-bold font-serif text-[17px] tracking-tight text-[#231f20] dark:text-white">
-            Yuva<span className="text-[#b56b37] dark:text-blue-400 italic">Hub</span>
+          <span className="font-bold font-serif text-[17px] tracking-tight text-text-primary dark:text-white">
+            Yuva<span className="text-primary-blue dark:text-blue-400 italic">Hub</span>
           </span>
         </div>
         <button 
           onClick={() => window.location.href = '/'}
-          className="text-xs font-bold px-4 py-2 bg-[#f6efe2] dark:bg-gray-800 text-[#b56b37] dark:text-gray-300 rounded-full hover:bg-[#e8ded1] dark:hover:bg-gray-700 transition-colors cursor-pointer"
+          className="text-xs font-bold px-4 py-2 bg-surface-secondary dark:bg-gray-800 text-primary-blue dark:text-gray-300 rounded-full hover:bg-[#e8ded1] dark:hover:bg-gray-700 transition-colors cursor-pointer"
         >
           Join YuvaHub
         </button>
@@ -176,7 +176,7 @@ export default function PublicPortfolio() {
 
       <main className="pt-24 pb-20 px-4 sm:px-6 max-w-4xl mx-auto">
         {/* Header Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-10 shadow-sm border border-[#e8ded1] dark:border-gray-700 relative overflow-hidden">
+        <div className="bg-surface dark:bg-gray-800 rounded-3xl p-6 sm:p-10 shadow-sm border border-border-theme dark:border-gray-700 relative overflow-hidden">
           {/* Decorative background element */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#f6efe2] to-transparent dark:from-gray-700/50 rounded-bl-full opacity-50 pointer-events-none" />
           
@@ -194,26 +194,26 @@ export default function PublicPortfolio() {
             )}
             
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-[#231f20] dark:text-white mb-2">
+              <h1 className="text-3xl sm:text-4xl font-serif font-extrabold text-text-primary dark:text-white mb-2">
                 {profile.name}
               </h1>
               
               {profile.bio && (
-                <p className="text-[#603620] dark:text-gray-300 text-sm sm:text-base leading-relaxed mb-4 max-w-2xl">
+                <p className="text-text-secondary dark:text-gray-300 text-sm sm:text-base leading-relaxed mb-4 max-w-2xl">
                   {profile.bio}
                 </p>
               )}
               
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-5 text-sm text-[#8c7569] dark:text-gray-400 font-medium mb-5">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 sm:gap-5 text-sm text-text-muted dark:text-gray-400 font-medium mb-5">
                 {hasLocation && (
-                  <div className="flex items-center gap-1.5 bg-[#fcf9f2] dark:bg-gray-900 px-3 py-1.5 rounded-full border border-[#e8ded1] dark:border-gray-700">
-                    <MapPin className="w-4 h-4 text-[#b56b37]" />
+                  <div className="flex items-center gap-1.5 bg-background dark:bg-gray-900 px-3 py-1.5 rounded-full border border-border-theme dark:border-gray-700">
+                    <MapPin className="w-4 h-4 text-primary-blue" />
                     <span>{locationString}</span>
                   </div>
                 )}
                 {profile.points !== undefined && (
-                  <div className="flex items-center gap-1.5 bg-[#fcf9f2] dark:bg-gray-900 px-3 py-1.5 rounded-full border border-[#e8ded1] dark:border-gray-700">
-                    <Sparkles className="w-4 h-4 text-[#b56b37]" />
+                  <div className="flex items-center gap-1.5 bg-background dark:bg-gray-900 px-3 py-1.5 rounded-full border border-border-theme dark:border-gray-700">
+                    <Sparkles className="w-4 h-4 text-primary-blue" />
                     <span>{profile.points} Karma</span>
                   </div>
                 )}
@@ -222,17 +222,17 @@ export default function PublicPortfolio() {
               {/* Social Links */}
               <div className="flex items-center justify-center sm:justify-start gap-3">
                 {profile.githubUrl && (
-                  <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#fcf9f2] dark:bg-gray-700 text-[#231f20] dark:text-white rounded-xl hover:bg-[#e8ded1] dark:hover:bg-gray-600 transition-colors tooltip cursor-pointer" aria-label="GitHub">
+                  <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-background dark:bg-gray-700 text-text-primary dark:text-white rounded-xl hover:bg-[#e8ded1] dark:hover:bg-gray-600 transition-colors tooltip cursor-pointer" aria-label="GitHub">
                     <Github className="w-5 h-5" />
                   </a>
                 )}
                 {profile.linkedinUrl && (
-                  <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#fcf9f2] dark:bg-gray-700 text-[#0077b5] rounded-xl hover:bg-[#e8ded1] dark:hover:bg-gray-600 transition-colors tooltip cursor-pointer" aria-label="LinkedIn">
+                  <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-background dark:bg-gray-700 text-[#0077b5] rounded-xl hover:bg-[#e8ded1] dark:hover:bg-gray-600 transition-colors tooltip cursor-pointer" aria-label="LinkedIn">
                     <Linkedin className="w-5 h-5" />
                   </a>
                 )}
                 {profile.portfolioUrl && (
-                  <a href={profile.portfolioUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-[#fcf9f2] dark:bg-gray-700 text-[#b56b37] rounded-xl hover:bg-[#e8ded1] dark:hover:bg-gray-600 transition-colors tooltip cursor-pointer" aria-label="Portfolio">
+                  <a href={profile.portfolioUrl} target="_blank" rel="noopener noreferrer" className="p-2 bg-background dark:bg-gray-700 text-primary-blue rounded-xl hover:bg-[#e8ded1] dark:hover:bg-gray-600 transition-colors tooltip cursor-pointer" aria-label="Portfolio">
                     <Globe className="w-5 h-5" />
                   </a>
                 )}
@@ -249,21 +249,21 @@ export default function PublicPortfolio() {
             
             {/* Skills */}
             {profile.skills && profile.skills.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-[#e8ded1] dark:border-gray-700">
+              <div className="bg-surface dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-border-theme dark:border-gray-700">
                 <div className="flex items-center gap-3 mb-5">
-                  <Target className="w-5 h-5 text-[#b56b37]" />
-                  <h3 className="text-xl font-serif font-bold text-[#231f20] dark:text-white">Technical Skills</h3>
+                  <Target className="w-5 h-5 text-primary-blue" />
+                  <h3 className="text-xl font-serif font-bold text-text-primary dark:text-white">Technical Skills</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {profile.skills.map((skill, idx) => (
                     <div 
                       key={idx} 
-                      className="group flex items-center bg-[#f6efe2] dark:bg-gray-700 rounded-full border border-transparent hover:border-[#b56b37] transition-all overflow-hidden"
+                      className="group flex items-center bg-surface-secondary dark:bg-gray-700 rounded-full border border-transparent hover:border-primary-blue transition-all overflow-hidden"
                     >
-                      <span className="px-3.5 py-1.5 text-[#603620] dark:text-gray-300 text-xs font-bold tracking-wide border-r border-[#e8ded1] dark:border-gray-600">
+                      <span className="px-3.5 py-1.5 text-text-secondary dark:text-gray-300 text-xs font-bold tracking-wide border-r border-border-theme dark:border-gray-600">
                         {skill}
                         {endorsements[skill] > 0 && (
-                          <span className="ml-1.5 bg-[#b56b37] text-white px-1.5 py-0.5 rounded-full text-[10px]">
+                          <span className="ml-1.5 bg-primary-blue text-white px-1.5 py-0.5 rounded-full text-[10px]">
                             {endorsements[skill]}
                           </span>
                         )}
@@ -272,7 +272,7 @@ export default function PublicPortfolio() {
                         <button 
                           onClick={() => handleEndorse(skill)}
                           disabled={endorsing === skill}
-                          className="px-3 py-1.5 bg-[#f6efe2] dark:bg-gray-700 hover:bg-[#e8ded1] dark:hover:bg-gray-600 text-[#b56b37] text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                          className="px-3 py-1.5 bg-surface-secondary dark:bg-gray-700 hover:bg-[#e8ded1] dark:hover:bg-gray-600 text-primary-blue text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
                           title="Endorse this skill"
                         >
                           <ThumbsUp className="w-3.5 h-3.5" />
@@ -286,13 +286,13 @@ export default function PublicPortfolio() {
             )}
 
             {/* Note about private info */}
-            <div className="bg-[#fcf9f2] dark:bg-gray-800/50 rounded-2xl p-5 border border-[#e8ded1] dark:border-gray-700 flex items-start gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#f6efe2] dark:bg-gray-700 flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5 text-[#b56b37]" />
+            <div className="bg-background dark:bg-gray-800/50 rounded-2xl p-5 border border-border-theme dark:border-gray-700 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-surface-secondary dark:bg-gray-700 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-primary-blue" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-[#231f20] dark:text-white mb-1">Authenticated YuvaHub Member</h4>
-                <p className="text-xs text-[#8c7569] dark:text-gray-400">
+                <h4 className="font-bold text-sm text-text-primary dark:text-white mb-1">Authenticated YuvaHub Member</h4>
+                <p className="text-xs text-text-muted dark:text-gray-400">
                   This is a verified YuvaHub profile. Certain sensitive information (like email address, private projects, and internal network stats) is hidden to protect user privacy.
                 </p>
               </div>
@@ -305,28 +305,28 @@ export default function PublicPortfolio() {
             
             {/* Education */}
             {hasEducation && (
-              <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-[#e8ded1] dark:border-gray-700">
+              <div className="bg-surface dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-border-theme dark:border-gray-700">
                 <div className="flex items-center gap-3 mb-5">
-                  <GraduationCap className="w-5 h-5 text-[#b56b37]" />
-                  <h3 className="text-lg font-serif font-bold text-[#231f20] dark:text-white">Education</h3>
+                  <GraduationCap className="w-5 h-5 text-primary-blue" />
+                  <h3 className="text-lg font-serif font-bold text-text-primary dark:text-white">Education</h3>
                 </div>
                 <div className="space-y-4">
                   {profile.college && (
                     <div>
-                      <p className="text-xs text-[#8c7569] dark:text-gray-500 font-bold uppercase tracking-wider mb-1">University / College</p>
-                      <p className="text-sm font-semibold text-[#231f20] dark:text-white">{profile.college}</p>
+                      <p className="text-xs text-text-muted dark:text-gray-500 font-bold uppercase tracking-wider mb-1">University / College</p>
+                      <p className="text-sm font-semibold text-text-primary dark:text-white">{profile.college}</p>
                     </div>
                   )}
                   {profile.field && (
                     <div>
-                      <p className="text-xs text-[#8c7569] dark:text-gray-500 font-bold uppercase tracking-wider mb-1">Major / Field</p>
-                      <p className="text-sm font-semibold text-[#231f20] dark:text-white">{profile.field}</p>
+                      <p className="text-xs text-text-muted dark:text-gray-500 font-bold uppercase tracking-wider mb-1">Major / Field</p>
+                      <p className="text-sm font-semibold text-text-primary dark:text-white">{profile.field}</p>
                     </div>
                   )}
                   {profile.year && (
                     <div>
-                      <p className="text-xs text-[#8c7569] dark:text-gray-500 font-bold uppercase tracking-wider mb-1">Graduation Year</p>
-                      <p className="text-sm font-semibold text-[#231f20] dark:text-white">{profile.year}</p>
+                      <p className="text-xs text-text-muted dark:text-gray-500 font-bold uppercase tracking-wider mb-1">Graduation Year</p>
+                      <p className="text-sm font-semibold text-text-primary dark:text-white">{profile.year}</p>
                     </div>
                   )}
                 </div>
@@ -335,10 +335,10 @@ export default function PublicPortfolio() {
 
             {/* Badges / Achievements */}
             {profile.badges && profile.badges.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-[#e8ded1] dark:border-gray-700">
+              <div className="bg-surface dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-border-theme dark:border-gray-700">
                 <div className="flex items-center gap-3 mb-5">
-                  <Award className="w-5 h-5 text-[#b56b37]" />
-                  <h3 className="text-lg font-serif font-bold text-[#231f20] dark:text-white">Badges</h3>
+                  <Award className="w-5 h-5 text-primary-blue" />
+                  <h3 className="text-lg font-serif font-bold text-text-primary dark:text-white">Badges</h3>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {profile.badges.map((badge, idx) => (

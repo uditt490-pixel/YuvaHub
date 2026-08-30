@@ -37,8 +37,8 @@ export const GrantDisbursementModal: React.FC<GrantDisbursementModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-      <div className="bg-white dark:bg-slate-900 border border-emerald-500 dark:border-emerald-600/50 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-blue/80 backdrop-blur-sm">
+      <div className="bg-surface dark:bg-primary-blue border border-emerald-500 dark:border-emerald-600/50 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="p-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <DollarSign className="w-6 h-6 animate-pulse" />
@@ -47,21 +47,21 @@ export const GrantDisbursementModal: React.FC<GrantDisbursementModalProps> = ({
               <p className="text-xs text-emerald-100">Authorize milestone tranche capital release</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-white/20 transition-colors">
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-surface/20 transition-colors">
             <X className="w-5 h-5 text-white" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 flex items-start gap-2.5">
-            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="p-3.5 rounded-xl bg-emerald-500/20 dark:bg-emerald-950/40 border border-emerald-500/30 dark:border-emerald-900 flex items-start gap-2.5">
+            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
             <div className="text-xs text-emerald-900 dark:text-emerald-200">
               Releasing <span className="font-bold">₹{milestone.allocatedAmountLakhs} Lakhs</span> for <span className="font-bold">{milestone.milestoneTitle}</span> to <span className="font-bold">{proposal.college}</span> ({proposal.principalInvestigator}).
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary dark:text-text-muted mb-1.5">
               Financial Officer / DST Director Email:
             </label>
             <input
@@ -69,12 +69,12 @@ export const GrantDisbursementModal: React.FC<GrantDisbursementModalProps> = ({
               value={approverEmail}
               onChange={(e) => setApproverEmail(e.target.value)}
               required
-              className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full p-2.5 rounded-xl border border-border-theme dark:border-border-theme bg-surface dark:bg-surface-secondary text-xs font-bold text-text-primary dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary dark:text-text-muted mb-1.5">
               Audit Compliance Declaration:
             </label>
             <textarea
@@ -82,15 +82,15 @@ export const GrantDisbursementModal: React.FC<GrantDisbursementModalProps> = ({
               value={declaration}
               onChange={(e) => setDeclaration(e.target.value)}
               required
-              className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full p-3 rounded-xl border border-border-theme dark:border-border-theme bg-surface dark:bg-surface-secondary text-xs text-text-primary dark:text-slate-200 focus:ring-2 focus:ring-emerald-500 outline-none"
             />
           </div>
 
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
+          <div className="pt-3 border-t border-border-theme dark:border-border-theme flex justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-text-secondary dark:text-slate-300 hover:bg-surface-secondary dark:hover:bg-surface-secondary transition-colors"
             >
               Cancel
             </button>

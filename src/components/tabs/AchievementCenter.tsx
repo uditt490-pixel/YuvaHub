@@ -253,7 +253,7 @@ export default function AchievementCenter() {
             <div className="text-gray-400 text-xs">Day Streak</div>
           </div>
         </div>
-        <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+        <div className="h-3 bg-surface/10 rounded-full overflow-hidden">
           <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-1000" style={{ width: `${xpProgress}%` }} />
         </div>
         <div className="flex justify-between text-[10px] text-gray-500 mt-1">
@@ -271,8 +271,8 @@ export default function AchievementCenter() {
           { label: 'Challenges Done', value: STATS.challengesCompleted, icon: <Target className="w-5 h-5" />, color: 'text-cyan-400' },
           { label: 'Weekly XP', value: STATS.weeklyXP.toLocaleString(), icon: <Zap className="w-5 h-5" />, color: 'text-emerald-400' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
-            <div className={`p-2 rounded-xl bg-white/5 ${stat.color} mb-3 inline-block`}>{stat.icon}</div>
+          <div key={i} className="bg-surface/5 backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
+            <div className={`p-2 rounded-xl bg-surface/5 ${stat.color} mb-3 inline-block`}>{stat.icon}</div>
             <div className="text-2xl font-bold text-white">{stat.value}</div>
             <div className="text-gray-400 text-xs mt-1">{stat.label}</div>
           </div>
@@ -280,7 +280,7 @@ export default function AchievementCenter() {
       </div>
 
       {/* Streak Calendar */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
+      <div className="bg-surface/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
         <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
           <Flame className="w-5 h-5 text-amber-400" /> This Week's Activity
         </h3>
@@ -289,7 +289,7 @@ export default function AchievementCenter() {
             <div key={i} className="text-center">
               <div className="text-[10px] text-gray-500 mb-2">{day.day}</div>
               <div className={`w-full aspect-square rounded-xl flex items-center justify-center transition-all ${
-                day.active ? 'bg-amber-500/30 border border-amber-500/50' : 'bg-white/5 border border-white/10'
+                day.active ? 'bg-amber-500/30 border border-amber-500/50' : 'bg-surface/5 border border-white/10'
               }`}>
                 {day.active ? (
                   <div className="text-center">
@@ -340,7 +340,7 @@ export default function AchievementCenter() {
           {activeChallenges.slice(0, 4).map(challenge => {
             const pct = Math.round((challenge.progress / challenge.maxProgress) * 100);
             return (
-              <div key={challenge.id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all">
+              <div key={challenge.id} className="bg-surface/5 backdrop-blur-md border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="p-2 rounded-xl bg-cyan-500/20 text-cyan-400">{challenge.icon}</div>
@@ -351,7 +351,7 @@ export default function AchievementCenter() {
                   </div>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${DIFFICULTY_CONFIG[challenge.difficulty].color}`}>{challenge.difficulty}</span>
                 </div>
-                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-2 bg-surface/10 rounded-full overflow-hidden">
                   <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${pct}%` }} />
                 </div>
                 <div className="flex justify-between text-[10px] text-gray-500 mt-1">
@@ -400,14 +400,14 @@ export default function AchievementCenter() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <select value={filterRarity} onChange={e => setFilterRarity(e.target.value as Rarity | 'all')}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none">
+            className="bg-surface/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none">
             <option value="all">All Rarities</option>
             {Object.entries(RARITY_CONFIG).map(([key, val]) => (
               <option key={key} value={key}>{val.label}</option>
             ))}
           </select>
           <select value={filterCategory} onChange={e => setFilterCategory(e.target.value as AchievementCategory | 'all')}
-            className="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none">
+            className="bg-surface/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none">
             <option value="all">All Categories</option>
             {Object.entries(CATEGORY_CONFIG).map(([key, val]) => (
               <option key={key} value={key}>{val.label}</option>
@@ -415,7 +415,7 @@ export default function AchievementCenter() {
           </select>
           <button onClick={() => setShowEarnedOnly(!showEarnedOnly)}
             className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all ${
-              showEarnedOnly ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-white/5 border-white/10 text-gray-400'
+              showEarnedOnly ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-surface/5 border-white/10 text-gray-400'
             }`}>
             {showEarnedOnly ? '✓ Earned Only' : 'Show All'}
           </button>
@@ -444,7 +444,7 @@ export default function AchievementCenter() {
           return (
             <div key={badge.id}
               className={`rounded-2xl p-5 border transition-all hover:scale-[1.02] ${
-                badge.isEarned ? `${rarity.bg} ${rarity.border}` : 'bg-white/5 border-white/10 opacity-60'
+                badge.isEarned ? `${rarity.bg} ${rarity.border}` : 'bg-surface/5 border-white/10 opacity-60'
               }`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="text-4xl">{badge.icon}</div>
@@ -459,7 +459,7 @@ export default function AchievementCenter() {
               <div className="text-white font-semibold text-sm mb-1">{badge.name}</div>
               <div className="text-gray-400 text-[10px] mb-2">{badge.description}</div>
               {badge.progress !== undefined && !badge.isEarned && (
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-2">
+                <div className="h-1.5 bg-surface/10 rounded-full overflow-hidden mb-2">
                   <div className="h-full bg-cyan-500 rounded-full" style={{ width: `${(badge.progress / badge.maxProgress!) * 100}%` }} />
                 </div>
               )}
@@ -486,23 +486,23 @@ export default function AchievementCenter() {
           const cat = CATEGORY_CONFIG[achievement.category];
           return (
             <div key={achievement.id}
-              className={`bg-white/5 backdrop-blur-md border rounded-2xl p-5 transition-all ${
+              className={`bg-surface/5 backdrop-blur-md border rounded-2xl p-5 transition-all ${
                 achievement.isUnlocked ? "border-amber-500/30 bg-amber-500/5" : "border-white/10 hover:border-white/20"
               }`}>
               <div className="flex items-start gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                  achievement.isUnlocked ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5 text-gray-500'
+                  achievement.isUnlocked ? 'bg-amber-500/20 text-amber-400' : 'bg-surface/5 text-gray-500'
                 }`}>
                   {achievement.icon}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <div className="text-white font-semibold text-sm">{achievement.title}</div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-gray-400">Tier {achievement.tier}</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-surface/10 text-gray-400">Tier {achievement.tier}</span>
                     {achievement.isUnlocked && <BadgeCheck className="w-4 h-4 text-amber-400" />}
                   </div>
                   <div className="text-gray-400 text-[10px] mb-2">{achievement.description}</div>
-                  <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-1">
+                  <div className="h-2 bg-surface/10 rounded-full overflow-hidden mb-1">
                     <div className={`h-full rounded-full ${achievement.isUnlocked ? 'bg-amber-500' : 'bg-cyan-500'}`}
                       style={{ width: `${pct}%` }} />
                   </div>
@@ -540,7 +540,7 @@ export default function AchievementCenter() {
               const diff = DIFFICULTY_CONFIG[challenge.difficulty];
               const cat = CATEGORY_CONFIG[challenge.category];
               return (
-                <div key={challenge.id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
+                <div key={challenge.id} className="bg-surface/5 backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="p-2.5 rounded-xl bg-cyan-500/20 text-cyan-400">{challenge.icon}</div>
@@ -551,7 +551,7 @@ export default function AchievementCenter() {
                     </div>
                     <span className={`px-2 py-1 rounded-lg text-[9px] font-bold ${diff.color}`}>{diff.label}</span>
                   </div>
-                  <div className="h-3 bg-white/10 rounded-full overflow-hidden mb-2">
+                  <div className="h-3 bg-surface/10 rounded-full overflow-hidden mb-2">
                     <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all"
                       style={{ width: `${pct}%` }} />
                   </div>
@@ -628,7 +628,7 @@ export default function AchievementCenter() {
   // ─── Tab: Leaderboard ───────────────────────────────────────────
   const LeaderboardTab = () => (
     <div className="space-y-6">
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden">
+      <div className="bg-surface/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="grid grid-cols-[60px_1fr_100px_80px_80px_80px] gap-4 px-6 py-3 border-b border-white/10 text-[10px] text-gray-500 uppercase tracking-wider font-medium">
           <span>Rank</span>
@@ -641,7 +641,7 @@ export default function AchievementCenter() {
         {/* Entries */}
         {LEADERBOARD.map((entry, i) => (
           <div key={entry.rank}
-            className={`grid grid-cols-[60px_1fr_100px_80px_80px_80px] gap-4 px-6 py-4 items-center border-b border-white/5 hover:bg-white/5 transition-all ${
+            className={`grid grid-cols-[60px_1fr_100px_80px_80px_80px] gap-4 px-6 py-4 items-center border-b border-white/5 hover:bg-surface/5 transition-all ${
               entry.isCurrentUser ? 'bg-cyan-500/5 border-l-2 border-l-cyan-500' : ''
             }`}>
             <div className="flex items-center gap-2">
@@ -657,7 +657,7 @@ export default function AchievementCenter() {
             <div className="flex items-center gap-3">
               <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${
                 entry.isCurrentUser ? 'bg-cyan-500/30 text-cyan-400 ring-1 ring-cyan-500/50' :
-                entry.rank <= 3 ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-gray-300'
+                entry.rank <= 3 ? 'bg-amber-500/20 text-amber-400' : 'bg-surface/10 text-gray-300'
               }`}>
                 {entry.avatar}
               </div>
@@ -686,19 +686,19 @@ export default function AchievementCenter() {
           <BarChart3 className="w-5 h-5 text-cyan-400" /> Your Stats vs Top 10
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white/5 rounded-xl p-3 text-center">
+          <div className="bg-surface/5 rounded-xl p-3 text-center">
             <div className="text-2xl font-bold text-cyan-400">#3</div>
             <div className="text-xs text-gray-400 mt-1">Your Rank</div>
           </div>
-          <div className="bg-white/5 rounded-xl p-3 text-center">
+          <div className="bg-surface/5 rounded-xl p-3 text-center">
             <div className="text-2xl font-bold text-purple-400">{STATS.totalXP.toLocaleString()}</div>
             <div className="text-xs text-gray-400 mt-1">Total XP</div>
           </div>
-          <div className="bg-white/5 rounded-xl p-3 text-center">
+          <div className="bg-surface/5 rounded-xl p-3 text-center">
             <div className="text-2xl font-bold text-amber-400">{STATS.earnedBadges}</div>
             <div className="text-xs text-gray-400 mt-1">Badges</div>
           </div>
-          <div className="bg-white/5 rounded-xl p-3 text-center">
+          <div className="bg-surface/5 rounded-xl p-3 text-center">
             <div className="text-2xl font-bold text-emerald-400">{STREAK.currentStreak}</div>
             <div className="text-xs text-gray-400 mt-1">Day Streak</div>
           </div>
@@ -709,35 +709,61 @@ export default function AchievementCenter() {
 
   // ─── Render ─────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-slate-950 to-gray-900">
-      {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-600/20 via-purple-600/20 to-cyan-600/20" />
-        <div className="relative px-6 py-8">
-          <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-            className="text-3xl font-bold text-white flex items-center gap-3">
-            <Trophy className="w-8 h-8 text-amber-400" />
-            Achievement Center
-          </motion.h1>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
-            className="text-gray-400 mt-2">Level {STATS.level} · {STATS.totalXP.toLocaleString()} XP · {STATS.earnedBadges} badges · {STREAK.currentStreak} day streak 🔥</motion.p>
-          <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-2">
-            {[
-              { id: 'overview' as const, label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
-              { id: 'badges' as const, label: 'Badges', icon: <Award className="w-4 h-4" />, count: STATS.earnedBadges },
-              { id: 'achievements' as const, label: 'Achievements', icon: <Trophy className="w-4 h-4" />, count: STATS.unlockedAchievements },
-              { id: 'challenges' as const, label: 'Challenges', icon: <Target className="w-4 h-4" />, count: activeChallenges.length },
-              { id: 'leaderboard' as const, label: 'Leaderboard', icon: <Crown className="w-4 h-4" /> },
-            ].map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
-                  activeTab === tab.id ? "bg-white/10 text-white border border-white/20 shadow-lg" : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}>
-                {tab.icon}{tab.label}
-                {tab.count !== undefined && <span className="text-xs opacity-60">({tab.count})</span>}
-              </button>
-            ))}
+    <div className="min-h-screen  font-sans pb-16">
+      {/* Top Banner Header - Brand Theme */}
+      <div className="m-4 sm:m-6 bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col gap-6 relative z-10">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1.5 shadow-xs">
+                <Trophy className="w-3.5 h-3.5 text-indigo-400" /> Achievement Hub
+              </span>
+              <span className="px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30">
+                Gamified Progression
+              </span>
+            </div>
+
+            <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+              className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+              Achievement <span className="text-primary-blue italic">Center</span>
+            </motion.h1>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+              className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
+              Earn badges, complete coding challenges, participate in open-source tasks, and climb the developer leaderboard.
+            </motion.p>
           </div>
+
+          <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl w-full shadow-xs">
+            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-primary-blue bg-background font-serif font-bold text-xs text-primary-blue">
+              Lvl {STATS.level}
+            </div>
+            <div>
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{STATS.totalXP.toLocaleString()} XP Total</div>
+              <div className="text-xs font-extrabold text-white">{STATS.earnedBadges} Badges Earned</div>
+              <div className="text-[11px] text-emerald-400 font-semibold">{STREAK.currentStreak} Day Streak 🔥</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-4 sm:px-6">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-white/10 pb-3">
+          {[
+            { id: 'overview' as const, label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
+            { id: 'badges' as const, label: 'Badges', icon: <Award className="w-4 h-4" />, count: STATS.earnedBadges },
+            { id: 'achievements' as const, label: 'Achievements', icon: <Trophy className="w-4 h-4" />, count: STATS.unlockedAchievements },
+            { id: 'challenges' as const, label: 'Challenges', icon: <Target className="w-4 h-4" />, count: activeChallenges.length },
+            { id: 'leaderboard' as const, label: 'Leaderboard', icon: <Crown className="w-4 h-4" /> },
+          ].map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                activeTab === tab.id ? "bg-primary-blue text-white shadow-lg" : "text-gray-400 hover:text-white hover:bg-surface/5"
+              }`}>
+              {tab.icon}{tab.label}
+              {tab.count !== undefined && <span className="text-xs opacity-60">({tab.count})</span>}
+            </button>
+          ))}
         </div>
       </div>
 

@@ -228,42 +228,43 @@ export default function OpenSourceBountyStudio() {
   return (
     <div className="w-full max-w-[1400px] mx-auto space-y-8 font-sans pb-16 px-2 sm:px-4">
       
-      {/* Top Banner Header - YuvaHub Brand Theme */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#f6efe2] via-[#fcf9f2] to-[#f6efe2] dark:from-slate-900 dark:to-slate-950 border border-[#e8ded1] dark:border-slate-800 p-6 md:p-8 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+      {/* Top Banner Header - Brand Theme */}
+      <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#f3e4bd] bg-[#603620] rounded-full flex items-center gap-1.5 shadow-xs">
-                <Code className="w-3.5 h-3.5 text-[#f3e4bd]" /> Open Source Bounty Vault
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1.5 shadow-xs">
+                <Code className="w-3.5 h-3.5 text-indigo-400" /> Open Source Bounty Vault
               </span>
-              <span className="px-3 py-1 text-xs font-bold text-[#63703d] bg-[#63703d]/15 border border-[#63703d]/30 rounded-full">
+              <span className="px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30">
                 Live Dynamic Rankings
               </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-              Open Source Bounties <span className="text-[#b56b37] italic">Studio</span>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+              Open Source Bounties <span className="text-primary-blue italic">Studio</span>
             </h1>
-            <p className="text-[#603620] dark:text-slate-400 text-xs md:text-sm max-w-2xl font-medium">
+            <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
               Solve verified open source GitHub issues, submit Pull Request links for test suite verification, and earn financial grants with real-time rank updates.
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl w-full lg:w-auto shadow-xs">
-            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-[#b56b37] bg-[#fcf9f2] font-serif font-bold text-base text-[#b56b37]">
+          <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl w-full shadow-xs">
+            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-primary-blue bg-background font-serif font-bold text-base text-primary-blue">
               $3.5K
             </div>
             <div>
-              <div className="text-[10px] uppercase font-bold text-[#8c7569] tracking-wider">Active Bounty Pool</div>
-              <div className="text-xs font-extrabold text-[#231f20] dark:text-white">3 Active Open Bounties</div>
-              <div className="text-[11px] text-[#63703d] font-semibold">Instant Maintainer Review</div>
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Active Bounty Pool</div>
+              <div className="text-xs font-extrabold text-white">3 Active Open Bounties</div>
+              <div className="text-[11px] text-emerald-400 font-semibold">Instant Maintainer Review</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-[#e8ded1] dark:border-slate-800 pb-3">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-border-theme dark:border-slate-800 pb-3">
         {[
           { id: 'bounties', label: 'Bounty Directory', icon: Code },
           { id: 'pr_claim', label: 'Submit PR Claim', icon: GitPullRequest },
@@ -278,11 +279,11 @@ export default function OpenSourceBountyStudio() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border ${
                 isActive
-                  ? 'bg-[#b56b37] border-[#b56b37] text-white shadow-sm scale-[1.02]'
-                  : 'bg-white dark:bg-slate-900 border-[#e8ded1] dark:border-slate-800 text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]'
+                  ? 'bg-primary-blue border-primary-blue text-white shadow-sm scale-[1.02]'
+                  : 'bg-surface dark:bg-slate-900 border-border-theme dark:border-slate-800 text-text-secondary dark:text-slate-300 hover:bg-surface-secondary'
               }`}
             >
-              <IconComponent className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#b56b37]'}`} />
+              <IconComponent className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-primary-blue'}`} />
               <span>{tab.label}</span>
             </button>
           );
@@ -307,15 +308,15 @@ export default function OpenSourceBountyStudio() {
       {/* Tab 1: Bounties Directory */}
       {activeTab === 'bounties' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
             <div className="relative flex-1 w-full sm:w-auto max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7569]" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 placeholder="Search by issue title or repository..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#231f20] dark:text-white outline-none focus:border-[#b56b37]"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-text-primary dark:text-white outline-none focus:border-primary-blue"
               />
             </div>
 
@@ -327,7 +328,7 @@ export default function OpenSourceBountyStudio() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all border ${
                     selectedLanguage === lang
                       ? 'bg-[#231f20] text-white border-[#231f20]'
-                      : 'bg-white border-[#e8ded1] text-[#603620] hover:bg-[#f6efe2]'
+                      : 'bg-surface border-border-theme text-text-secondary hover:bg-surface-secondary'
                   }`}
                 >
                   {lang}
@@ -338,14 +339,14 @@ export default function OpenSourceBountyStudio() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredBounties.map(bounty => (
-              <div key={bounty.id} className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-2xl p-5 shadow-2xs space-y-4 hover:border-[#b56b37] transition-all">
+              <div key={bounty.id} className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-2xl p-5 shadow-2xs space-y-4 hover:border-primary-blue transition-all">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[10px] font-bold text-[#8c7569] uppercase tracking-wider block">{bounty.repo}</span>
-                    <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white mt-1 leading-snug">{bounty.title}</h3>
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">{bounty.repo}</span>
+                    <h3 className="font-serif font-bold text-base text-text-primary dark:text-white mt-1 leading-snug">{bounty.title}</h3>
                   </div>
                   <span className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold border ${
-                    bounty.claimed ? 'bg-[#f3e4bd] text-[#603620] border-[#e8ded1]' : 'bg-[#63703d]/15 text-[#63703d] border-[#63703d]/30'
+                    bounty.claimed ? 'bg-[#f3e4bd] text-text-secondary border-border-theme' : 'bg-[#63703d]/15 text-[#63703d] border-[#63703d]/30'
                   }`}>
                     {bounty.claimed ? 'CLAIMED' : 'OPEN'}
                   </span>
@@ -353,19 +354,19 @@ export default function OpenSourceBountyStudio() {
 
                 <div className="flex flex-wrap gap-1.5">
                   {bounty.tags.map(t => (
-                    <span key={t} className="px-2 py-0.5 bg-[#f6efe2] text-[#603620] text-[10px] font-bold rounded-md border border-[#e8ded1]">
+                    <span key={t} className="px-2 py-0.5 bg-surface-secondary text-text-secondary text-[10px] font-bold rounded-md border border-border-theme">
                       #{t}
                     </span>
                   ))}
                 </div>
 
-                <div className="pt-3 border-t border-[#e8ded1] dark:border-slate-800 flex items-center justify-between text-xs font-bold">
-                  <div className="text-[#b56b37]">{bounty.reward}</div>
+                <div className="pt-3 border-t border-border-theme dark:border-slate-800 flex items-center justify-between text-xs font-bold">
+                  <div className="text-primary-blue">{bounty.reward}</div>
                   <a
                     href={bounty.issueUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[#b56b37] hover:underline"
+                    className="inline-flex items-center gap-1 text-primary-blue hover:underline"
                   >
                     <span>View GitHub Issue</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -379,19 +380,19 @@ export default function OpenSourceBountyStudio() {
 
       {/* Tab 2: Submit PR Claim */}
       {activeTab === 'pr_claim' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs max-w-2xl mx-auto">
-          <div className="border-b border-[#e8ded1] dark:border-slate-800 pb-4">
-            <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white">Submit Pull Request Link</h2>
-            <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">Link your merged or active Pull Request to claim the bounty grant and boost your dynamic rank.</p>
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs max-w-2xl mx-auto">
+          <div className="border-b border-border-theme dark:border-slate-800 pb-4">
+            <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white">Submit Pull Request Link</h2>
+            <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">Link your merged or active Pull Request to claim the bounty grant and boost your dynamic rank.</p>
           </div>
 
           <form onSubmit={handleSubmitPr} className="space-y-4 text-xs">
             <div className="space-y-1">
-              <label className="font-bold text-[#603620] uppercase">Select Target Bounty</label>
+              <label className="font-bold text-text-secondary uppercase">Select Target Bounty</label>
               <select
                 value={claimedBountyId}
                 onChange={e => setClaimedBountyId(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               >
                 {bounties.map(b => (
                   <option key={b.id} value={b.id}>{b.title} ({b.reward})</option>
@@ -400,29 +401,29 @@ export default function OpenSourceBountyStudio() {
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-[#603620] uppercase">GitHub Pull Request URL</label>
+              <label className="font-bold text-text-secondary uppercase">GitHub Pull Request URL</label>
               <input
                 type="url"
                 required
                 placeholder="https://github.com/org/repo/pull/123"
                 value={prUrl}
                 onChange={e => setPrUrl(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-[#603620] uppercase">PR Summary & Test Suite Results</label>
+              <label className="font-bold text-text-secondary uppercase">PR Summary & Test Suite Results</label>
               <textarea
                 rows={3}
                 placeholder="Explain what changes were made and link passed CI build tests..."
                 value={prDesc}
                 onChange={e => setPrDesc(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none resize-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none resize-none"
               />
             </div>
 
-            <button type="submit" className="w-full py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
+            <button type="submit" className="w-full py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
               <GitPullRequest className="w-4 h-4" /> Submit Pull Request for Verification
             </button>
           </form>
@@ -433,26 +434,26 @@ export default function OpenSourceBountyStudio() {
       {activeTab === 'leaderboard' && (
         <div className="space-y-4">
           {dynamicRankedContributors.map(c => (
-            <div key={c.id} className="flex items-center justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 shadow-2xs hover:border-[#b56b37] transition-all">
+            <div key={c.id} className="flex items-center justify-between p-5 rounded-2xl bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 shadow-2xs hover:border-primary-blue transition-all">
               <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-full font-serif font-bold flex items-center justify-center text-sm shadow-xs ${
-                  c.rank === 1 ? 'bg-[#603620] text-[#f3e4bd]' : (c.rank === 2 ? 'bg-[#b56b37] text-white' : 'bg-[#f6efe2] text-[#603620] border border-[#e8ded1]')
+                  c.rank === 1 ? 'bg-[#603620] text-[#f3e4bd]' : (c.rank === 2 ? 'bg-primary-blue text-white' : 'bg-surface-secondary text-text-secondary border border-border-theme')
                 }`}>
                   #{c.rank}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-serif font-bold text-sm text-[#231f20] dark:text-white">{c.name}</h3>
+                    <h3 className="font-serif font-bold text-sm text-text-primary dark:text-white">{c.name}</h3>
                     <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#63703d]/15 text-[#63703d] border border-[#63703d]/30">
                       {c.badge}
                     </span>
                   </div>
-                  <p className="text-xs text-[#603620] font-semibold">{c.github}</p>
+                  <p className="text-xs text-text-secondary font-semibold">{c.github}</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-extrabold text-[#b56b37]">{c.earnedFormatted}</div>
-                <span className="text-[10px] font-bold text-[#8c7569]">{c.bountiesSolved} Bounties Merged</span>
+                <div className="text-sm font-extrabold text-primary-blue">{c.earnedFormatted}</div>
+                <span className="text-[10px] font-bold text-text-muted">{c.bountiesSolved} Bounties Merged</span>
               </div>
             </div>
           ))}
@@ -461,15 +462,15 @@ export default function OpenSourceBountyStudio() {
 
       {/* Tab 4: Export */}
       {activeTab === 'export' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
-          <div className="w-16 h-16 bg-[#f6efe2] text-[#b56b37] flex items-center justify-center rounded-full mx-auto border border-[#e8ded1]">
-            <Download className="w-8 h-8 text-[#b56b37]" />
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
+          <div className="w-16 h-16 bg-surface-secondary text-primary-blue flex items-center justify-center rounded-full mx-auto border border-border-theme">
+            <Download className="w-8 h-8 text-primary-blue" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white">Export Bounty Manifest</h2>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">
+          <h2 className="text-2xl font-serif font-bold text-text-primary dark:text-white">Export Bounty Manifest</h2>
+          <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">
             Download all active bounty listings and verified contributor claims as a JSON file.
           </p>
-          <button onClick={handleExportManifest} className="px-6 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer inline-flex items-center gap-2">
+          <button onClick={handleExportManifest} className="px-6 py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer inline-flex items-center gap-2">
             <Download className="w-4 h-4" /> Download Open Source Bounties JSON
           </button>
         </div>

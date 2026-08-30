@@ -281,35 +281,36 @@ export default function CampusAlumniHub() {
   return (
     <div className="w-full max-w-[1400px] mx-auto space-y-8 font-sans pb-16 px-2 sm:px-4">
 
-      {/* Top Banner Header - YuvaHub Brand Theme */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#f6efe2] via-[#fcf9f2] to-[#f6efe2] dark:from-slate-900 dark:to-slate-950 border border-[#e8ded1] dark:border-slate-800 p-6 md:p-8 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+      {/* Top Banner Header - Brand Theme */}
+      <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#f3e4bd] bg-[#603620] rounded-full flex items-center gap-1.5 shadow-xs">
-                <GraduationCap className="w-3.5 h-3.5 text-[#f3e4bd]" /> Campus & Alumni Network
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1.5 shadow-xs">
+                <GraduationCap className="w-3.5 h-3.5 text-indigo-400" /> Campus & Alumni Network
               </span>
-              <span className="px-3 py-1 text-xs font-bold text-[#63703d] bg-[#63703d]/15 border border-[#63703d]/30 rounded-full">
+              <span className="px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30">
                 50+ University Chapters
               </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-              Campus & Alumni <span className="text-[#b56b37] italic">Hub</span>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+              Campus & Alumni <span className="text-primary-blue italic">Hub</span>
             </h1>
-            <p className="text-[#603620] dark:text-slate-400 text-xs md:text-sm max-w-2xl font-medium">
+            <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
               Explore university tech chapters, request job referrals from verified alumni, and RSVP for campus hackathons and office hours.
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl w-full lg:w-auto shadow-xs">
-            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-[#b56b37] bg-[#fcf9f2] font-serif font-bold text-base text-[#b56b37]">
+          <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl w-full shadow-xs">
+            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-primary-blue bg-background font-serif font-bold text-base text-primary-blue">
               3,250
             </div>
             <div>
-              <div className="text-[10px] uppercase font-bold text-[#8c7569] tracking-wider">Verified Network Members</div>
-              <div className="text-xs font-extrabold text-[#231f20] dark:text-white">{alumni.length} Alumni Referral Ready</div>
-              <div className="text-[11px] text-[#63703d] font-semibold">
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Verified Network Members</div>
+              <div className="text-xs font-extrabold text-white">{alumni.length} Alumni Referral Ready</div>
+              <div className="text-[11px] text-emerald-400 font-semibold">
                 {events.filter(e => e.userStatus === 'confirmed').length} Upcoming Event RSVPs
               </div>
             </div>
@@ -318,7 +319,7 @@ export default function CampusAlumniHub() {
       </div>
 
       {/* Sub Navigation Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-[#e8ded1] dark:border-slate-800 pb-3">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-border-theme dark:border-slate-800 pb-3">
         {[
           { id: 'chapters', label: 'Campus Chapters', icon: Building2 },
           { id: 'alumni', label: 'Alumni Directory', icon: UserCheck },
@@ -334,11 +335,11 @@ export default function CampusAlumniHub() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border ${
                 isActive
-                  ? 'bg-[#b56b37] border-[#b56b37] text-white shadow-sm scale-[1.02]'
-                  : 'bg-white dark:bg-slate-900 border-[#e8ded1] dark:border-slate-800 text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]'
+                  ? 'bg-primary-blue border-primary-blue text-white shadow-sm scale-[1.02]'
+                  : 'bg-surface dark:bg-slate-900 border-border-theme dark:border-slate-800 text-text-secondary dark:text-slate-300 hover:bg-surface-secondary'
               }`}
             >
-              <IconComponent className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#b56b37]'}`} />
+              <IconComponent className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-primary-blue'}`} />
               <span>{tab.label}</span>
             </button>
           );
@@ -361,26 +362,26 @@ export default function CampusAlumniHub() {
       {/* Tab 1: Campus Chapters */}
       {activeTab === 'chapters' && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
+          <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
             <div className="relative flex-1 w-full max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7569]" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 placeholder="Search chapters by name or college..."
                 value={chapterSearch}
                 onChange={e => setChapterSearch(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#231f20] dark:text-white outline-none focus:border-[#b56b37]"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-text-primary dark:text-white outline-none focus:border-primary-blue"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredChapters.map(ch => (
-              <div key={ch.id} className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-2xl p-5 shadow-2xs space-y-4 hover:border-[#b56b37] transition-all">
+              <div key={ch.id} className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-2xl p-5 shadow-2xs space-y-4 hover:border-primary-blue transition-all">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[10px] font-bold text-[#8c7569] uppercase tracking-wider block">{ch.location}</span>
-                    <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white mt-1 leading-snug">{ch.name}</h3>
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">{ch.location}</span>
+                    <h3 className="font-serif font-bold text-base text-text-primary dark:text-white mt-1 leading-snug">{ch.name}</h3>
                   </div>
                   <span className="px-2.5 py-1 rounded-md bg-[#63703d]/15 text-[#63703d] font-bold text-xs border border-[#63703d]/30">
                     {ch.badge}
@@ -389,15 +390,15 @@ export default function CampusAlumniHub() {
 
                 <div className="flex flex-wrap gap-1.5">
                   {ch.tags.map(t => (
-                    <span key={t} className="px-2 py-0.5 bg-[#f6efe2] text-[#603620] text-[10px] font-bold rounded-md border border-[#e8ded1]">
+                    <span key={t} className="px-2 py-0.5 bg-surface-secondary text-text-secondary text-[10px] font-bold rounded-md border border-border-theme">
                       #{t}
                     </span>
                   ))}
                 </div>
 
-                <div className="pt-3 border-t border-[#e8ded1] dark:border-slate-800 flex items-center justify-between text-xs font-bold">
-                  <div className="text-[#603620]">{ch.members} Members</div>
-                  <span className="text-[#b56b37]">Lead: {ch.lead}</span>
+                <div className="pt-3 border-t border-border-theme dark:border-slate-800 flex items-center justify-between text-xs font-bold">
+                  <div className="text-text-secondary">{ch.members} Members</div>
+                  <span className="text-primary-blue">Lead: {ch.lead}</span>
                 </div>
               </div>
             ))}
@@ -408,30 +409,30 @@ export default function CampusAlumniHub() {
       {/* Tab 2: Alumni Directory */}
       {activeTab === 'alumni' && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
+          <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
             <div className="relative flex-1 w-full max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7569]" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 placeholder="Search alumni by name, company, or role..."
                 value={alumniSearch}
                 onChange={e => setAlumniSearch(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#231f20] dark:text-white outline-none focus:border-[#b56b37]"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-text-primary dark:text-white outline-none focus:border-primary-blue"
               />
             </div>
           </div>
 
           <div className="space-y-3">
             {filteredAlumni.map(alm => (
-              <div key={alm.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 shadow-2xs gap-4 hover:border-[#b56b37] transition-all">
+              <div key={alm.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 shadow-2xs gap-4 hover:border-primary-blue transition-all">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-[#603620] text-[#f3e4bd] font-serif font-bold flex items-center justify-center text-sm shadow-xs">
                     {alm.name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="font-serif font-bold text-sm text-[#231f20] dark:text-white">{alm.name}</h3>
-                    <p className="text-xs text-[#b56b37] font-bold">{alm.currentRole}</p>
-                    <p className="text-[11px] text-[#8c7569] font-medium">{alm.college} • Class of {alm.gradYear}</p>
+                    <h3 className="font-serif font-bold text-sm text-text-primary dark:text-white">{alm.name}</h3>
+                    <p className="text-xs text-primary-blue font-bold">{alm.currentRole}</p>
+                    <p className="text-[11px] text-text-muted font-medium">{alm.college} • Class of {alm.gradYear}</p>
                   </div>
                 </div>
 
@@ -447,7 +448,7 @@ export default function CampusAlumniHub() {
                         setTargetAlumni(alm.name);
                         setActiveTab('referrals');
                       }}
-                      className="px-3.5 py-2 bg-[#b56b37] hover:bg-[#96552a] text-white text-xs font-bold rounded-xl cursor-pointer"
+                      className="px-3.5 py-2 bg-primary-blue hover:bg-[#96552a] text-white text-xs font-bold rounded-xl cursor-pointer"
                     >
                       Request Referral
                     </button>
@@ -461,11 +462,11 @@ export default function CampusAlumniHub() {
 
       {/* Tab 3: Campus Events (RSVP + Waitlist) */}
       {activeTab === 'events' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-2xl p-6 space-y-6 shadow-2xs">
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-2xl p-6 space-y-6 shadow-2xs">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white">Campus Workshops & Seminars</h3>
-              <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">RSVP for upcoming technical workshops organized by campus chapters.</p>
+              <h3 className="font-serif font-bold text-base text-text-primary dark:text-white">Campus Workshops & Seminars</h3>
+              <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">RSVP for upcoming technical workshops organized by campus chapters.</p>
             </div>
           </div>
 
@@ -475,10 +476,10 @@ export default function CampusAlumniHub() {
               placeholder="Host event title (e.g. LLM Fine-Tuning Workshop)..."
               value={newEventTitle}
               onChange={(e) => setNewEventTitle(e.target.value)}
-              className="flex-1 p-2.5 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-xs text-[#231f20] dark:text-white outline-none focus:border-[#b56b37]"
+              className="flex-1 p-2.5 bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl text-xs text-text-primary dark:text-white outline-none focus:border-primary-blue"
               required
             />
-            <button type="submit" className="px-4 py-2.5 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl transition cursor-pointer">
+            <button type="submit" className="px-4 py-2.5 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl transition cursor-pointer">
               + Host Event
             </button>
           </form>
@@ -491,11 +492,11 @@ export default function CampusAlumniHub() {
               const hasActed = isConfirmed || isWaitlisted;
 
               return (
-                <div key={e.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-[#fcf9f2] dark:bg-slate-900/60 rounded-2xl border border-[#e8ded1] dark:border-slate-800 text-xs">
+                <div key={e.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-background dark:bg-slate-900/60 rounded-2xl border border-border-theme dark:border-slate-800 text-xs">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-serif font-bold text-[#231f20] dark:text-white text-sm">{e.title}</span>
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-[#f6efe2] text-[#603620] rounded-md border border-[#e8ded1]">
+                      <span className="font-serif font-bold text-text-primary dark:text-white text-sm">{e.title}</span>
+                      <span className="px-2 py-0.5 text-[10px] font-bold bg-surface-secondary text-text-secondary rounded-md border border-border-theme">
                         {e.chapter}
                       </span>
                       {/* Capacity badge */}
@@ -512,7 +513,7 @@ export default function CampusAlumniHub() {
                       )}
                     </div>
 
-                    <p className="text-[#8c7569] dark:text-slate-400 mt-1">
+                    <p className="text-text-muted dark:text-slate-400 mt-1">
                       {e.date} at {e.time} • {e.location} • ({e.rsvpCount} / {e.maxCapacity} RSVPs)
                     </p>
 
@@ -523,7 +524,7 @@ export default function CampusAlumniHub() {
                       </span>
                     )}
                     {isWaitlisted && (
-                      <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[10px] font-bold bg-[#f3e4bd] text-[#603620] rounded-full">
+                      <span className="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 text-[10px] font-bold bg-[#f3e4bd] text-text-secondary rounded-full">
                         <Clock size={10} /> You're on the waitlist
                       </span>
                     )}
@@ -537,7 +538,7 @@ export default function CampusAlumniHub() {
                         className={`px-4 py-2 font-bold rounded-xl transition text-white cursor-pointer ${
                           isFull
                             ? 'bg-[#603620] hover:bg-[#4a2a19]'
-                            : 'bg-[#b56b37] hover:bg-[#96552a]'
+                            : 'bg-primary-blue hover:bg-[#96552a]'
                         }`}
                         aria-label={isFull ? `Join waitlist for ${e.title}` : `RSVP for ${e.title}`}
                       >
@@ -549,7 +550,7 @@ export default function CampusAlumniHub() {
                     {hasActed && (
                       <button
                         onClick={() => handleCancelRsvp(e.id)}
-                        className="px-4 py-2 font-bold rounded-xl transition bg-white dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 text-[#603620] dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
+                        className="px-4 py-2 font-bold rounded-xl transition bg-surface dark:bg-slate-800 border border-border-theme dark:border-slate-700 text-text-secondary dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400 cursor-pointer"
                         aria-label={`Cancel ${isWaitlisted ? 'waitlist entry' : 'RSVP'} for ${e.title}`}
                       >
                         {isConfirmed ? '✓ RSVP Confirmed' : '⏳ On Waitlist'}
@@ -565,51 +566,51 @@ export default function CampusAlumniHub() {
 
       {/* Tab 4: Referral Portal */}
       {activeTab === 'referrals' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs max-w-2xl mx-auto">
-          <div className="border-b border-[#e8ded1] dark:border-slate-800 pb-4">
-            <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white">Request Alumni Job Referral</h2>
-            <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">Connect directly with verified alumni engineers for job & internship referrals.</p>
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs max-w-2xl mx-auto">
+          <div className="border-b border-border-theme dark:border-slate-800 pb-4">
+            <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white">Request Alumni Job Referral</h2>
+            <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">Connect directly with verified alumni engineers for job & internship referrals.</p>
           </div>
 
           <form onSubmit={handleRequestReferral} className="space-y-4 text-xs">
             <div className="space-y-1">
-              <label className="font-bold text-[#603620] uppercase">Target Alumni Name</label>
+              <label className="font-bold text-text-secondary uppercase">Target Alumni Name</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Siddharth Rao (Google)"
                 value={targetAlumni}
                 onChange={e => setTargetAlumni(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-[#603620] uppercase">Target Job / Internship Role</label>
+              <label className="font-bold text-text-secondary uppercase">Target Job / Internship Role</label>
               <input
                 type="text"
                 required
                 placeholder="e.g. Software Engineer Intern 2026"
                 value={targetRole}
                 onChange={e => setTargetRole(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none"
               />
             </div>
 
-            <button type="submit" className="w-full py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
+            <button type="submit" className="w-full py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
               <Send className="w-4 h-4" /> Send Referral Request to Alumni
             </button>
           </form>
 
-          <div className="pt-4 border-t border-[#e8ded1] space-y-2">
-            <h4 className="font-bold text-[#231f20] text-xs">Your Recent Referral Requests</h4>
+          <div className="pt-4 border-t border-border-theme space-y-2">
+            <h4 className="font-bold text-text-primary text-xs">Your Recent Referral Requests</h4>
             {referralRequests.map(r => (
-              <div key={r.id} className="flex justify-between items-center p-3 rounded-xl bg-[#fcf9f2] border border-[#e8ded1] text-xs">
+              <div key={r.id} className="flex justify-between items-center p-3 rounded-xl bg-background border border-border-theme text-xs">
                 <div>
-                  <span className="font-bold text-[#231f20]">{r.role}</span>
-                  <span className="text-[10px] text-[#8c7569] block">To: {r.alumniName}</span>
+                  <span className="font-bold text-text-primary">{r.role}</span>
+                  <span className="text-[10px] text-text-muted block">To: {r.alumniName}</span>
                 </div>
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-[#f3e4bd] text-[#603620]">{r.status}</span>
+                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-[#f3e4bd] text-text-secondary">{r.status}</span>
               </div>
             ))}
           </div>
@@ -618,15 +619,15 @@ export default function CampusAlumniHub() {
 
       {/* Tab 5: Export */}
       {activeTab === 'export' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
-          <div className="w-16 h-16 bg-[#f6efe2] text-[#b56b37] flex items-center justify-center rounded-full mx-auto border border-[#e8ded1]">
-            <Download className="w-8 h-8 text-[#b56b37]" />
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
+          <div className="w-16 h-16 bg-surface-secondary text-primary-blue flex items-center justify-center rounded-full mx-auto border border-border-theme">
+            <Download className="w-8 h-8 text-primary-blue" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white">Export Campus Manifest</h2>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">
+          <h2 className="text-2xl font-serif font-bold text-text-primary dark:text-white">Export Campus Manifest</h2>
+          <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">
             Download full chapter listings, alumni network directory, campus events, and waitlist status in a JSON file.
           </p>
-          <button onClick={handleExportManifest} className="px-6 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer inline-flex items-center gap-2">
+          <button onClick={handleExportManifest} className="px-6 py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer inline-flex items-center gap-2">
             <Download className="w-4 h-4" /> Download Campus Network JSON
           </button>
         </div>

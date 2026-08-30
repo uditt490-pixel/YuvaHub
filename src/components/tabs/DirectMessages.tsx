@@ -129,7 +129,7 @@ export default function DirectMessages() {
   });
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
+    <div className="flex h-[calc(100vh-8rem)] bg-surface dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
       
       {/* Sidebar */}
       <div className="w-80 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50 dark:bg-gray-900/50">
@@ -142,7 +142,7 @@ export default function DirectMessages() {
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-white"
+              className="w-full pl-9 pr-4 py-2 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-white"
             />
           </div>
         </div>
@@ -199,10 +199,10 @@ export default function DirectMessages() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-gray-800">
+      <div className="flex-1 flex flex-col min-w-0 bg-surface dark:bg-gray-800">
         {activeConversation ? (
           <>
-            <div className="h-16 border-b border-gray-200 dark:border-gray-700 flex items-center px-6 shrink-0 bg-white dark:bg-gray-800">
+            <div className="h-16 border-b border-gray-200 dark:border-gray-700 flex items-center px-6 shrink-0 bg-surface dark:bg-gray-800">
               <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm shrink-0 mr-3">
                 {getRecipientId(activeConversation).substring(0, 2).toUpperCase()}
               </div>
@@ -259,7 +259,7 @@ export default function DirectMessages() {
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-white"
+                  className="flex-1 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all dark:text-white"
                 />
                 <button
                   type="submit"

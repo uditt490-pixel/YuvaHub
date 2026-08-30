@@ -15,7 +15,7 @@ export default function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
+    <div className="rounded-2xl border border-dashed border-slate-300 bg-surface p-8 text-center">
       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
         {icon ?? <Inbox className="h-6 w-6" aria-hidden="true" />}
       </div>

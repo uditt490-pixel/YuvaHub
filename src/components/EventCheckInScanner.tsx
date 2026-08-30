@@ -149,7 +149,7 @@ export function EventCheckInScanner({ eventId, onClose }: CheckInScannerProps) {
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-md bg-surface dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#b56b37] to-[#96552a] p-4 flex items-center justify-between">
           <div className="flex items-center gap-2 text-white">
@@ -158,7 +158,7 @@ export function EventCheckInScanner({ eventId, onClose }: CheckInScannerProps) {
           </div>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-white/20 rounded-lg transition"
+            className="p-1 hover:bg-surface/20 rounded-lg transition"
             aria-label="Close scanner"
           >
             <X className="w-5 h-5 text-white" />
@@ -186,7 +186,7 @@ export function EventCheckInScanner({ eventId, onClose }: CheckInScannerProps) {
         <div className="p-4 bg-gray-50 dark:bg-slate-800 flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">Checked In</p>
-            <p className="text-2xl font-bold text-[#b56b37]">{stats.checkedIn}</p>
+            <p className="text-2xl font-bold text-primary-blue">{stats.checkedIn}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold">Total RSVPs</p>

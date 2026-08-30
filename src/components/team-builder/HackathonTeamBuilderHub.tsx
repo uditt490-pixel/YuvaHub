@@ -72,8 +72,8 @@ const HackathonTeamBuilderHub: React.FC = () => {
   const activeCandidate = candidates[currentIndex];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white pt-24 pb-12 px-4 md:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="font-sans h-full flex flex-col w-full">
+      <div className="w-full h-full flex flex-col">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -82,17 +82,17 @@ const HackathonTeamBuilderHub: React.FC = () => {
               <Users className="w-8 h-8 text-purple-500" />
               Team Matchmaker
             </h1>
-            <p className="text-gray-400 mt-2">Find the perfect additions to your hackathon dream team.</p>
+            <p className="text-text-muted mt-2">Find the perfect additions to your hackathon dream team.</p>
           </div>
           
           <button 
             onClick={() => setIsInboxOpen(true)}
-            className="relative px-5 py-2.5 bg-gray-900 border border-gray-700 hover:border-purple-500 rounded-xl transition flex items-center gap-2 font-medium shadow-lg"
+            className="relative px-5 py-2.5 bg-surface border border-border-theme hover:border-purple-500 rounded-xl transition flex items-center gap-2 font-medium shadow-lg"
           >
-            <Mail className="w-5 h-5 text-gray-300" />
+            <Mail className="w-5 h-5 text-text-primary" />
             Inbox
             {invites.length > 0 && (
-              <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rounded-full animate-bounce">
+              <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-text-primary text-xs font-bold flex items-center justify-center rounded-full animate-bounce">
                 {invites.length}
               </span>
             )}
@@ -102,13 +102,13 @@ const HackathonTeamBuilderHub: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column: Swipe Area */}
-          <div className="lg:col-span-7 flex flex-col items-center justify-center min-h-[500px] relative bg-gray-900/50 rounded-3xl border border-gray-800 p-8 overflow-hidden">
-            <h2 className="absolute top-6 left-6 text-xl font-bold text-gray-300 flex items-center gap-2">
+          <div className="lg:col-span-7 flex flex-col items-center justify-center min-h-[550px] relative bg-surface rounded-3xl border border-border-theme p-8 overflow-hidden">
+            <h2 className="absolute top-6 left-6 text-xl font-bold text-text-primary flex items-center gap-2">
               <Search className="w-5 h-5 text-purple-400" />
               Discover Talent
             </h2>
 
-            <div className="relative w-full max-w-sm h-[400px] flex items-center justify-center mt-8">
+            <div className="relative w-full max-w-sm h-[460px] flex items-center justify-center mt-8">
               {activeCandidate ? (
                 // Use key to force re-render for animation when index changes
                 <CandidateSwipeCard 
@@ -118,15 +118,15 @@ const HackathonTeamBuilderHub: React.FC = () => {
                 />
               ) : (
                 <div className="text-center flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-surface-secondary flex items-center justify-center">
                     <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
                   </div>
-                  <p className="text-gray-400 text-lg">You've seen everyone!<br/>Check back later for new hackers.</p>
+                  <p className="text-text-muted text-lg">You've seen everyone!<br/>Check back later for new hackers.</p>
                 </div>
               )}
             </div>
             
-            <p className="absolute bottom-6 text-gray-500 text-sm">
+            <p className="absolute bottom-6 text-text-secondary text-sm">
               Swipe Left to skip, Swipe Right to invite
             </p>
           </div>
@@ -138,8 +138,8 @@ const HackathonTeamBuilderHub: React.FC = () => {
               requiredSkills={MOCK_REQUIRED_SKILLS} 
             />
             
-            <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 shadow-xl">
-              <h3 className="text-lg font-semibold text-white mb-4">Your Open Roles</h3>
+            <div className="bg-surface rounded-xl p-6 border border-border-theme shadow-xl">
+              <h3 className="text-lg font-semibold text-text-primary mb-4">Your Open Roles</h3>
               <div className="flex flex-wrap gap-2">
                 {MOCK_REQUIRED_SKILLS.map(skill => (
                   <span key={skill} className="px-3 py-1.5 bg-rose-500/10 text-rose-400 text-sm font-medium rounded-lg border border-rose-500/20">

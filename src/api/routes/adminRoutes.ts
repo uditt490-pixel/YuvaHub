@@ -17,7 +17,9 @@ import {
     adminPurgeDlq,
     getPlatformStats,
     getUsersList,
-    performModerationAction
+    performModerationAction,
+    getScraperConfigs,
+    updateScraperConfig
 } from "../controllers/adminController.js";
 import { authMiddleware, adminOnly } from "../middlewares/auth.js";
 import { requireRole } from "../../middleware/roleAuth.js";
@@ -40,6 +42,9 @@ router.get("/admin/scraper-health", authMiddleware, adminOnly, adminScraperHealt
 router.get("/admin/scrapers/stats", authMiddleware, adminOnly, scraperStats);
 router.get("/admin/scrapers/logs", authMiddleware, adminOnly, scraperLogs);
 router.post("/admin/scrapers/trigger", authMiddleware, adminOnly, triggerScraper);
+router.post("/admin/scrapers/trigger/:sourceId", authMiddleware, adminOnly, triggerScraper);
+router.get("/admin/scrapers/configs", authMiddleware, adminOnly, getScraperConfigs);
+router.patch("/admin/scrapers/configs/:sourceId", authMiddleware, adminOnly, updateScraperConfig);
 router.get("/admin/incidents", authMiddleware, adminOnly, adminIncidents);
 router.delete("/admin/users/:id", authMiddleware, adminOnly, adminDeleteUser);
 router.get("/admin/telemetry", adminTelemetryStream);

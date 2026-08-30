@@ -145,7 +145,7 @@ export const MyRsvps: React.FC = () => {
             {selectedQrEvent && (
                 <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200" onClick={() => setSelectedQrEvent(null)}>
                     <div 
-                        className="bg-white dark:bg-slate-900 max-w-sm w-full rounded-3xl p-8 shadow-2xl relative border border-slate-800 flex flex-col items-center text-center animate-in zoom-in-95"
+                        className="bg-surface dark:bg-slate-900 max-w-sm w-full rounded-3xl p-8 shadow-2xl relative border border-slate-800 flex flex-col items-center text-center animate-in zoom-in-95"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <h3 className="font-bold text-xl text-slate-100 mb-2 leading-tight">
@@ -155,7 +155,7 @@ export const MyRsvps: React.FC = () => {
                             Show this QR code at the event entrance to check in.
                         </p>
                         
-                        <div className="bg-white p-4 rounded-2xl shadow-inner mb-6">
+                        <div className="bg-surface p-4 rounded-2xl shadow-inner mb-6">
                             <QRCodeSVG 
                                 value={generateQrData(selectedQrEvent)} 
                                 size={200}

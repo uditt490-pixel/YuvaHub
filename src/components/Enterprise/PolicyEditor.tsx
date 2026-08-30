@@ -49,14 +49,14 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ role }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+        <div className="bg-surface rounded-2xl border border-border-theme shadow-sm overflow-hidden">
+            <div className="bg-surface px-6 py-4 border-b border-border-theme flex justify-between items-center">
                 <div>
-                    <h3 className="text-sm font-semibold text-slate-800">Policy Configuration Map</h3>
-                    <p className="text-xs text-slate-500 mt-1">Configure fine-grained access control levels for specific modules.</p>
+                    <h3 className="text-sm font-semibold text-text-primary">Policy Configuration Map</h3>
+                    <p className="text-xs text-text-muted mt-1">Configure fine-grained access control levels for specific modules.</p>
                 </div>
                 {localRole.isSystemRole && (
-                    <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-full border border-amber-200 text-xs font-medium text-amber-700">
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 rounded-full border border-amber-500/30 text-xs font-medium text-amber-400">
                         <ShieldAlert className="h-3.5 w-3.5" /> Core System Role
                     </div>
                 )}
@@ -65,8 +65,8 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ role }) => {
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-white border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                            <th className="px-6 py-4 font-semibold text-slate-600">Resource Module</th>
+                        <tr className="bg-surface border-b border-border-theme text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            <th className="px-6 py-4 font-semibold text-text-secondary">Resource Module</th>
                             {LEVELS.map(lvl => (
                                 <th key={lvl} className="px-6 py-4 text-center">{lvl}</th>
                             ))}
@@ -74,8 +74,8 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ role }) => {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {RESOURCES.map(res => (
-                            <tr key={res} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="px-6 py-4 font-medium text-sm text-slate-700">
+                            <tr key={res} className="hover:bg-surface/50 transition-colors">
+                                <td className="px-6 py-4 font-medium text-sm text-text-primary">
                                     {res.replace('_', ' ')}
                                 </td>
                                 {LEVELS.map(lvl => {
@@ -87,8 +87,8 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ role }) => {
                                                 onClick={() => togglePermission(res, lvl)}
                                                 disabled={isSuperAdmin || isSaving}
                                                 className={`w-10 h-10 rounded-full mx-auto flex items-center justify-center transition-all ${allowed
-                                                        ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 border-2 border-emerald-200'
-                                                        : 'bg-slate-100 text-slate-400 hover:bg-slate-200 border-2 border-transparent'
+                                                        ? 'bg-emerald-500/200/20 text-emerald-400 hover:bg-emerald-200 border-2 border-emerald-500/30'
+                                                        : 'bg-surface-secondary text-text-muted hover:bg-border-theme border-2 border-transparent'
                                                     } ${isSuperAdmin ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}`}
                                             >
                                                 {allowed ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
@@ -102,11 +102,11 @@ export const PolicyEditor: React.FC<PolicyEditorProps> = ({ role }) => {
                 </table>
             </div>
 
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+            <div className="p-4 bg-surface border-t border-border-theme flex items-center justify-between text-xs text-text-muted">
                 <div className="flex items-center gap-2">
                     <Lock className="h-4 w-4" /> Changes take effect at next user session refresh.
                 </div>
-                {isSaving && <span className="animate-pulse text-indigo-600 font-medium">Saving policy...</span>}
+                {isSaving && <span className="animate-pulse text-indigo-400 font-medium">Saving policy...</span>}
             </div>
         </div>
     );

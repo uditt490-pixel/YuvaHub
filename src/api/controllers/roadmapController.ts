@@ -44,7 +44,7 @@ export const generateRoadmap = async (req: Request, res: Response) => {
 
         res.status(201).json({ data: newRoadmap });
     } catch (error) {
-        logger.error('Error generating roadmap:', error);
+        logger.error({ err: error }, 'Error generating roadmap:');
         res.status(500).json({ error: 'Failed to generate roadmap' });
     }
 };
@@ -84,7 +84,7 @@ export const updateNodeStatus = async (req: Request, res: Response) => {
         await roadmap.save();
         res.status(200).json({ data: roadmap });
     } catch (error) {
-        logger.error('Error updating node status:', error);
+        logger.error({ err: error }, 'Error updating node status:');
         res.status(500).json({ error: 'Failed to update node' });
     }
 };

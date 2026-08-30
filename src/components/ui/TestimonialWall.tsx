@@ -49,20 +49,20 @@ export default function TestimonialWall({ targetUid }: Props) {
   };
 
   if (loading) {
-    return <div className="py-8 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-[#b56b37]" /></div>;
+    return <div className="py-8 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary-blue" /></div>;
   }
 
   return (
     <div className="mt-12">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-          <Quote className="w-6 h-6 text-[#b56b37]" />
+        <h3 className="text-2xl font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+          <Quote className="w-6 h-6 text-primary-blue" />
           Testimonials
         </h3>
         {user && user.uid !== targetUid && !writing && (
           <button 
             onClick={() => setWriting(true)}
-            className="text-xs font-bold px-4 py-2 bg-[#b56b37] text-white rounded-lg hover:bg-[#603620] transition-colors"
+            className="text-xs font-bold px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-[#603620] transition-colors"
           >
             Write Testimonial
           </button>
@@ -70,12 +70,12 @@ export default function TestimonialWall({ targetUid }: Props) {
       </div>
 
       {writing && (
-        <div className="bg-[#fcf9f2] dark:bg-gray-800 p-5 rounded-2xl border border-[#e8ded1] dark:border-gray-700 mb-8">
+        <div className="bg-background dark:bg-gray-800 p-5 rounded-2xl border border-border-theme dark:border-gray-700 mb-8">
           <h4 className="font-bold text-sm mb-3 dark:text-white">Write a recommendation</h4>
           <select 
             value={relationship} 
             onChange={(e) => setRelationship(e.target.value)}
-            className="w-full mb-3 bg-white dark:bg-gray-900 border border-[#e8ded1] dark:border-gray-700 rounded-lg p-2 text-sm dark:text-white"
+            className="w-full mb-3 bg-surface dark:bg-gray-900 border border-border-theme dark:border-gray-700 rounded-lg p-2 text-sm dark:text-white"
           >
             <option value="peer">Peer / Classmate</option>
             <option value="teammate">Project Teammate</option>
@@ -87,11 +87,11 @@ export default function TestimonialWall({ targetUid }: Props) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Write your testimonial here (min 50 chars)..."
-            className="w-full h-24 mb-3 bg-white dark:bg-gray-900 border border-[#e8ded1] dark:border-gray-700 rounded-lg p-3 text-sm resize-none dark:text-white"
+            className="w-full h-24 mb-3 bg-surface dark:bg-gray-900 border border-border-theme dark:border-gray-700 rounded-lg p-3 text-sm resize-none dark:text-white"
           />
           <div className="flex gap-2 justify-end">
-            <button onClick={() => setWriting(false)} className="px-4 py-2 text-xs font-bold text-[#8c7569] hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
-            <button onClick={handleSubmit} className="px-4 py-2 text-xs font-bold bg-[#b56b37] text-white rounded-lg flex items-center gap-1 hover:bg-[#603620] transition-colors">
+            <button onClick={() => setWriting(false)} className="px-4 py-2 text-xs font-bold text-text-muted hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+            <button onClick={handleSubmit} className="px-4 py-2 text-xs font-bold bg-primary-blue text-white rounded-lg flex items-center gap-1 hover:bg-[#603620] transition-colors">
               <Send className="w-3.5 h-3.5" /> Submit
             </button>
           </div>
@@ -99,22 +99,22 @@ export default function TestimonialWall({ targetUid }: Props) {
       )}
 
       {testimonials.length === 0 ? (
-        <div className="text-center py-10 bg-[#fcf9f2] dark:bg-gray-800/50 rounded-3xl border border-dashed border-[#e8ded1] dark:border-gray-700">
-          <p className="text-sm text-[#8c7569] dark:text-gray-400">No testimonials yet.</p>
+        <div className="text-center py-10 bg-background dark:bg-gray-800/50 rounded-3xl border border-dashed border-border-theme dark:border-gray-700">
+          <p className="text-sm text-text-muted dark:text-gray-400">No testimonials yet.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {testimonials.map(t => (
-            <div key={t.id} className={`p-5 rounded-2xl border ${t.isHighlighted ? 'bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30' : 'bg-white dark:bg-gray-800 border-[#e8ded1] dark:border-gray-700'} shadow-sm`}>
+            <div key={t.id} className={`p-5 rounded-2xl border ${t.isHighlighted ? 'bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-900/30' : 'bg-surface dark:bg-gray-800 border-border-theme dark:border-gray-700'} shadow-sm`}>
               {t.isHighlighted && <div className="flex items-center gap-1 text-[10px] font-bold text-amber-600 mb-2 uppercase tracking-wider"><Star className="w-3 h-3 fill-amber-500" /> Highlighted</div>}
-              <p className="text-sm text-[#603620] dark:text-gray-300 italic mb-4">"{t.content}"</p>
+              <p className="text-sm text-text-secondary dark:text-gray-300 italic mb-4">"{t.content}"</p>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#f6efe2] dark:bg-gray-700 flex items-center justify-center font-bold text-[#b56b37]">
+                <div className="w-8 h-8 rounded-full bg-surface-secondary dark:bg-gray-700 flex items-center justify-center font-bold text-primary-blue">
                   {(t.authorName || 'U')[0]}
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-[#231f20] dark:text-white">{t.authorName || 'Anonymous'}</p>
-                  <p className="text-[10px] text-[#8c7569] dark:text-gray-400 capitalize">{t.relationship}</p>
+                  <p className="text-xs font-bold text-text-primary dark:text-white">{t.authorName || 'Anonymous'}</p>
+                  <p className="text-[10px] text-text-muted dark:text-gray-400 capitalize">{t.relationship}</p>
                 </div>
               </div>
             </div>

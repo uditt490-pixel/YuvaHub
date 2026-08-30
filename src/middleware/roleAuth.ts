@@ -33,7 +33,7 @@ export const requireRole = (allowedRoles: string[]) => {
 
             next();
         } catch (error) {
-            logger.error('Token verification failed:', error);
+            logger.error({ err: error }, 'Token verification failed:');
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });
         }
     };

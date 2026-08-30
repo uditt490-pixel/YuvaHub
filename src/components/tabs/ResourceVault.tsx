@@ -164,10 +164,10 @@ export default function ResourceVault() {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm relative overflow-hidden">
+      <div className="bg-surface dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <div className="flex items-center gap-2 text-[#b56b37] dark:text-blue-400 font-bold text-xs uppercase tracking-wider mb-2">
+            <div className="flex items-center gap-2 text-primary-blue dark:text-blue-400 font-bold text-xs uppercase tracking-wider mb-2">
               <BookOpen className="w-4 h-4" /> Community Resource Vault
             </div>
             <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">Discover & Share Learning Resources</h1>
@@ -178,7 +178,7 @@ export default function ResourceVault() {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" /> Submit Resource
           </button>
@@ -190,7 +190,7 @@ export default function ResourceVault() {
             <button
               onClick={() => setViewMode('all')}
               className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                viewMode === 'all' ? 'bg-[#b56b37] text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                viewMode === 'all' ? 'bg-primary-blue text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
               All Resources
@@ -198,7 +198,7 @@ export default function ResourceVault() {
             <button
               onClick={() => setViewMode('saved')}
               className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                viewMode === 'saved' ? 'bg-[#b56b37] text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                viewMode === 'saved' ? 'bg-primary-blue text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
               }`}
             >
               <Bookmark className={`w-3.5 h-3.5 ${viewMode === 'saved' ? 'fill-current' : ''}`} /> My Saved
@@ -249,10 +249,10 @@ export default function ResourceVault() {
       {/* Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-[#b56b37]" />
+          <Loader2 className="w-8 h-8 animate-spin text-primary-blue" />
         </div>
       ) : filteredResources.length === 0 ? (
-        <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+        <div className="text-center py-20 bg-surface dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
           <BookOpen className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">No resources found</h3>
           <p className="text-xs text-slate-500 mt-2">Try adjusting your filters or be the first to submit a resource!</p>
@@ -265,7 +265,7 @@ export default function ResourceVault() {
             const isSaved = res.savedBy?.includes(user?.uid || '');
             
             return (
-              <div key={res.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-[#b56b37] transition-all flex flex-col h-full shadow-sm">
+              <div key={res.id} className="bg-surface dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-primary-blue transition-all flex flex-col h-full shadow-sm">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex-1">
                     <span className="inline-block px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold uppercase rounded-md mb-2">
@@ -279,7 +279,7 @@ export default function ResourceVault() {
                     onClick={() => handleSave(res.id)}
                     className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                       isSaved 
-                        ? 'text-[#b56b37] bg-[#b56b37]/10' 
+                        ? 'text-primary-blue bg-primary-blue/10' 
                         : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
@@ -312,7 +312,7 @@ export default function ResourceVault() {
                     <button
                       onClick={() => handleVote(res.id, 'up')}
                       className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                        isUpvoted ? 'bg-[#b56b37] text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        isUpvoted ? 'bg-primary-blue text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
                       }`}
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
@@ -366,7 +366,7 @@ export default function ResourceVault() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl p-6 w-full max-w-lg border border-slate-200 dark:border-slate-800 shadow-2xl"
+              className="bg-surface dark:bg-slate-900 rounded-3xl p-6 w-full max-w-lg border border-slate-200 dark:border-slate-800 shadow-2xl"
             >
               <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Submit a Resource</h2>
               <p className="text-xs text-slate-500 mb-6">Share a high-quality link with the YuvaHub community.</p>
@@ -419,7 +419,7 @@ export default function ResourceVault() {
                   <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
                     Cancel
                   </button>
-                  <button type="submit" disabled={submitLoading} className="px-6 py-2 text-xs font-bold text-white bg-[#b56b37] hover:bg-[#96552a] rounded-xl transition-colors flex items-center gap-2">
+                  <button type="submit" disabled={submitLoading} className="px-6 py-2 text-xs font-bold text-white bg-primary-blue hover:bg-[#96552a] rounded-xl transition-colors flex items-center gap-2">
                     {submitLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Resource'}
                   </button>
                 </div>

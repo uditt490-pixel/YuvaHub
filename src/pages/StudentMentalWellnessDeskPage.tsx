@@ -103,7 +103,7 @@ export default function StudentMentalWellnessDeskPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen  py-10 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-teal-950/40 rounded-3xl p-8 sm:p-10 border border-slate-800 shadow-2xl relative overflow-hidden">
           <div className="relative z-10 max-w-3xl space-y-4">

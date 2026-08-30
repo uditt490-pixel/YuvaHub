@@ -31,7 +31,7 @@ export default function OpportunityNotePanel({ opportunityId }: OpportunityNoteP
   const activeColorObj = COLOR_OPTIONS.find(c => c.id === note?.color) || COLOR_OPTIONS[0];
 
   return (
-    <div className={`w-full rounded-2xl border transition-all duration-300 overflow-hidden ${hasNote ? activeColorObj.class : 'bg-white border-gray-200'}`}>
+    <div className={`w-full rounded-2xl border transition-all duration-300 overflow-hidden ${hasNote ? activeColorObj.class : 'bg-surface border-gray-200'}`}>
       
       {/* Header / Toggle */}
       <div 
@@ -66,7 +66,7 @@ export default function OpportunityNotePanel({ opportunityId }: OpportunityNoteP
             value={note.content || ''}
             onChange={(e) => updateNoteField('content', e.target.value)}
             placeholder="Write your private context, follow-up actions, or thoughts here..."
-            className={`w-full h-32 p-3 text-sm rounded-xl border focus:outline-none focus:ring-2 bg-white/50 backdrop-blur-sm transition-all resize-none ${hasNote ? 'border-black/10 focus:ring-black/20 text-inherit placeholder-black/40' : 'border-gray-200 focus:ring-blue-500/20 focus:border-blue-500 text-gray-800 placeholder-gray-400'}`}
+            className={`w-full h-32 p-3 text-sm rounded-xl border focus:outline-none focus:ring-2 bg-surface/50 backdrop-blur-sm transition-all resize-none ${hasNote ? 'border-black/10 focus:ring-black/20 text-inherit placeholder-black/40' : 'border-gray-200 focus:ring-blue-500/20 focus:border-blue-500 text-gray-800 placeholder-gray-400'}`}
             maxLength={2000}
           />
           

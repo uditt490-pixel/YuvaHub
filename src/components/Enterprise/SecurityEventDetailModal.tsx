@@ -33,36 +33,36 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
       case 'CRITICAL_BREACH':
         return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-300';
       case 'HIGH':
-        return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300';
+        return 'bg-orange-500/200/20 text-orange-800 border-orange-500/30 dark:bg-orange-950 dark:text-orange-300';
       case 'MEDIUM':
-        return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300';
+        return 'bg-amber-500/200/20 text-amber-800 border-amber-500/30 dark:bg-amber-950 dark:text-amber-300';
       case 'LOW':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300';
+        return 'bg-emerald-500/200/20 text-emerald-800 border-emerald-500/30 dark:bg-emerald-950 dark:text-emerald-300';
     }
   };
 
   const getStatusBadge = (status: SecurityEvent['status']) => {
     switch (status) {
       case 'GRANTED':
-        return 'bg-emerald-500 text-white';
+        return 'bg-emerald-500/200 text-white';
       case 'DENIED':
         return 'bg-rose-500 text-white';
       case 'QUARANTINED':
-        return 'bg-amber-500 text-white';
+        return 'bg-amber-500/200 text-white';
       case 'UNDER_REVIEW':
-        return 'bg-blue-500 text-white';
+        return 'bg-blue-500/200 text-white';
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-4xl shadow-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-blue/70 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme rounded-3xl w-full max-w-4xl shadow-2xl max-h-[92vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-6 border-b border-border-theme dark:border-border-theme bg-surface dark:bg-primary-blue/60 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="font-mono text-sm font-bold text-slate-900 dark:text-white">
+              <span className="font-mono text-sm font-bold text-text-primary dark:text-white">
                 {event.eventId}
               </span>
               <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold border ${getSeverityBadge(event.threatSeverity)}`}>
@@ -72,8 +72,8 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
                 {event.status}
               </span>
             </div>
-            <div className="text-xs text-slate-500 flex items-center gap-2">
-              <Globe className="w-3.5 h-3.5 text-blue-600" />
+            <div className="text-xs text-text-muted flex items-center gap-2">
+              <Globe className="w-3.5 h-3.5 text-blue-400" />
               <span>{event.location}</span> • <span className="font-mono">{event.sourceIp}</span>
             </div>
           </div>
@@ -87,7 +87,7 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-text-muted hover:text-text-secondary dark:hover:text-white hover:bg-surface-secondary dark:hover:bg-surface-secondary transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -95,41 +95,41 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
         </div>
 
         {/* Quick KPI Bar */}
-        <div className="px-6 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs">
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="text-slate-400 text-[10px] font-bold uppercase">Threat Risk Score</div>
+        <div className="px-6 py-3 bg-surface dark:bg-primary-blue border-b border-border-theme dark:border-border-theme grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs">
+          <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/50">
+            <div className="text-text-muted text-[10px] font-bold uppercase">Threat Risk Score</div>
             <div className="text-base font-extrabold text-rose-600 dark:text-rose-400 mt-0.5">
               {event.riskScore}/100
             </div>
           </div>
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="text-slate-400 text-[10px] font-bold uppercase">Gate Protocol</div>
-            <div className="text-base font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
+          <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/50">
+            <div className="text-text-muted text-[10px] font-bold uppercase">Gate Protocol</div>
+            <div className="text-base font-extrabold text-blue-400 dark:text-blue-400 mt-0.5">
               {event.gateProtocol.replace(/_/g, ' ')}
             </div>
           </div>
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="text-slate-400 text-[10px] font-bold uppercase">Target API Endpoint</div>
-            <div className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200 truncate mt-1">
+          <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/50">
+            <div className="text-text-muted text-[10px] font-bold uppercase">Target API Endpoint</div>
+            <div className="text-xs font-mono font-bold text-text-primary dark:text-slate-200 truncate mt-1">
               {event.targetResource}
             </div>
           </div>
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-            <div className="text-slate-400 text-[10px] font-bold uppercase">Timestamp</div>
-            <div className="text-xs font-mono text-slate-600 dark:text-slate-300 mt-1">
+          <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/50">
+            <div className="text-text-muted text-[10px] font-bold uppercase">Timestamp</div>
+            <div className="text-xs font-mono text-text-secondary dark:text-slate-300 mt-1">
               {new Date(event.timestamp).toLocaleTimeString()}
             </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 px-6 bg-slate-50/50 dark:bg-slate-900/40 text-xs">
+        <div className="flex border-b border-border-theme dark:border-border-theme px-6 bg-surface/50 dark:bg-primary-blue/40 text-xs">
           <button
             onClick={() => setActiveTab('ingress')}
             className={`py-3 px-4 font-bold border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'ingress'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-blue-600 text-blue-400 dark:text-blue-400'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <ShieldAlert className="w-4 h-4" /> Ingress Telemetry & Anomalies ({event.anomaliesDetected.length})
@@ -138,8 +138,8 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
             onClick={() => setActiveTab('identity')}
             className={`py-3 px-4 font-bold border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'identity'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-blue-600 text-blue-400 dark:text-blue-400'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <Key className="w-4 h-4" /> Identity Claims & Cryptography
@@ -148,8 +148,8 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
             onClick={() => setActiveTab('mitigation')}
             className={`py-3 px-4 font-bold border-b-2 transition-colors flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'mitigation'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-blue-600 text-blue-400 dark:text-blue-400'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <Zap className="w-4 h-4" /> Mitigation & Audit Trail
@@ -175,15 +175,15 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                  <span className="text-slate-400 font-bold uppercase text-[10px]">User-Agent Signature</span>
-                  <div className="font-mono text-slate-800 dark:text-slate-200 mt-1 break-all">
+                <div className="p-4 rounded-xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme">
+                  <span className="text-text-muted font-bold uppercase text-[10px]">User-Agent Signature</span>
+                  <div className="font-mono text-text-primary dark:text-slate-200 mt-1 break-all">
                     {event.userAgent}
                   </div>
                 </div>
-                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                  <span className="text-slate-400 font-bold uppercase text-[10px]">Target Resource URI</span>
-                  <div className="font-mono text-slate-800 dark:text-slate-200 mt-1">
+                <div className="p-4 rounded-xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme">
+                  <span className="text-text-muted font-bold uppercase text-[10px]">Target Resource URI</span>
+                  <div className="font-mono text-text-primary dark:text-slate-200 mt-1">
                     {event.targetResource}
                   </div>
                 </div>
@@ -193,18 +193,18 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
 
           {activeTab === 'identity' && (
             <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-3">
+              <div className="p-4 rounded-2xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400 font-bold uppercase text-[10px]">User Principal</span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-white">{event.userPrincipal}</span>
+                  <span className="text-text-muted font-bold uppercase text-[10px]">User Principal</span>
+                  <span className="font-mono font-bold text-text-primary dark:text-white">{event.userPrincipal}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400 font-bold uppercase text-[10px]">Role / Authority</span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400">{event.userRole}</span>
+                  <span className="text-text-muted font-bold uppercase text-[10px]">Role / Authority</span>
+                  <span className="font-bold text-blue-400 dark:text-blue-400">{event.userRole}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400 font-bold uppercase text-[10px]">Cryptographic Passkey Status</span>
-                  <span className="font-bold text-emerald-600 flex items-center gap-1">
+                  <span className="text-text-muted font-bold uppercase text-[10px]">Cryptographic Passkey Status</span>
+                  <span className="font-bold text-emerald-400 flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> FIDO2 Certified
                   </span>
                 </div>
@@ -214,14 +214,14 @@ export const SecurityEventDetailModal: React.FC<SecurityEventDetailModalProps> =
 
           {activeTab === 'mitigation' && (
             <div className="space-y-4 text-xs">
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
-                <span className="text-slate-400 font-bold uppercase text-[10px]">Mitigation Directive</span>
-                <div className="font-bold text-slate-900 dark:text-white text-sm">
+              <div className="p-4 rounded-2xl bg-surface dark:bg-surface-secondary border border-border-theme dark:border-border-theme space-y-2">
+                <span className="text-text-muted font-bold uppercase text-[10px]">Mitigation Directive</span>
+                <div className="font-bold text-text-primary dark:text-white text-sm">
                   {event.mitigationTaken || 'No active mitigation required.'}
                 </div>
                 {event.mitigatedBy && (
-                  <div className="text-slate-500">
-                    Authorized By: <span className="font-semibold text-blue-600">{event.mitigatedBy}</span>
+                  <div className="text-text-muted">
+                    Authorized By: <span className="font-semibold text-blue-400">{event.mitigatedBy}</span>
                   </div>
                 )}
               </div>

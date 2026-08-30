@@ -8,7 +8,8 @@ export const EventType = z.enum([
   'SessionCompleted',
   'MentorApplicationSubmitted',
   'PollVoted',
-  'PollClosed'
+  'PollClosed',
+  'OpportunityExpired'
 ]);
 
 export const BaseEventSchema = z.object({
@@ -98,10 +99,23 @@ export const PollClosedEventSchema = BaseEventSchema.extend({
 
 export type PollClosedEvent = z.infer<typeof PollClosedEventSchema>;
 
+export const OpportunityExpiredPayloadSchema = z.object({
+  opportunityId: z.string(),
+  title: z.string(),
+});
+
+export const OpportunityExpiredEventSchema = BaseEventSchema.extend({
+  eventType: z.literal(EventType.enum.OpportunityExpired),
+  payload: OpportunityExpiredPayloadSchema,
+});
+
+export type OpportunityExpiredEvent = z.infer<typeof OpportunityExpiredEventSchema>;
+
 export type EventPayloads =
   | OpportunityScrapedEvent
   | SessionBookedEvent
   | SessionCompletedEvent
   | MentorApplicationSubmittedEvent
   | PollVotedEvent
-  | PollClosedEvent;
+  | PollClosedEvent
+  | OpportunityExpiredEvent;

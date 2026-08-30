@@ -214,7 +214,7 @@ export default function StarInterviewStudio() {
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 isActive
                   ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
+                  : 'bg-surface dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
               }`}
             >
               <Icon size={14} />
@@ -229,7 +229,7 @@ export default function StarInterviewStudio() {
       {/* TAB 1: BUILDER */}
       {activeTab === 'builder' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
+          <div className="lg:col-span-2 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Formulate STAR Story</h3>
 
             <form onSubmit={handleSaveStory} className="space-y-4 text-xs">
@@ -301,7 +301,7 @@ export default function StarInterviewStudio() {
             </form>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
+          <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
             <h3 className="text-base font-bold text-gray-900 dark:text-white">AI Story Health Score</h3>
 
             <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center space-y-2">
@@ -325,7 +325,7 @@ export default function StarInterviewStudio() {
 
       {/* TAB 2: BANK */}
       {activeTab === 'bank' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div>
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Saved STAR Stories Repository</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">Review prepared behavioral answers before interviews.</p>
@@ -342,10 +342,10 @@ export default function StarInterviewStudio() {
                 </div>
                 <h4 className="font-bold text-gray-900 dark:text-white text-sm">{s.question}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-600 dark:text-gray-300 font-mono text-[11px]">
-                  <div className="p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="p-2 bg-surface dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <strong>Situation:</strong> {s.situation}
                   </div>
-                  <div className="p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="p-2 bg-surface dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <strong>Result:</strong> {s.result}
                   </div>
                 </div>
@@ -357,7 +357,7 @@ export default function StarInterviewStudio() {
 
       {/* TAB 3: EXPORT */}
       {activeTab === 'export' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">STAR Behavioral Manifest JSON</h3>

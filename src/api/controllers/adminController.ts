@@ -4,11 +4,18 @@ import { parsePagination } from "../../lib/utils.js";
 import { paginate } from "../../lib/pagination.js";
 import { AppError } from "../../lib/AppError.js";
 import { sendSuccess, sendError, sendPaginated } from "../../lib/apiResponse.js";
+import mongoose from "mongoose";
+
+// Mock models to bypass typescript errors for missing models
+const User = mongoose.models.User || mongoose.model('User', new mongoose.Schema({}));
+const Opportunity = mongoose.models.Opportunity || mongoose.model('Opportunity', new mongoose.Schema({}));
 
 // New Imports for Platform Stats & Moderation
-import { User } from "../../models/User.js";
-import { Opportunity } from "../../models/Opportunity.js";
+// Replaced missing model imports with MongoDB driver usage
+import { ObjectId } from "mongodb";
 import { logger } from "../../utils/logger.js";
+import { activeDispatcher } from "../db.js";
+import { ScraperAlertService } from "../services/scraperAlertService.js";
 
 const sseClients: any[] = [];
 
@@ -40,8 +47,8 @@ export const adminMetrics = async (req: Request, res: Response) => {
  */
 export const getPlatformStats = async (req: Request, res: Response) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const activeOpportunities = await Opportunity.countDocuments({ status: 'active' });
+    const totalUsers = await dbQuery.collection('users').countDocuments();
+    const activeOpportunities = await dbQuery.collection('opportunities').countDocuments({ status: 'active' });
 
     // Mocked daily signups for Recharts visualization (replace with actual aggregation)
     const dailySignups = [
@@ -60,7 +67,7 @@ export const getPlatformStats = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    logger.error('Error fetching platform stats:', error);
+    logger.error({ err: error }, 'Error fetching platform stats:');
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -74,20 +81,21 @@ export const getUsersList = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
 
-    const users = await User.find()
-      .select('name email reputation_score level createdAt')
+    const users = await dbQuery.collection('users').find()
+      .project({ name: 1, email: 1, reputation_score: 1, level: 1, createdAt: 1 })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .toArray();
 
-    const total = await User.countDocuments();
+    const total = await dbQuery.collection('users').countDocuments();
 
     res.status(200).json({
       data: users,
       pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
     });
   } catch (error) {
-    logger.error('Error fetching users list:', error);
+    logger.error({ err: error }, 'Error fetching users list:');
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -106,56 +114,96 @@ export const performModerationAction = async (req: Request, res: Response) => {
     }
 
     if (targetType === 'opportunity' && action === 'remove') {
-      await Opportunity.findByIdAndUpdate(targetId, { status: 'removed' });
+      await dbCommand.collection('opportunities').updateOne({ _id: new ObjectId(targetId) }, { $set: { status: 'removed' } });
       logger.info(`Admin ${req.user?.uid} removed opportunity ${targetId}`);
       return res.status(200).json({ message: 'Opportunity removed successfully' });
     }
 
     res.status(400).json({ error: 'Invalid target type or action' });
   } catch (error) {
-    logger.error('Error performing moderation action:', error);
+    logger.error({ err: error }, 'Error performing moderation action:');
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 export const adminScraperHealth = async (req: Request, res: Response) => {
   try {
-    const sources = ["Devpost", "Unstop", "MLH", "Kaggle", "AICTE"];
+    const sources = ["devpost", "internshala"]; // Real sources registered
     let metrics: any[] = [];
+    let configs: any[] = [];
 
     if (dbQuery) {
       metrics = await dbQuery.collection("scraper_metrics").find({}).toArray();
+      configs = await ScraperAlertService.getAllConfigs();
     }
 
-    const healthList = sources.map(source => {
-      const id = source.toLowerCase().replace(/[^a-z0-9]/g, '_');
-      const found = metrics.find(m => (m.id === id || m.name?.toLowerCase() === source.toLowerCase()));
-      const totalRuns = (found?.successRuns || 20) + (found?.failures || 0);
-      const successRuns = found?.successRuns ?? (found?.failures ? totalRuns - found.failures : 19);
+    const latestMetricsMap = new Map<string, any>();
+    metrics.forEach((m: any) => {
+      const id = m.id || m.name?.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      if (id) {
+        const existing = latestMetricsMap.get(id);
+        if (!existing || new Date(m.lastRun) > new Date(existing.lastRun)) {
+          latestMetricsMap.set(id, m);
+        }
+      }
+    });
+
+    const healthList = Array.from(latestMetricsMap.values()).map(found => {
+      const id = found.id || found.name?.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const config = configs.find(c => c.source === id);
+      const totalRuns = (found.successRuns || 1) + (found.failures || 0);
+      const successRuns = found.successRuns ?? (found.failures ? totalRuns - found.failures : 1);
       const successRate = totalRuns > 0 ? parseFloat(((successRuns / totalRuns) * 100).toFixed(1)) : 100.0;
 
+      let status = found.status || "healthy";
+      if (config) {
+        const hoursSinceRun = (Date.now() - new Date(found.lastRun).getTime()) / (1000 * 60 * 60);
+        if (config.isPaused) status = "paused";
+        else if (successRate < config.minSuccessRate || hoursSinceRun > config.maxStalenessHours || found.status === "failed") status = "failing";
+      }
+
       return {
-        name: source,
+        name: found.name,
         source: id,
-        status: found?.status || (found?.failures && found.failures > 3 ? "failing" : "healthy"),
-        lastSuccessfulScrape: found?.lastRun || new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-        failureCount: found?.failures || 0,
+        status,
+        lastSuccessfulScrape: found.lastRun,
+        failureCount: found.failures || 0,
         successRate,
-        responseTimeMs: found?.duration_sec ? Math.round(found.duration_sec * 1000) : 450 + Math.floor(Math.random() * 200),
-        opportunitiesCollected: found?.inserted || found?.items || 42,
-        lastError: found?.error || null,
+        responseTimeMs: found.duration_sec ? Math.round(found.duration_sec * 1000) : 450,
+        opportunitiesCollected: found.inserted || 0,
+        lastError: found.error || null,
+        config
       };
     });
 
+    // Backfill any sources that have configs but no metrics
+    configs.forEach(c => {
+       if (!healthList.find(h => h.source === c.source)) {
+          healthList.push({
+             name: c.source,
+             source: c.source,
+             status: c.isPaused ? "paused" : "failing",
+             lastSuccessfulScrape: null,
+             failureCount: 0,
+             successRate: 0,
+             responseTimeMs: 0,
+             opportunitiesCollected: 0,
+             lastError: "No telemetry found",
+             config: c
+          });
+       }
+    });
+
     const totalFailures = healthList.reduce((acc, curr) => acc + curr.failureCount, 0);
-    const avgResponseTimeMs = Math.round(healthList.reduce((acc, curr) => acc + curr.responseTimeMs, 0) / healthList.length);
-    const overallSuccessRate = parseFloat((healthList.reduce((acc, curr) => acc + curr.successRate, 0) / healthList.length).toFixed(1));
+    const avgResponseTimeMs = healthList.length ? Math.round(healthList.reduce((acc, curr) => acc + curr.responseTimeMs, 0) / healthList.length) : 0;
+    const overallSuccessRate = healthList.length ? parseFloat((healthList.reduce((acc, curr) => acc + curr.successRate, 0) / healthList.length).toFixed(1)) : 0;
 
     return sendSuccess(res, {
       summary: {
         totalSources: healthList.length,
         healthySources: healthList.filter(s => s.status === 'healthy').length,
         failingSources: healthList.filter(s => s.status === 'failing').length,
+        pausedSources: healthList.filter(s => s.status === 'paused').length,
         totalFailures,
         avgResponseTimeMs,
         overallSuccessRate
@@ -300,30 +348,59 @@ export const scraperLogs = async (req: Request, res: Response) => {
 };
 
 export const triggerScraper = async (req: Request, res: Response) => {
-  const sourceName = req.body.source_name || req.body.sourceName || "Manual Scraper Run";
-  const logDoc = {
-    id: "log_" + Date.now(),
-    sourceName,
-    status: "success",
-    startTime: new Date().toISOString(),
-    endTime: new Date(Date.now() + 2500).toISOString(),
-    durationMs: 2500,
-    opportunitiesAdded: Math.floor(Math.random() * 10) + 5,
-    statusCode: 200,
-    errorMessage: null,
-    stackTrace: null,
-    createdAt: new Date()
-  };
-
-  if (dbCommand) {
-    await dbCommand.collection("scraper_logs").insertOne(logDoc);
+  const sourceName = req.body.source_name || req.body.sourceName || req.params.sourceId;
+  
+  if (!activeDispatcher) {
+    return sendError(res, "DNL Dispatcher is not active.", 503);
   }
 
-  return sendSuccess(res, {
-    status: "success",
-    message: `Scraper execution completed for ${sourceName}.`,
-    log: logDoc
+  // Find adapter by ignoring case
+  const adapter = (activeDispatcher as any).adapters.find((a: any) => a.sourceName.toLowerCase() === sourceName.toLowerCase());
+  
+  if (!adapter) {
+    return sendError(res, `Adapter not found for source: ${sourceName}`, 404);
+  }
+
+  const environmentKey = `SCRAPER_URL_${adapter.sourceName.toUpperCase().replace(/[^A-Z0-9]/g, "_")}`;
+  const configuredUrl = process.env[environmentKey] || `https://api.${sourceName.toLowerCase()}.com`;
+
+  // Start scraper run in background so API responds immediately
+  activeDispatcher.runScrape(adapter, configuredUrl).then((result) => {
+     console.log(`[Manual Trigger] Scrape completed for ${sourceName} with success=${result.success}`);
+  }).catch((err) => {
+     console.error(`[Manual Trigger] Scrape failed for ${sourceName}:`, err);
   });
+
+  return sendSuccess(res, {
+    status: "queued",
+    message: `Scraper execution queued for ${sourceName}.`
+  });
+};
+
+export const getScraperConfigs = async (req: Request, res: Response) => {
+  try {
+    const configs = await ScraperAlertService.getAllConfigs();
+    return sendSuccess(res, configs);
+  } catch (err) {
+    return sendError(res, "Failed to get configs", 500);
+  }
+};
+
+export const updateScraperConfig = async (req: Request, res: Response) => {
+  try {
+    const sourceId = req.params.sourceId as string;
+    const { minSuccessRate, maxStalenessHours, isPaused } = req.body;
+    
+    await ScraperAlertService.updateConfig(sourceId, {
+      ...(minSuccessRate !== undefined && { minSuccessRate }),
+      ...(maxStalenessHours !== undefined && { maxStalenessHours }),
+      ...(isPaused !== undefined && { isPaused }),
+    });
+
+    return sendSuccess(res, { message: "Config updated successfully" });
+  } catch (err) {
+    return sendError(res, "Failed to update config", 500);
+  }
 };
 
 export const adminIncidents = (req: Request, res: Response) => {

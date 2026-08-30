@@ -19,7 +19,7 @@ interface GigListingCardProps {
 export const GigListingCard: React.FC<GigListingCardProps> = ({ gig, onClick }) => {
   return (
     <div 
-      className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer group"
+      className="bg-surface dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer group"
       onClick={onClick}
     >
       <div className="flex justify-between items-start mb-3">

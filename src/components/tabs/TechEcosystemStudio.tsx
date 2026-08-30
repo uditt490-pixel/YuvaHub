@@ -119,34 +119,35 @@ export default function TechEcosystemStudio() {
   return (
     <div className="w-full max-w-[1400px] mx-auto space-y-8 font-sans pb-16 px-2 sm:px-4">
       
-      {/* Top Banner Header - YuvaHub Brand Theme */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#f6efe2] via-[#fcf9f2] to-[#f6efe2] dark:from-slate-900 dark:to-slate-950 border border-[#e8ded1] dark:border-slate-800 p-6 md:p-8 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+            {/* Top Banner Header - Brand Theme */}
+      <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#f3e4bd] bg-[#603620] rounded-full flex items-center gap-1.5 shadow-xs">
-                <Globe className="w-3.5 h-3.5 text-[#f3e4bd]" /> Tech Ecosystem Intelligence
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30">
+                <Globe className="w-3.5 h-3.5 text-indigo-400 inline-block mr-1" /> TECH ECOSYSTEM INTELLIGENCE
               </span>
-              <span className="px-3 py-1 text-xs font-bold text-[#63703d] bg-[#63703d]/15 border border-[#63703d]/30 rounded-full">
+              <span className="px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30">
                 Global Chapter Rankings
               </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-              Tech Ecosystem <span className="text-[#b56b37] italic">Studio</span>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+              Tech Ecosystem <span className="text-primary-blue italic">Studio</span>
             </h1>
-            <p className="text-[#603620] dark:text-slate-400 text-xs md:text-sm max-w-2xl font-medium">
+            <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
               Analyze global student developer rankings, skill demand trends, inter-university chapter performance, and talent verification credentials.
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl w-full lg:w-auto shadow-xs">
-            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-[#b56b37] bg-[#fcf9f2] font-serif font-bold text-lg text-[#b56b37]">
+          <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl w-full shadow-xs">
+            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-primary-blue bg-background font-serif font-bold text-lg text-primary-blue">
               #1
             </div>
             <div>
-              <div className="text-[10px] uppercase font-bold text-[#8c7569] tracking-wider">Top University Chapter</div>
-              <div className="text-xs font-extrabold text-[#231f20] dark:text-white">IIT Bombay GDSC</div>
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Top University Chapter</div>
+              <div className="text-xs font-extrabold text-white">IIT Bombay GDSC</div>
               <div className="text-[11px] text-[#63703d] font-semibold">45,200 Ecosystem Points</div>
             </div>
           </div>
@@ -154,7 +155,7 @@ export default function TechEcosystemStudio() {
       </div>
 
       {/* Sub Navigation Bar */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-[#e8ded1] dark:border-slate-800 pb-3">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-border-theme dark:border-slate-800 pb-3">
         {[
           { id: 'leaderboard', label: 'Developer Leaderboard', icon: Trophy },
           { id: 'trends', label: 'Skill Demand Matrix', icon: TrendingUp },
@@ -170,11 +171,11 @@ export default function TechEcosystemStudio() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border ${
                 isActive
-                  ? 'bg-[#b56b37] border-[#b56b37] text-white shadow-sm scale-[1.02]'
-                  : 'bg-white dark:bg-slate-900 border-[#e8ded1] dark:border-slate-800 text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]'
+                  ? 'bg-primary-blue border-primary-blue text-white shadow-sm scale-[1.02]'
+                  : 'bg-surface dark:bg-slate-900 border-border-theme dark:border-slate-800 text-text-secondary dark:text-slate-300 hover:bg-surface-secondary'
               }`}
             >
-              <IconComponent className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#b56b37]'}`} />
+              <IconComponent className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-primary-blue'}`} />
               <span>{tab.label}</span>
             </button>
           );
@@ -197,49 +198,49 @@ export default function TechEcosystemStudio() {
       {/* Tab 1: Leaderboard */}
       {activeTab === 'leaderboard' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
             <div className="relative flex-1 w-full sm:w-auto max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7569]" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 placeholder="Search developer name or college..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#231f20] dark:text-white outline-none focus:border-[#b56b37]"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white outline-none focus:border-primary-blue"
               />
             </div>
           </div>
 
           <div className="space-y-3">
             {filteredLeaderboard.map((dev) => (
-              <div key={dev.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 shadow-2xs gap-4 hover:border-[#b56b37] transition-all">
+              <div key={dev.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 shadow-2xs gap-4 hover:border-primary-blue transition-all">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#603620] text-[#f3e4bd] font-serif font-bold flex items-center justify-center text-sm shadow-xs">
+                  <div className="w-10 h-10 rounded-full bg-[#603620] text-indigo-400 font-serif font-bold flex items-center justify-center text-sm shadow-xs">
                     #{dev.rank}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-serif font-bold text-sm text-[#231f20] dark:text-white">{dev.name}</h3>
+                      <h3 className="font-serif font-bold text-sm text-white">{dev.name}</h3>
                       <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#63703d]/15 text-[#63703d] border border-[#63703d]/30">
                         {dev.badge}
                       </span>
                     </div>
-                    <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">{dev.college}</p>
+                    <p className="text-xs text-slate-300 font-medium">{dev.college}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-6 text-xs font-bold">
                   <div>
-                    <span className="text-[10px] text-[#8c7569] uppercase block">Commits</span>
-                    <span className="text-[#231f20] dark:text-slate-200">{dev.commits}</span>
+                    <span className="text-[10px] text-text-muted uppercase block">Commits</span>
+                    <span className="text-text-primary dark:text-slate-200">{dev.commits}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[#8c7569] uppercase block">Bounties</span>
+                    <span className="text-[10px] text-text-muted uppercase block">Bounties</span>
                     <span className="text-[#63703d]">{dev.bountiesWon}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[#8c7569] uppercase block">Ecosystem Points</span>
-                    <span className="text-[#b56b37] font-extrabold">{dev.score} pts</span>
+                    <span className="text-[10px] text-text-muted uppercase block">Ecosystem Points</span>
+                    <span className="text-primary-blue font-extrabold">{dev.score} pts</span>
                   </div>
                 </div>
               </div>
@@ -252,23 +253,23 @@ export default function TechEcosystemStudio() {
       {activeTab === 'trends' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {skills.map((s, idx) => (
-            <div key={idx} className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-2xl p-5 shadow-2xs space-y-3">
+            <div key={idx} className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-2xl p-5 shadow-2xs space-y-3">
               <div className="flex justify-between items-center">
-                <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white">{s.name}</h3>
+                <h3 className="font-serif font-bold text-base text-white">{s.name}</h3>
                 <span className="px-2.5 py-1 rounded-md bg-[#63703d]/15 text-[#63703d] font-bold text-xs">
                   {s.growth} YoY
                 </span>
               </div>
               <div className="space-y-1">
-                <div className="flex justify-between text-xs font-bold text-[#603620]">
+                <div className="flex justify-between text-xs font-bold text-text-secondary">
                   <span>Market Demand Index</span>
                   <span>{s.demand}/100</span>
                 </div>
                 <div className="h-2 rounded-full bg-[#e8ded1] overflow-hidden">
-                  <div className="h-full bg-[#b56b37]" style={{ width: `${s.demand}%` }} />
+                  <div className="h-full bg-primary-blue" style={{ width: `${s.demand}%` }} />
                 </div>
               </div>
-              <p className="text-xs text-[#8c7569] font-medium pt-1">Over {s.jobsCount} verified active student opportunities requiring this skill.</p>
+              <p className="text-xs text-text-muted font-medium pt-1">Over {s.jobsCount} verified active student opportunities requiring this skill.</p>
             </div>
           ))}
         </div>
@@ -278,18 +279,18 @@ export default function TechEcosystemStudio() {
       {activeTab === 'university' && (
         <div className="space-y-4">
           {universities.map(u => (
-            <div key={u.rank} className="flex items-center justify-between p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 shadow-2xs">
+            <div key={u.rank} className="flex items-center justify-between p-5 rounded-2xl bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 shadow-2xs">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[#603620] text-[#f3e4bd] font-serif font-bold flex items-center justify-center text-sm">
+                <div className="w-10 h-10 rounded-xl bg-[#603620] text-indigo-400 font-serif font-bold flex items-center justify-center text-sm">
                   #{u.rank}
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white">{u.name}</h3>
-                  <p className="text-xs text-[#603620] font-medium">{u.members} Active Members · {u.projects} Open Projects</p>
+                  <h3 className="font-serif font-bold text-base text-white">{u.name}</h3>
+                  <p className="text-xs text-text-secondary font-medium">{u.members} Active Members · {u.projects} Open Projects</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-extrabold text-[#b56b37]">{u.score.toLocaleString()} PTS</div>
+                <div className="text-sm font-extrabold text-primary-blue">{u.score.toLocaleString()} PTS</div>
                 <span className="text-[10px] font-bold text-[#63703d] uppercase">Ranked #1 Regional</span>
               </div>
             </div>
@@ -299,15 +300,15 @@ export default function TechEcosystemStudio() {
 
       {/* Tab 4: Certificate */}
       {activeTab === 'certificate' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
-          <div className="w-16 h-16 bg-[#f6efe2] text-[#b56b37] flex items-center justify-center rounded-full mx-auto border border-[#e8ded1]">
-            <ShieldCheck className="w-8 h-8 text-[#b56b37]" />
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
+          <div className="w-16 h-16 bg-surface-secondary text-primary-blue flex items-center justify-center rounded-full mx-auto border border-border-theme">
+            <ShieldCheck className="w-8 h-8 text-primary-blue" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white">Talent Credentialing Portal</h2>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">
+          <h2 className="text-2xl font-serif font-bold text-white">Talent Credentialing Portal</h2>
+          <p className="text-xs text-slate-300 font-medium">
             Verify and export cryptographic proof of your student developer ranking, open-source commits, and verified bounty wins.
           </p>
-          <button onClick={() => setNotification({ type: 'success', message: 'Credential badge verified and synced to profile!' })} className="px-6 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer">
+          <button onClick={() => setNotification({ type: 'success', message: 'Credential badge verified and synced to profile!' })} className="px-6 py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer">
             Issue Verified Developer Credential
           </button>
         </div>
@@ -315,15 +316,15 @@ export default function TechEcosystemStudio() {
 
       {/* Tab 5: Export */}
       {activeTab === 'export' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
-          <div className="w-16 h-16 bg-[#f6efe2] text-[#b56b37] flex items-center justify-center rounded-full mx-auto border border-[#e8ded1]">
-            <Download className="w-8 h-8 text-[#b56b37]" />
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
+          <div className="w-16 h-16 bg-surface-secondary text-primary-blue flex items-center justify-center rounded-full mx-auto border border-border-theme">
+            <Download className="w-8 h-8 text-primary-blue" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white">Export Ecosystem Analytics</h2>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">
+          <h2 className="text-2xl font-serif font-bold text-white">Export Ecosystem Analytics</h2>
+          <p className="text-xs text-slate-300 font-medium">
             Download full leaderboard rankings, skill demand matrix, and university chapter statistics in a structured JSON manifest.
           </p>
-          <button onClick={handleExportManifest} className="px-6 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer inline-flex items-center gap-2">
+          <button onClick={handleExportManifest} className="px-6 py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer inline-flex items-center gap-2">
             <Download className="w-4 h-4" /> Download Ecosystem Analytics JSON
           </button>
         </div>

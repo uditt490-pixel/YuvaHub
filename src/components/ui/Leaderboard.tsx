@@ -23,45 +23,45 @@ export default function Leaderboard() {
   if (loading) {
     return (
       <div className="animate-pulse space-y-3">
-        {[1, 2, 3].map(i => <div key={i} className="h-16 bg-[#f6efe2] dark:bg-slate-800 rounded-2xl w-full" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-16 bg-surface-secondary dark:bg-slate-800 rounded-2xl w-full" />)}
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-[#e8ded1] dark:border-slate-800 overflow-hidden shadow-2xs">
-      <div className="p-4 border-b border-[#e8ded1] dark:border-slate-800 bg-[#fcf9f2] dark:bg-slate-800/50">
-        <h3 className="font-serif font-bold text-sm text-[#231f20] dark:text-white flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-[#b56b37]" /> Top Community Mentors
+    <div className="bg-surface dark:bg-slate-900 rounded-3xl border border-border-theme dark:border-slate-800 overflow-hidden shadow-2xs">
+      <div className="p-4 border-b border-border-theme dark:border-slate-800 bg-background dark:bg-slate-800/50">
+        <h3 className="font-serif font-bold text-sm text-text-primary dark:text-white flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-primary-blue" /> Top Community Mentors
         </h3>
       </div>
       <div className="divide-y divide-[#e8ded1] dark:divide-slate-800">
         {leaders.length === 0 ? (
-          <div className="p-6 text-center text-xs font-semibold text-[#603620] dark:text-slate-400">
+          <div className="p-6 text-center text-xs font-semibold text-text-secondary dark:text-slate-400">
             No mentors on the board yet. Be the first to earn reputation!
           </div>
         ) : (
           leaders.map((leader, index) => (
-            <div key={leader.userId} className="flex items-center justify-between p-3.5 hover:bg-[#fcf9f2] dark:hover:bg-slate-800/50 transition-colors">
+            <div key={leader.userId} className="flex items-center justify-between p-3.5 hover:bg-background dark:hover:bg-slate-800/50 transition-colors">
               <div className="flex items-center gap-3">
                 <span className={`font-serif font-bold text-xs w-6 text-center ${
-                  index === 0 ? 'text-[#b56b37]' : (index === 1 ? 'text-[#603620]' : 'text-[#8c7569]')
+                  index === 0 ? 'text-primary-blue' : (index === 1 ? 'text-text-secondary' : 'text-text-muted')
                 }`}>
                   #{index + 1}
                 </span>
                 <img 
                   src={leader.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(leader.name)}&background=603620&color=f3e4bd`} 
                   alt={leader.name} 
-                  className="w-9 h-9 rounded-full border border-[#e8ded1] object-cover" 
+                  className="w-9 h-9 rounded-full border border-border-theme object-cover" 
                 />
                 <div>
-                  <p className="font-serif font-bold text-xs text-[#231f20] dark:text-white">{leader.name}</p>
-                  <p className="text-[10px] text-[#603620] dark:text-slate-400 font-semibold">{leader.bountiesResolved || 0} bounties resolved</p>
+                  <p className="font-serif font-bold text-xs text-text-primary dark:text-white">{leader.name}</p>
+                  <p className="text-[10px] text-text-secondary dark:text-slate-400 font-semibold">{leader.bountiesResolved || 0} bounties resolved</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="inline-flex items-center gap-1 bg-[#f3e4bd] text-[#603620] px-2.5 py-1 rounded-full text-[10px] font-extrabold border border-[#e8ded1]">
-                  <Coins className="w-3 h-3 text-[#b56b37]" /> {leader.reputation} Karma
+                <div className="inline-flex items-center gap-1 bg-[#f3e4bd] text-text-secondary px-2.5 py-1 rounded-full text-[10px] font-extrabold border border-border-theme">
+                  <Coins className="w-3 h-3 text-primary-blue" /> {leader.reputation} Karma
                 </div>
               </div>
             </div>

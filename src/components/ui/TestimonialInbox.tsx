@@ -42,23 +42,23 @@ export default function TestimonialInbox() {
   };
 
   if (loading) {
-    return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-[#b56b37]" /></div>;
+    return <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-primary-blue" /></div>;
   }
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#e8ded1] mt-8">
-      <h3 className="text-xl font-serif font-bold text-[#231f20] mb-4">Testimonials Inbox</h3>
+    <div className="bg-surface rounded-3xl p-6 shadow-sm border border-border-theme mt-8">
+      <h3 className="text-xl font-serif font-bold text-text-primary mb-4">Testimonials Inbox</h3>
       
-      <div className="flex gap-4 mb-6 border-b border-[#e8ded1] pb-2">
+      <div className="flex gap-4 mb-6 border-b border-border-theme pb-2">
         <button 
           onClick={() => setActiveTab('received')}
-          className={`text-sm font-bold pb-2 border-b-2 transition-colors ${activeTab === 'received' ? 'border-[#b56b37] text-[#b56b37]' : 'border-transparent text-[#8c7569]'}`}
+          className={`text-sm font-bold pb-2 border-b-2 transition-colors ${activeTab === 'received' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-text-muted'}`}
         >
           Received ({received.length})
         </button>
         <button 
           onClick={() => setActiveTab('given')}
-          className={`text-sm font-bold pb-2 border-b-2 transition-colors ${activeTab === 'given' ? 'border-[#b56b37] text-[#b56b37]' : 'border-transparent text-[#8c7569]'}`}
+          className={`text-sm font-bold pb-2 border-b-2 transition-colors ${activeTab === 'given' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-text-muted'}`}
         >
           Given ({given.length})
         </button>
@@ -66,13 +66,13 @@ export default function TestimonialInbox() {
 
       <div className="space-y-4">
         {activeTab === 'received' ? (
-          received.length === 0 ? <p className="text-sm text-[#8c7569]">No testimonials received yet.</p> :
+          received.length === 0 ? <p className="text-sm text-text-muted">No testimonials received yet.</p> :
           received.map(t => (
-            <div key={t.id} className="p-4 bg-[#fcf9f2] rounded-xl border border-[#e8ded1]">
+            <div key={t.id} className="p-4 bg-background rounded-xl border border-border-theme">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-bold text-sm text-[#231f20]">{t.authorName || t.authorId}</p>
-                  <p className="text-xs text-[#b56b37] capitalize">{t.relationship}</p>
+                  <p className="font-bold text-sm text-text-primary">{t.authorName || t.authorId}</p>
+                  <p className="text-xs text-primary-blue capitalize">{t.relationship}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded uppercase ${t.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : t.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
@@ -80,12 +80,12 @@ export default function TestimonialInbox() {
                   </span>
                   {t.status === 'approved' && (
                     <button onClick={() => handleHighlight(t.id!, !t.isHighlighted)} className="p-1 hover:bg-[#e8ded1] rounded-md transition-colors" title={t.isHighlighted ? "Remove highlight" : "Highlight (Pin)"}>
-                      {t.isHighlighted ? <Star className="w-4 h-4 fill-amber-400 text-amber-400" /> : <StarOff className="w-4 h-4 text-[#8c7569]" />}
+                      {t.isHighlighted ? <Star className="w-4 h-4 fill-amber-400 text-amber-400" /> : <StarOff className="w-4 h-4 text-text-muted" />}
                     </button>
                   )}
                 </div>
               </div>
-              <p className="text-sm text-[#603620] mb-3">"{t.content}"</p>
+              <p className="text-sm text-text-secondary mb-3">"{t.content}"</p>
               
               <div className="flex gap-2">
                 {t.status === 'pending' && (
@@ -112,19 +112,19 @@ export default function TestimonialInbox() {
             </div>
           ))
         ) : (
-          given.length === 0 ? <p className="text-sm text-[#8c7569]">No testimonials given yet.</p> :
+          given.length === 0 ? <p className="text-sm text-text-muted">No testimonials given yet.</p> :
           given.map(t => (
-            <div key={t.id} className="p-4 bg-[#fcf9f2] rounded-xl border border-[#e8ded1]">
+            <div key={t.id} className="p-4 bg-background rounded-xl border border-border-theme">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-bold text-sm text-[#231f20]">To: {t.recipientId}</p>
-                  <p className="text-xs text-[#b56b37] capitalize">{t.relationship}</p>
+                  <p className="font-bold text-sm text-text-primary">To: {t.recipientId}</p>
+                  <p className="text-xs text-primary-blue capitalize">{t.relationship}</p>
                 </div>
                 <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded uppercase ${t.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : t.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
                   {t.status}
                 </span>
               </div>
-              <p className="text-sm text-[#603620]">"{t.content}"</p>
+              <p className="text-sm text-text-secondary">"{t.content}"</p>
             </div>
           ))
         )}

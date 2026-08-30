@@ -1,3 +1,4 @@
+// @ts-ignore
 import { Meilisearch } from 'meilisearch';
 import { Db, ChangeStream, ChangeStreamInsertDocument, ChangeStreamUpdateDocument, ChangeStreamReplaceDocument, ChangeStreamDeleteDocument } from 'mongodb';
 

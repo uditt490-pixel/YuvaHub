@@ -62,7 +62,7 @@ export const AdminDataTable: React.FC<AdminDataTableProps> = ({ columns, data })
                         </th>
                     </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-surface dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {paginatedData.map((row, idx) => (
                         <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                             {columns.map((col) => (

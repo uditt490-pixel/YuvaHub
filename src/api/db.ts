@@ -30,7 +30,7 @@ type ReinitCallback = () => Promise<void>;
 const reinitCallbacks: ReinitCallback[] = [];
 
 let reconnectTimer: ReturnType<typeof setInterval> | null = null;
-let activeDispatcher: DNLDispatcher | null = null;
+export let activeDispatcher: DNLDispatcher | null = null;
 let activeClients: MongoClient[] = [];
 
 /**

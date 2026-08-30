@@ -64,15 +64,15 @@ export function ReportModal({ isOpen, onClose, contentType, contentId, contentTi
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#231f20]/50 backdrop-blur-xs p-4 animate-fade-in" onClick={onClose}>
       <div 
-        className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-xl p-6 max-w-md w-full shadow-xl space-y-4 animate-scale-up text-[#231f20] dark:text-slate-100"
+        className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-xl p-6 max-w-md w-full shadow-xl space-y-4 animate-scale-up text-text-primary dark:text-slate-100"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center border-b border-[#e8ded1] dark:border-slate-800 pb-3">
+        <div className="flex justify-between items-center border-b border-border-theme dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-red-600" />
             <h3 className="font-bold text-base">Report Content</h3>
           </div>
-          <button onClick={onClose} className="text-[#8c7569] hover:text-[#231f20] p-1 rounded-lg hover:bg-[#f6efe2] transition-colors">
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-surface-secondary transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -82,23 +82,23 @@ export function ReportModal({ isOpen, onClose, contentType, contentId, contentTi
             <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-2">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-lg text-[#231f20] dark:text-white">Report Submitted</h4>
-            <p className="text-xs text-[#603620] dark:text-slate-400">Our moderation team will review this shortly. Thank you for helping keep YuvaHub safe.</p>
+            <h4 className="font-bold text-lg text-text-primary dark:text-white">Report Submitted</h4>
+            <p className="text-xs text-text-secondary dark:text-slate-400">Our moderation team will review this shortly. Thank you for helping keep YuvaHub safe.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {contentTitle && (
-              <p className="text-xs text-[#603620] dark:text-slate-400">
-                Reporting: <strong className="text-[#231f20] dark:text-slate-200">{contentTitle}</strong>
+              <p className="text-xs text-text-secondary dark:text-slate-400">
+                Reporting: <strong className="text-text-primary dark:text-slate-200">{contentTitle}</strong>
               </p>
             )}
             
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#231f20] dark:text-slate-200">Reason for reporting</label>
+              <label className="text-xs font-bold text-text-primary dark:text-slate-200">Reason for reporting</label>
               <select 
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs text-[#231f20] dark:text-white outline-none font-medium"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs text-text-primary dark:text-white outline-none font-medium"
               >
                 <option value="Spam">Spam</option>
                 <option value="Scam">Scam / Fraudulent</option>
@@ -109,13 +109,13 @@ export function ReportModal({ isOpen, onClose, contentType, contentId, contentTi
             </div>
             
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#231f20] dark:text-slate-200">Additional Details (Optional)</label>
+              <label className="text-xs font-bold text-text-primary dark:text-slate-200">Additional Details (Optional)</label>
               <textarea 
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Provide more context..."
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none font-medium resize-none"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none font-medium resize-none"
               />
             </div>
 

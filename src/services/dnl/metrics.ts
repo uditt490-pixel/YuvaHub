@@ -1,4 +1,5 @@
 import { ScraperMetrics } from './types';
+import { ScraperAlertService } from '../../api/services/scraperAlertService.js';
 
 export async function initializeDNLDatabase(db: any): Promise<void> {
   if (!db || db.isMock) {
@@ -62,6 +63,9 @@ export async function logTelemetry(db: any, metrics: ScraperMetrics): Promise<vo
       await db.collection('scraper_metrics').insertOne(metrics);
     }
     console.log(`[DNL Telemetry] Logged telemetry for ${metrics.name}. Status: ${metrics.status}, Processed: ${metrics.payloads_processed}`);
+    
+    // Evaluate metrics for real-time alerting
+    await ScraperAlertService.evaluateMetrics(metrics);
   } catch (err) {
     console.error('[DNL Telemetry] Failed to log telemetry:', err);
   }

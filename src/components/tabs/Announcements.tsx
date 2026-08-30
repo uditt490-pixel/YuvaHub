@@ -112,7 +112,7 @@ export default function Announcements() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-            <Megaphone className="w-8 h-8 text-[#b56b37]" />
+            <Megaphone className="w-8 h-8 text-primary-blue" />
             Announcements
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">Platform updates, news, and critical alerts</p>
@@ -137,8 +137,8 @@ export default function Announcements() {
             onClick={() => setCategoryFilter(cat)}
             className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all capitalize ${
               categoryFilter === cat 
-                ? 'bg-[#b56b37] text-white shadow-md' 
-                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'bg-primary-blue text-white shadow-md' 
+                : 'bg-surface dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             {cat}
@@ -149,13 +149,13 @@ export default function Announcements() {
       {/* Feed */}
       <div className="space-y-6">
         {announcements.map((announcement) => (
-          <div key={announcement.id} className={`bg-white dark:bg-gray-800 rounded-2xl shadow-sm border ${announcement.isPinned ? 'border-[#b56b37]/30 shadow-[#b56b37]/10' : 'border-gray-100 dark:border-gray-700'} p-6 transition-all`}>
+          <div key={announcement.id} className={`bg-surface dark:bg-gray-800 rounded-2xl shadow-sm border ${announcement.isPinned ? 'border-primary-blue/30 shadow-[#b56b37]/10' : 'border-gray-100 dark:border-gray-700'} p-6 transition-all`}>
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
                 {getPriorityIcon(announcement.priority)}
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">{announcement.title}</h2>
                 {announcement.isPinned && (
-                  <span className="flex items-center gap-1 text-xs font-bold bg-[#f6efe2] text-[#b56b37] px-2 py-0.5 rounded-md border border-[#b56b37]/20">
+                  <span className="flex items-center gap-1 text-xs font-bold bg-surface-secondary text-primary-blue px-2 py-0.5 rounded-md border border-primary-blue/20">
                     <Pin className="w-3 h-3" /> Pinned
                   </span>
                 )}
@@ -199,12 +199,12 @@ export default function Announcements() {
 
         {loading && (
           <div className="flex justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#b56b37]"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-blue"></div>
           </div>
         )}
 
         {!loading && announcements.length === 0 && (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
+          <div className="text-center py-12 bg-surface dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
             <Megaphone className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">No announcements</h3>
             <p className="text-gray-500 mt-1">Check back later for updates</p>
@@ -217,7 +217,7 @@ export default function Announcements() {
               setPage(p => p + 1);
               loadAnnouncements(page + 1, true);
             }}
-            className="w-full py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+            className="w-full py-3 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
           >
             Load More
           </button>
@@ -227,10 +227,10 @@ export default function Announcements() {
       {/* Admin Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+          <div className="bg-surface dark:bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Megaphone className="w-5 h-5 text-[#b56b37]" />
+                <Megaphone className="w-5 h-5 text-primary-blue" />
                 Create Announcement
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
@@ -246,7 +246,7 @@ export default function Announcements() {
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] focus:border-transparent transition-all"
+                  className="w-full bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] focus:border-transparent transition-all"
                   placeholder="Enter a descriptive title..."
                 />
               </div>
@@ -261,7 +261,7 @@ export default function Announcements() {
                   rows={6}
                   value={body}
                   onChange={(e) => setBody(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] focus:border-transparent transition-all font-mono resize-y"
+                  className="w-full bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] focus:border-transparent transition-all font-mono resize-y"
                   placeholder="# Big Update&#10;&#10;Here are the details..."
                 />
               </div>
@@ -272,7 +272,7 @@ export default function Announcements() {
                   <select 
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] transition-all"
+                    className="w-full bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] transition-all"
                   >
                     <option value="update">Update</option>
                     <option value="feature">Feature</option>
@@ -286,7 +286,7 @@ export default function Announcements() {
                   <select 
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] transition-all"
+                    className="w-full bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] transition-all"
                   >
                     <option value="low">Low</option>
                     <option value="normal">Normal</option>
@@ -305,7 +305,7 @@ export default function Announcements() {
                     type="datetime-local" 
                     value={expiresAt}
                     onChange={(e) => setExpiresAt(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] transition-all"
+                    className="w-full bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-[#b56b37] transition-all"
                   />
                 </div>
                 
@@ -318,8 +318,8 @@ export default function Announcements() {
                         checked={isPinned}
                         onChange={(e) => setIsPinned(e.target.checked)}
                       />
-                      <div className={`w-11 h-6 rounded-full transition-colors ${isPinned ? 'bg-[#b56b37]' : 'bg-gray-300 dark:bg-gray-700'}`}></div>
-                      <div className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${isPinned ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${isPinned ? 'bg-primary-blue' : 'bg-gray-300 dark:bg-gray-700'}`}></div>
+                      <div className={`absolute top-1 left-1 bg-surface w-4 h-4 rounded-full transition-transform ${isPinned ? 'translate-x-5' : 'translate-x-0'}`}></div>
                     </div>
                     <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
                       Pin to top
@@ -338,7 +338,7 @@ export default function Announcements() {
                 </button>
                 <button 
                   type="submit"
-                  className="px-5 py-2.5 text-sm font-bold text-white bg-[#b56b37] hover:bg-[#a05a2b] rounded-xl transition-colors shadow-md flex items-center gap-2"
+                  className="px-5 py-2.5 text-sm font-bold text-white bg-primary-blue hover:bg-[#a05a2b] rounded-xl transition-colors shadow-md flex items-center gap-2"
                 >
                   Publish Announcement
                 </button>

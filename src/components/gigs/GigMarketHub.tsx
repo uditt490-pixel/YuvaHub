@@ -101,7 +101,7 @@ export default function GigMarketHub() {
                 placeholder="Search gigs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
+                className="w-full pl-10 pr-4 py-2.5 bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-900 dark:text-white"
               />
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function GigMarketHub() {
           {loading ? (
             <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
           ) : gigs.length === 0 ? (
-            <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="text-center py-12 bg-surface dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
               <p className="text-gray-500 dark:text-gray-400">No open gigs found. Be the first to post one!</p>
             </div>
           ) : (
@@ -122,7 +122,7 @@ export default function GigMarketHub() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="bg-surface dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Plus className="w-5 h-5 text-blue-600" /> Post a New Gig
             </h2>
@@ -146,7 +146,7 @@ export default function GigMarketHub() {
           </div>
 
           {selectedGig && (
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-blue-200 dark:border-blue-900/50 shadow-sm sticky top-24">
+            <div className="bg-surface dark:bg-gray-800 p-6 rounded-2xl border border-blue-200 dark:border-blue-900/50 shadow-sm sticky top-24">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{selectedGig.title}</h2>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{selectedGig.description}</p>
               

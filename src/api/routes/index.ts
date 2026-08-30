@@ -5,7 +5,7 @@ import bookmarkRoutes from "./bookmarkRoutes.js";
 import karmaRoutes from "./karmaRoutes.js";
 import bountyRoutes from "./bountyRoutes.js";
 import storageRoutes from "./storageRoutes.js";
-import resumeRoutes from "./resumeRoutes.js";
+import resumeBuilderRoutes from "./resumeBuilderRoutes.js";
 import opportunityRoutes from "./opportunityRoutes.js";
 import aiRoutes from "./aiRoutes.js";
 import searchRoutes from "./searchRoutes.js";
@@ -45,7 +45,7 @@ const routes = [
   karmaRoutes,
   bountyRoutes,
   storageRoutes,
-  resumeRoutes,
+  resumeBuilderRoutes,
   opportunityRoutes,
   aiRoutes,
   searchRoutes,

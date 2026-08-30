@@ -472,19 +472,19 @@ export default function FAQ() {
   /* ── Render ────────────────────────────────────────────────────────── */
 
   return (
-    <div className="bg-[#fcf9f2] min-h-[calc(100vh-64px)] font-sans pb-16">
+    <div className="bg-background min-h-[calc(100vh-64px)] font-sans pb-16">
       <div
         className={`max-w-6xl mx-auto px-4 py-8 transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
       >
         {/* Hero / Search */}
-        <header className="mb-10 text-center py-10 px-6 bg-white rounded-2xl border border-[#e8ded1] shadow-xs relative overflow-hidden">
-          <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-[#231f20] flex items-center justify-center gap-3 relative z-10">
+        <header className="mb-10 text-center py-10 px-6 bg-surface rounded-2xl border border-border-theme shadow-xs relative overflow-hidden">
+          <h1 className="text-3xl md:text-4xl font-serif font-bold tracking-tight text-text-primary flex items-center justify-center gap-3 relative z-10">
             <div className="relative">
-              <HelpCircle className="w-9 h-9 text-[#b56b37]" aria-hidden="true" />
+              <HelpCircle className="w-9 h-9 text-primary-blue" aria-hidden="true" />
             </div>
             Help Center &amp; FAQ
           </h1>
-          <p className="text-xs md:text-sm text-[#603620] mt-2.5 max-w-2xl mx-auto relative z-10 leading-relaxed font-medium">
+          <p className="text-xs md:text-sm text-text-secondary mt-2.5 max-w-2xl mx-auto relative z-10 leading-relaxed font-medium">
             Find answers to common questions, troubleshoot issues, and learn how to use YuvaHub effectively.
           </p>
 
@@ -510,8 +510,8 @@ export default function FAQ() {
                 }}
                 className={`px-4 py-2 text-xs font-extrabold uppercase tracking-wider rounded-xl transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? 'bg-[#b56b37] text-white shadow-xs'
-                    : 'bg-white text-[#603620] border border-[#e8ded1] hover:bg-[#f6efe2]'
+                    ? 'bg-primary-blue text-white shadow-xs'
+                    : 'bg-surface text-text-secondary border border-border-theme hover:bg-surface-secondary'
                 }`}
                 aria-pressed={isActive}
               >
@@ -527,10 +527,10 @@ export default function FAQ() {
           <section className="lg:col-span-2 space-y-6" aria-labelledby="faq-heading">
             <div className="flex items-end justify-between gap-3 flex-wrap">
               <div>
-                <h2 id="faq-heading" className="text-xl font-serif font-bold text-[#231f20]">
+                <h2 id="faq-heading" className="text-xl font-serif font-bold text-text-primary">
                   Frequently Asked Questions
                 </h2>
-                <p className="text-xs text-[#603620] mt-0.5">
+                <p className="text-xs text-text-secondary mt-0.5">
                   {filteredFaqs.length} topic{filteredFaqs.length === 1 ? '' : 's'}
                   {isFiltering ? ' matching your filters' : ''}
                 </p>
@@ -538,17 +538,17 @@ export default function FAQ() {
             </div>
 
             {filteredFaqs.length === 0 ? (
-              <div className="text-center py-16 px-4 border border-dashed border-[#e8ded1] rounded-2xl bg-white">
-                <AlertTriangle className="w-10 h-10 text-[#8c7569] mx-auto mb-3" aria-hidden="true" />
-                <p className="font-serif font-bold text-sm text-[#231f20]">No matching questions found.</p>
-                <p className="text-xs text-[#603620] mt-1 mb-5">Try a different keyword or clear your filters.</p>
+              <div className="text-center py-16 px-4 border border-dashed border-border-theme rounded-2xl bg-surface">
+                <AlertTriangle className="w-10 h-10 text-text-muted mx-auto mb-3" aria-hidden="true" />
+                <p className="font-serif font-bold text-sm text-text-primary">No matching questions found.</p>
+                <p className="text-xs text-text-secondary mt-1 mb-5">Try a different keyword or clear your filters.</p>
                 <button
                   type="button"
                   onClick={() => {
                     clearSearch();
                     setActiveCategory('all');
                   }}
-                  className="text-xs font-extrabold uppercase tracking-wider text-[#b56b37] hover:underline px-4 py-2 bg-[#f6efe2] rounded-xl border border-[#e8ded1] cursor-pointer"
+                  className="text-xs font-extrabold uppercase tracking-wider text-primary-blue hover:underline px-4 py-2 bg-surface-secondary rounded-xl border border-border-theme cursor-pointer"
                 >
                   Clear Search &amp; Filters
                 </button>
@@ -590,38 +590,38 @@ export default function FAQ() {
           {/* Getting Started Sidebar */}
           <aside className="space-y-6" aria-labelledby="getting-started-heading">
             <div>
-              <h2 id="getting-started-heading" className="text-xl font-serif font-bold text-[#231f20]">
+              <h2 id="getting-started-heading" className="text-xl font-serif font-bold text-text-primary">
                 Getting Started
               </h2>
-              <p className="text-xs text-[#603620] mt-0.5">
+              <p className="text-xs text-text-secondary mt-0.5">
                 A quick path from signup to your first application.
               </p>
             </div>
 
-            <div className="relative pl-6 border-l-2 border-[#e8ded1] space-y-4">
+            <div className="relative pl-6 border-l-2 border-border-theme space-y-4">
               {GETTING_STARTED_STEPS.map((step) => {
                 const Icon = step.icon;
                 return (
                   <div key={step.id} className="relative group">
-                    <div className="absolute -left-[31px] top-4 w-4 h-4 rounded-full bg-white border-2 border-[#b56b37] transition-all duration-300 group-hover:bg-[#b56b37]" />
+                    <div className="absolute -left-[31px] top-4 w-4 h-4 rounded-full bg-surface border-2 border-primary-blue transition-all duration-300 group-hover:bg-primary-blue" />
                     <div
                       onClick={() => handleStepClick(step.id)}
                       role="button"
                       tabIndex={0}
-                      className="bg-white border border-[#e8ded1] p-4 rounded-2xl flex gap-3 items-start shadow-xs cursor-pointer hover:border-[#b56b37] transition-all duration-300 select-none"
+                      className="bg-surface border border-border-theme p-4 rounded-2xl flex gap-3 items-start shadow-xs cursor-pointer hover:border-primary-blue transition-all duration-300 select-none"
                     >
                       <div className="w-8 h-8 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center shrink-0">
                         <Icon className="w-4 h-4" aria-hidden="true" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-xs font-serif font-bold text-[#231f20] group-hover:text-[#b56b37]">
+                        <h3 className="text-xs font-serif font-bold text-text-primary group-hover:text-primary-blue">
                           {step.title}
                         </h3>
-                        <p className="text-[11px] text-[#603620] mt-0.5 leading-relaxed">
+                        <p className="text-[11px] text-text-secondary mt-0.5 leading-relaxed">
                           {step.description}
                         </p>
                       </div>
-                      <ArrowRight className="w-4 h-4 text-[#8c7569] group-hover:text-[#b56b37] shrink-0 mt-2" />
+                      <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-primary-blue shrink-0 mt-2" />
                     </div>
                   </div>
                 );
@@ -652,10 +652,10 @@ export default function FAQ() {
               return (
                 <article
                   key={guide.id}
-                  className={`bg-white border rounded-2xl overflow-hidden transition-all duration-300 group ${
+                  className={`bg-surface border rounded-2xl overflow-hidden transition-all duration-300 group ${
                     isExpanded
-                      ? 'border-[#b56b37] shadow-xs'
-                      : 'border-[#e8ded1] hover:border-[#b56b37]'
+                      ? 'border-primary-blue shadow-xs'
+                      : 'border-border-theme hover:border-primary-blue'
                   }`}
                 >
                   <button
@@ -663,27 +663,27 @@ export default function FAQ() {
                     onClick={() => handleToggleTroubleshoot(guide.id)}
                     aria-expanded={isExpanded}
                     aria-controls={`ts-panel-${guide.id}`}
-                    className="w-full p-5 flex items-center gap-3 text-left focus:outline-none transition-colors hover:bg-[#fcf9f2] cursor-pointer"
+                    className="w-full p-5 flex items-center gap-3 text-left focus:outline-none transition-colors hover:bg-background cursor-pointer"
                   >
                     <div
                       className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                         isExpanded
                           ? 'bg-[#603620] text-[#f3e4bd]'
-                          : 'bg-[#f6efe2] text-[#b56b37]'
+                          : 'bg-surface-secondary text-primary-blue'
                       }`}
                     >
                       <Icon className="w-4 h-4" aria-hidden="true" />
                     </div>
                     <h3
                       className={`text-xs font-serif font-bold flex-1 transition-colors ${
-                        isExpanded ? 'text-[#b56b37]' : 'text-[#231f20] group-hover:text-[#b56b37]'
+                        isExpanded ? 'text-primary-blue' : 'text-text-primary group-hover:text-primary-blue'
                       }`}
                     >
                       {guide.title}
                     </h3>
                     <ChevronDown
                       className={`w-4 h-4 transition-transform duration-300 shrink-0 ${
-                        isExpanded ? 'rotate-180 text-[#b56b37]' : 'text-[#8c7569]'
+                        isExpanded ? 'rotate-180 text-primary-blue' : 'text-text-muted'
                       }`}
                     />
                   </button>
@@ -698,27 +698,27 @@ export default function FAQ() {
                     <div className="overflow-hidden min-h-0">
                       <div
                         className={`px-5 pb-5 pt-0 border-t transition-all ${
-                          isExpanded ? 'opacity-100 border-[#e8ded1]' : 'opacity-0 border-transparent'
+                          isExpanded ? 'opacity-100 border-border-theme' : 'opacity-0 border-transparent'
                         }`}
                       >
                         <dl className="space-y-3 text-xs leading-relaxed mt-4">
                           <div>
-                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-[#603620] mb-1">
+                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-text-secondary mb-1">
                               Problem
                             </dt>
-                            <dd className="text-[#231f20] m-0">{guide.problem}</dd>
+                            <dd className="text-text-primary m-0">{guide.problem}</dd>
                           </div>
                           <div>
-                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-[#603620] mb-1">
+                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-text-secondary mb-1">
                               Cause
                             </dt>
-                            <dd className="text-[#231f20] m-0">{guide.cause}</dd>
+                            <dd className="text-text-primary m-0">{guide.cause}</dd>
                           </div>
                           <div>
-                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-[#603620] mb-1">
+                            <dt className="font-extrabold uppercase tracking-wider text-[10px] text-text-secondary mb-1">
                               Solution
                             </dt>
-                            <dd className="text-[#b56b37] m-0 font-bold">
+                            <dd className="text-primary-blue m-0 font-bold">
                               {guide.solution}
                             </dd>
                           </div>
@@ -737,12 +737,12 @@ export default function FAQ() {
           <div>
             <h2
               id="support-heading"
-              className="text-xl font-serif font-bold text-[#231f20] flex items-center gap-2"
+              className="text-xl font-serif font-bold text-text-primary flex items-center gap-2"
             >
-              <MessageSquare className="w-5 h-5 text-[#b56b37]" aria-hidden="true" />
+              <MessageSquare className="w-5 h-5 text-primary-blue" aria-hidden="true" />
               Need More Help?
             </h2>
-            <p className="text-xs text-[#603620] mt-0.5">
+            <p className="text-xs text-text-secondary mt-0.5">
               Get personalized support or connect with our community.
             </p>
           </div>
@@ -754,18 +754,18 @@ export default function FAQ() {
                   key={card.id}
                   type="button"
                   onClick={() => setActiveTab(card.action)}
-                  className="group relative overflow-hidden bg-white border border-[#e8ded1] rounded-2xl p-6 text-left shadow-xs transition-all duration-300 hover:border-[#b56b37] cursor-pointer"
+                  className="group relative overflow-hidden bg-surface border border-border-theme rounded-2xl p-6 text-left shadow-xs transition-all duration-300 hover:border-primary-blue cursor-pointer"
                 >
                   <div
                     className="w-10 h-10 rounded-xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
                   >
                     <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-xs font-serif font-bold text-[#231f20] mb-1.5 group-hover:text-[#b56b37] transition-colors">
+                  <h3 className="text-xs font-serif font-bold text-text-primary mb-1.5 group-hover:text-primary-blue transition-colors">
                     {card.title}
                   </h3>
-                  <p className="text-[11px] text-[#603620] leading-relaxed">{card.description}</p>
-                  <div className="mt-4 flex items-center gap-1 text-[11px] font-extrabold uppercase text-[#b56b37]">
+                  <p className="text-[11px] text-text-secondary leading-relaxed">{card.description}</p>
+                  <div className="mt-4 flex items-center gap-1 text-[11px] font-extrabold uppercase text-primary-blue">
                     <span>Open</span>
                     <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -776,17 +776,17 @@ export default function FAQ() {
         </section>
 
         {/* Community Guidelines Callout */}
-        <div className="mt-12 p-6 md:p-8 bg-white border border-[#e8ded1] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+        <div className="mt-12 p-6 md:p-8 bg-surface border border-border-theme rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
           <div>
-            <h3 className="text-base font-serif font-bold text-[#231f20] mb-1">Community Guidelines</h3>
-            <p className="text-xs text-[#603620] leading-relaxed max-w-md">
+            <h3 className="text-base font-serif font-bold text-text-primary mb-1">Community Guidelines</h3>
+            <p className="text-xs text-text-secondary leading-relaxed max-w-md">
               Learn how to participate respectfully, understand our moderation policies, and help keep YuvaHub safe for everyone.
             </p>
           </div>
           <button
             type="button"
             onClick={() => setActiveTab('guidelines')}
-            className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-[#b56b37] hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-colors cursor-pointer"
+            className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-primary-blue hover:bg-[#603620] text-white text-xs font-extrabold uppercase tracking-wider rounded-xl transition-colors cursor-pointer"
           >
             <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
             Read Guidelines

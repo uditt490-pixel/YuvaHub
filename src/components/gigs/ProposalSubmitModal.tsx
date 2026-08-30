@@ -26,7 +26,7 @@ export const ProposalSubmitModal: React.FC<ProposalSubmitModalProps> = ({ gig, o
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+      <div className="bg-surface dark:bg-gray-900 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden border border-gray-200 dark:border-gray-800">
         <div className="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Submit Proposal</h2>
           <button onClick={onClose} className="text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-full transition-colors">
@@ -46,7 +46,7 @@ export const ProposalSubmitModal: React.FC<ProposalSubmitModalProps> = ({ gig, o
               id="proposal"
               value={proposalText}
               onChange={(e) => setProposalText(e.target.value)}
-              className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none resize-none"
+              className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-surface dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none resize-none"
               placeholder="Describe your relevant experience and how you plan to complete this gig..."
               required
             ></textarea>

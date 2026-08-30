@@ -41,7 +41,7 @@ const CandidateSwipeCard: React.FC<CandidateSwipeCardProps> = ({ candidate, onSw
       onDragEnd={handleDragEnd}
       animate={{ x: exitX }}
       transition={{ duration: 0.3 }}
-      className="absolute top-0 w-full max-w-sm bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl p-6 cursor-grab active:cursor-grabbing flex flex-col items-center gap-4"
+      className="absolute top-0 w-full max-w-sm bg-surface border border-border-theme rounded-2xl shadow-2xl p-6 cursor-grab active:cursor-grabbing flex flex-col items-center gap-4"
     >
       <div className="w-24 h-24 bg-gradient-to-tr from-purple-600 to-blue-500 rounded-full flex items-center justify-center text-4xl text-white font-bold shadow-lg">
         {candidate.name.charAt(0)}
@@ -52,10 +52,10 @@ const CandidateSwipeCard: React.FC<CandidateSwipeCardProps> = ({ candidate, onSw
           <User className="w-5 h-5 text-purple-400" />
           {candidate.name}
         </h3>
-        <p className="text-gray-400 text-sm mt-1">Match Score: {candidate.matchScore}</p>
+        <p className="text-text-muted text-sm mt-1">Match Score: {candidate.matchScore}</p>
         
         {candidate.timezone && (
-          <p className="text-gray-500 text-xs mt-2 flex items-center justify-center gap-1">
+          <p className="text-text-secondary text-xs mt-2 flex items-center justify-center gap-1">
             <MapPin className="w-3 h-3" />
             {candidate.timezone}
           </p>
@@ -63,13 +63,13 @@ const CandidateSwipeCard: React.FC<CandidateSwipeCardProps> = ({ candidate, onSw
       </div>
 
       <div className="w-full mt-4">
-        <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+        <h4 className="text-sm font-semibold text-text-primary mb-2 flex items-center gap-2">
           <Code className="w-4 h-4 text-blue-400" />
           Skills
         </h4>
         <div className="flex flex-wrap gap-2 justify-center">
           {candidate.skills.map((skill, idx) => (
-            <span key={idx} className="px-3 py-1 bg-gray-800 text-purple-300 text-xs rounded-full border border-gray-700">
+            <span key={idx} className="px-3 py-1 bg-surface-secondary text-purple-300 text-xs rounded-full border border-border-theme">
               {skill}
             </span>
           ))}
@@ -79,13 +79,13 @@ const CandidateSwipeCard: React.FC<CandidateSwipeCardProps> = ({ candidate, onSw
       <div className="flex justify-between w-full mt-6 px-4">
         <button 
           onClick={() => { setExitX(-200); onSwipe(candidate.id, "left"); }}
-          className="w-12 h-12 rounded-full bg-gray-800 border-2 border-red-500 flex items-center justify-center text-red-500 hover:bg-red-500/20 transition"
+          className="w-12 h-12 rounded-full bg-surface-secondary border-2 border-red-500 flex items-center justify-center text-red-500 hover:bg-red-500/20 transition"
         >
           ✕
         </button>
         <button 
           onClick={() => { setExitX(200); onSwipe(candidate.id, "right"); }}
-          className="w-12 h-12 rounded-full bg-gray-800 border-2 border-green-500 flex items-center justify-center text-green-500 hover:bg-green-500/20 transition"
+          className="w-12 h-12 rounded-full bg-surface-secondary border-2 border-green-500 flex items-center justify-center text-green-500 hover:bg-green-500/20 transition"
         >
           ♥
         </button>

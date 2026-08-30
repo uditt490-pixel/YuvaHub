@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AdminDataTable } from '../components/AdminDataTable';
+import { ReportModerationQueue } from '../components/admin/ReportModerationQueue';
 import { Users, Briefcase, TrendingUp } from 'lucide-react';
 
 interface PlatformStats {
@@ -54,21 +55,21 @@ export const AdminDashboard: React.FC = () => {
 
             {/* Metric Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center">
+                <div className="bg-surface dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center">
                     <Users className="w-10 h-10 text-blue-500 mr-4" />
                     <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Total Users</p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.totalUsers}</p>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center">
+                <div className="bg-surface dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center">
                     <Briefcase className="w-10 h-10 text-green-500 mr-4" />
                     <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Active Opportunities</p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.activeOpportunities}</p>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center">
+                <div className="bg-surface dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex items-center">
                     <TrendingUp className="w-10 h-10 text-purple-500 mr-4" />
                     <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Avg. Daily Signups</p>
@@ -78,7 +79,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Chart */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+            <div className="bg-surface dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Daily Signups</h2>
                 <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -96,7 +97,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Data Table */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="bg-surface dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Users</h2>
                 <AdminDataTable
                     columns={['Name', 'Email', 'Reputation', 'Joined']}
@@ -106,6 +107,9 @@ export const AdminDashboard: React.FC = () => {
                     ]}
                 />
             </div>
+
+            {/* Moderation Queue */}
+            <ReportModerationQueue />
         </div>
     );
 };

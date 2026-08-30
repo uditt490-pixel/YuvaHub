@@ -72,12 +72,12 @@ export default function ActivityFeed() {
       case 'code_review_requested':
       case 'code_review_claimed':
       case 'code_review_completed':
-        return <Activity className="w-5 h-5 text-blue-500" />;
+        return <Activity className="w-5 h-5 text-primary-blue" />;
       case 'karma_earned':
       case 'karma_spent':
         return <TrendingUp className="w-5 h-5 text-green-500" />;
       default:
-        return <Activity className="w-5 h-5 text-gray-400" />;
+        return <Activity className="w-5 h-5 text-text-muted" />;
     }
   };
 
@@ -109,23 +109,23 @@ export default function ActivityFeed() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="w-full mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Activity className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl font-bold text-text-primary flex items-center gap-2">
+            <Activity className="w-8 h-8 text-primary-blue" />
             Activity Feed
           </h1>
-          <p className="text-gray-500 mt-1">Track your contributions and karma</p>
+          <p className="text-text-muted mt-1">Track your contributions and karma</p>
         </div>
 
-        <div className="flex items-center gap-2 text-sm bg-white border border-gray-200 rounded-lg p-2 shadow-sm">
-          <Settings className="w-4 h-4 text-gray-500" />
-          <span className="text-gray-700 font-medium mr-2">Digest:</span>
+        <div className="flex items-center gap-2 text-sm bg-surface border border-border-theme rounded-lg p-2 shadow-sm">
+          <Settings className="w-4 h-4 text-text-muted" />
+          <span className="text-text-secondary font-medium mr-2">Digest:</span>
           <select 
             value={digestFreq}
             onChange={(e) => handleUpdateDigest(e.target.value as "Daily" | "Weekly" | "None")}
-            className="border-none bg-gray-50 rounded-md p-1 focus:ring-0 text-gray-700 font-medium outline-none"
+            className="border-none bg-surface-secondary rounded-md p-1 focus:ring-0 text-text-secondary font-medium outline-none"
           >
             <option value="None">None</option>
             <option value="Daily">Daily</option>
@@ -135,40 +135,40 @@ export default function ActivityFeed() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+        <div className="bg-surface rounded-xl shadow-sm border border-border-theme p-6 flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-500 font-medium">Total Actions</h3>
-            <Activity className="w-5 h-5 text-blue-500" />
+            <h3 className="text-text-muted font-medium">Total Actions</h3>
+            <Activity className="w-5 h-5 text-primary-blue" />
           </div>
-          <span className="text-3xl font-bold text-gray-900">{stats.totalActions}</span>
+          <span className="text-3xl font-bold text-text-primary">{stats.totalActions}</span>
         </div>
         
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+        <div className="bg-surface rounded-xl shadow-sm border border-border-theme p-6 flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-500 font-medium">Weekly Karma</h3>
+            <h3 className="text-text-muted font-medium">Weekly Karma</h3>
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
-          <span className="text-3xl font-bold text-gray-900">+{stats.weeklyKarma}</span>
+          <span className="text-3xl font-bold text-text-primary">+{stats.weeklyKarma}</span>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
+        <div className="bg-surface rounded-xl shadow-sm border border-border-theme p-6 flex flex-col">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-500 font-medium">Active Streak</h3>
+            <h3 className="text-text-muted font-medium">Active Streak</h3>
             <Flame className="w-5 h-5 text-orange-500" />
           </div>
-          <span className="text-3xl font-bold text-gray-900">{stats.streak} Days</span>
+          <span className="text-3xl font-bold text-text-primary">{stats.streak} Days</span>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-          <h2 className="font-semibold text-gray-800">Timeline</h2>
+      <div className="bg-surface rounded-xl shadow-sm border border-border-theme overflow-hidden">
+        <div className="p-4 border-b border-border-theme flex justify-between items-center bg-surface-secondary">
+          <h2 className="font-semibold text-text-primary">Timeline</h2>
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-500" />
+            <Filter className="w-4 h-4 text-text-muted" />
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="text-sm border-gray-300 rounded-md py-1 px-2 focus:ring-blue-500 focus:border-blue-500"
+              className="text-sm border-border-theme rounded-md py-1 px-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">All Activities</option>
               <option value="bounty_posted">Bounties</option>
@@ -184,25 +184,25 @@ export default function ActivityFeed() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : activities.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <Activity className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <div className="text-center py-12 text-text-muted">
+              <Activity className="w-12 h-12 mx-auto mb-3 text-text-muted" />
               <p>No activity found. Start contributing!</p>
             </div>
           ) : (
-            <div className="relative border-l-2 border-gray-100 ml-4">
+            <div className="relative border-l-2 border-border-theme ml-4">
               {activities.map((activity, index) => (
                 <div key={activity.id} className={`relative pl-8 ${index !== activities.length - 1 ? 'pb-8' : ''}`}>
-                  <div className="absolute -left-2.5 top-0 bg-white rounded-full p-1 border border-gray-200 shadow-sm">
+                  <div className="absolute -left-2.5 top-0 bg-surface rounded-full p-1 border border-border-theme shadow-sm">
                     {getActivityIcon(activity.type)}
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-2 hover:shadow-md transition-shadow">
+                  <div className="bg-surface-secondary rounded-lg p-4 border border-border-theme flex flex-col sm:flex-row justify-between sm:items-center gap-2 hover:shadow-md transition-shadow">
                     <div>
-                      <p className="text-gray-800 font-medium">{getActivityDescription(activity)}</p>
-                      <p className="text-sm text-gray-500 mt-1">{formatRelativeTime(activity.createdAt)}</p>
+                      <p className="text-text-primary font-medium">{getActivityDescription(activity)}</p>
+                      <p className="text-sm text-text-muted mt-1">{formatRelativeTime(activity.createdAt)}</p>
                     </div>
                     {activity.points !== undefined && activity.points !== 0 && (
-                      <div className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 ${activity.points > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      <div className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 ${activity.points > 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                         {activity.points > 0 ? '+' : ''}{activity.points} Karma
                       </div>
                     )}
@@ -216,7 +216,7 @@ export default function ActivityFeed() {
             <div className="mt-8 text-center">
               <button 
                 onClick={loadMore}
-                className="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1 mx-auto"
+                className="px-4 py-2 text-sm font-medium text-primary-blue hover:text-primary-blue hover:bg-primary-blue/20 rounded-lg transition-colors flex items-center gap-1 mx-auto"
               >
                 Load More <ChevronRight className="w-4 h-4" />
               </button>

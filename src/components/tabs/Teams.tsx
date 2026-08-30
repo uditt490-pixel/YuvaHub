@@ -245,7 +245,7 @@ export default function Teams() {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-surface p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative flex-1 w-full">
           <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -253,7 +253,7 @@ export default function Teams() {
             placeholder="Search teams by name, hackathon, or project description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white"
+            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-surface"
           />
         </div>
 
@@ -313,7 +313,7 @@ export default function Teams() {
             return (
               <div
                 key={teamId}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between p-6"
+                className="bg-surface rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between p-6"
               >
                 <div className="space-y-4">
                   {/* Card Top */}
@@ -416,7 +416,7 @@ export default function Teams() {
       {/* Create Team Modal */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl space-y-4">
+          <div className="bg-surface rounded-xl max-w-lg w-full p-6 shadow-xl space-y-4">
             <h2 className="text-xl font-bold text-gray-900">
               Create a New Team
             </h2>
@@ -546,7 +546,7 @@ export default function Teams() {
       {/* Join Request Modal */}
       {selectedTeamForJoin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl space-y-4">
+          <div className="bg-surface rounded-xl max-w-md w-full p-6 shadow-xl space-y-4">
             <h2 className="text-xl font-bold text-gray-900">
               Apply to join{" "}
               <span className="text-indigo-600">
@@ -627,7 +627,7 @@ export default function Teams() {
       {/* Manage Requests Modal */}
       {selectedTeamForManage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-xl space-y-4 max-h-[85vh] overflow-y-auto">
+          <div className="bg-surface rounded-xl max-w-2xl w-full p-6 shadow-xl space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">
@@ -678,7 +678,7 @@ export default function Teams() {
                           </span>
                         </div>
                         {req.message && (
-                          <p className="text-xs text-gray-600 bg-white p-2 rounded border border-gray-100 italic">
+                          <p className="text-xs text-gray-600 bg-surface p-2 rounded border border-gray-100 italic">
                             "{req.message}"
                           </p>
                         )}

@@ -14,7 +14,7 @@ const FOCUSABLE_SELECTORS =
  * - Calls `onClose` when the Escape key is pressed.
  */
 export function useFocusTrap(
-  containerRef: RefObject<HTMLElement | null>,
+  containerRef: RefObject<HTMLElement>,
   isOpen: boolean,
   onClose: () => void,
 ): void {
@@ -28,7 +28,13 @@ export function useFocusTrap(
       if (!containerRef.current) return;
       const focusable = containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS);
       const firstFocusable = Array.from(focusable).find(el => el.offsetParent !== null);
-      (firstFocusable ?? containerRef.current).focus();
+      
+      if (firstFocusable) {
+        firstFocusable.focus();
+      } else {
+        // Fallback: focus the container itself (ensure container has tabIndex={-1})
+        containerRef.current.focus();
+      }
     });
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,7 +73,9 @@ export function useFocusTrap(
       cancelAnimationFrame(raf);
       document.removeEventListener('keydown', handleKeyDown);
       // Restore focus to whatever was focused before the modal opened.
-      previouslyFocused?.focus();
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
     };
   }, [isOpen, onClose, containerRef]);
 }

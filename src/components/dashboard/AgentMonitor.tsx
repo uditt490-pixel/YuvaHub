@@ -58,7 +58,7 @@ export function AgentMonitor({ userId }: AgentMonitorProps) {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="bg-white/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl overflow-hidden"
+            className="bg-surface/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl overflow-hidden"
           >
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2 text-white">

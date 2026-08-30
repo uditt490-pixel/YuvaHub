@@ -21,7 +21,7 @@ export const SemesterBoard: React.FC<SemesterBoardProps> = ({ semester, courses 
 
   return (
     <div className="flex flex-col bg-slate-900/40 rounded-2xl border border-white/5 overflow-hidden w-80 flex-shrink-0">
-      <div className="p-4 bg-white/5 border-b border-white/5 flex justify-between items-center">
+      <div className="p-4 bg-surface/5 border-b border-white/5 flex justify-between items-center">
         <h3 className="font-semibold text-slate-200">
           {semester.term} {semester.year}
         </h3>
@@ -36,7 +36,7 @@ export const SemesterBoard: React.FC<SemesterBoardProps> = ({ semester, courses 
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={`flex-1 p-4 flex flex-col gap-3 min-h-[150px] transition-colors ${
-              snapshot.isDraggingOver ? "bg-white/5" : ""
+              snapshot.isDraggingOver ? "bg-surface/5" : ""
             }`}
           >
             {semesterCourses.map((course, index) => (

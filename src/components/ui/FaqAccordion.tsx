@@ -55,10 +55,10 @@ export function FaqAccordion({ faq, isOpen, onToggle, index = 0, searchQuery = '
 
   return (
     <li
-      className={`border rounded-2xl overflow-hidden bg-white transition-all duration-300 ${
+      className={`border rounded-2xl overflow-hidden bg-surface transition-all duration-300 ${
         isOpen
-          ? 'border-[#b56b37] shadow-xs'
-          : 'border-[#e8ded1] hover:border-[#b56b37]'
+          ? 'border-primary-blue shadow-xs'
+          : 'border-border-theme hover:border-primary-blue'
       }`}
       style={{ animationDelay: `${index * 50}ms` }}
     >
@@ -71,15 +71,15 @@ export function FaqAccordion({ faq, isOpen, onToggle, index = 0, searchQuery = '
           aria-controls={panelId}
           className={`w-full text-left p-5 flex justify-between items-start gap-4 cursor-pointer bg-transparent border-none focus:outline-none transition-all duration-200 relative overflow-hidden select-none ${
             isOpen
-              ? 'bg-[#fcf9f2]'
-              : 'hover:bg-[#fcf9f2]'
+              ? 'bg-background'
+              : 'hover:bg-background'
           }`}
         >
           {/* Ripple elements */}
           {ripples.map((r) => (
             <span
               key={r.id}
-              className="absolute pointer-events-none rounded-full animate-ping bg-[#b56b37]/20"
+              className="absolute pointer-events-none rounded-full animate-ping bg-primary-blue/20"
               style={{
                 left: r.x - 20,
                 top: r.y - 20,
@@ -93,16 +93,16 @@ export function FaqAccordion({ faq, isOpen, onToggle, index = 0, searchQuery = '
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider border transition-all ${
                 isOpen
-                  ? 'bg-[#f6efe2] text-[#b56b37] border-[#e8ded1]'
-                  : 'bg-[#fcf9f2] text-[#603620] border-[#e8ded1]'
+                  ? 'bg-surface-secondary text-primary-blue border-border-theme'
+                  : 'bg-background text-text-secondary border-border-theme'
               }`}
             >
               {faq.category}
             </span>
 
             <div
-              className={`text-sm md:text-base font-serif font-bold text-[#231f20] leading-snug transition-colors ${
-                isOpen ? 'text-[#b56b37]' : 'group-hover:text-[#b56b37]'
+              className={`text-sm md:text-base font-serif font-bold text-text-primary leading-snug transition-colors ${
+                isOpen ? 'text-primary-blue' : 'group-hover:text-primary-blue'
               }`}
               dangerouslySetInnerHTML={{ __html: highlightText(faq.question) }}
             />
@@ -112,7 +112,7 @@ export function FaqAccordion({ faq, isOpen, onToggle, index = 0, searchQuery = '
             className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 ${
               isOpen
                 ? 'bg-[#603620] text-[#f3e4bd] rotate-180'
-                : 'bg-[#f6efe2] text-[#8c7569]'
+                : 'bg-surface-secondary text-text-muted'
             }`}
           >
             <ChevronDown className="w-4 h-4" aria-hidden="true" />
@@ -130,7 +130,7 @@ export function FaqAccordion({ faq, isOpen, onToggle, index = 0, searchQuery = '
       >
         <div className="overflow-hidden min-h-0">
           <div
-            className={`p-5 pt-3 text-xs md:text-sm text-[#603620] leading-relaxed border-t border-[#e8ded1] transition-opacity duration-300 ${
+            className={`p-5 pt-3 text-xs md:text-sm text-text-secondary leading-relaxed border-t border-border-theme transition-opacity duration-300 ${
               isOpen ? 'opacity-100' : 'opacity-0'
             }`}
             dangerouslySetInnerHTML={{ __html: highlightText(faq.answer) }}

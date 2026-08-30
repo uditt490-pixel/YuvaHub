@@ -158,42 +158,43 @@ export default function InterviewPrepStudio() {
   return (
     <div className="w-full max-w-[1400px] mx-auto space-y-8 font-sans pb-16 px-2 sm:px-4">
       
-      {/* Top Banner Header - YuvaHub Brand Theme */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#f6efe2] via-[#fcf9f2] to-[#f6efe2] dark:from-slate-900 dark:to-slate-950 border border-[#e8ded1] dark:border-slate-800 p-6 md:p-8 shadow-sm">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+      {/* Top Banner Header - Brand Theme */}
+      <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col gap-6 relative z-10">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#f3e4bd] bg-[#603620] rounded-full flex items-center gap-1.5 shadow-xs">
-                <Brain className="w-3.5 h-3.5 text-[#f3e4bd]" /> AI Mock Interview Studio
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1.5 shadow-xs">
+                <Brain className="w-3.5 h-3.5 text-indigo-400" /> AI Mock Interview Studio
               </span>
-              <span className="px-3 py-1 text-xs font-bold text-[#63703d] bg-[#63703d]/15 border border-[#63703d]/30 rounded-full">
+              <span className="px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30">
                 System Design & Coding
               </span>
             </div>
 
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-              AI Interview <span className="text-[#b56b37] italic">Studio</span>
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+              AI Mock Interview <span className="text-primary-blue italic">Room</span>
             </h1>
-            <p className="text-[#603620] dark:text-slate-400 text-xs md:text-sm max-w-2xl font-medium">
+            <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
               Practice System Design, Data Structures, and STAR behavioral interview questions with AI model answers and timed mock sessions.
             </p>
           </div>
 
-          <div className="flex items-center gap-4 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl w-full lg:w-auto shadow-xs">
-            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-[#b56b37] bg-[#fcf9f2] font-serif font-bold text-base text-[#b56b37]">
+          <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl w-full shadow-xs">
+            <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-primary-blue bg-background font-serif font-bold text-base text-primary-blue">
               92%
             </div>
             <div>
-              <div className="text-[10px] uppercase font-bold text-[#8c7569] tracking-wider">Interview Readiness</div>
-              <div className="text-xs font-extrabold text-[#231f20] dark:text-white">FAANG Ready</div>
-              <div className="text-[11px] text-[#63703d] font-semibold">{questions.filter(q => q.solved).length} of {questions.length} Questions Solved</div>
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Interview Readiness</div>
+              <div className="text-xs font-extrabold text-white">FAANG Ready</div>
+              <div className="text-[11px] text-emerald-400 font-semibold">{questions.filter(q => q.solved).length} of {questions.length} Questions Solved</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-[#e8ded1] dark:border-slate-800 pb-3">
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar border-b border-border-theme dark:border-slate-800 pb-3">
         {[
           { id: 'vault', label: 'Question Vault', icon: Code2 },
           { id: 'simulator', label: '30-Min Timed Simulator', icon: Clock },
@@ -208,11 +209,11 @@ export default function InterviewPrepStudio() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border ${
                 isActive
-                  ? 'bg-[#b56b37] border-[#b56b37] text-white shadow-sm scale-[1.02]'
-                  : 'bg-white dark:bg-slate-900 border-[#e8ded1] dark:border-slate-800 text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]'
+                  ? 'bg-primary-blue border-primary-blue text-white shadow-sm scale-[1.02]'
+                  : 'bg-surface dark:bg-slate-900 border-border-theme dark:border-slate-800 text-text-secondary dark:text-slate-300 hover:bg-surface-secondary'
               }`}
             >
-              <IconComponent className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#b56b37]'}`} />
+              <IconComponent className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-primary-blue'}`} />
               <span>{tab.label}</span>
             </button>
           );
@@ -235,15 +236,15 @@ export default function InterviewPrepStudio() {
       {/* Tab 1: Question Vault */}
       {activeTab === 'vault' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 p-4 rounded-2xl shadow-2xs">
             <div className="relative flex-1 w-full sm:w-auto max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7569]" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
               <input
                 type="text"
                 placeholder="Search questions by topic or title..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-[#231f20] dark:text-white outline-none focus:border-[#b56b37]"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-text-primary dark:text-white outline-none focus:border-primary-blue"
               />
             </div>
 
@@ -255,7 +256,7 @@ export default function InterviewPrepStudio() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                     selectedTopic === top
                       ? 'bg-[#231f20] text-white border-[#231f20]'
-                      : 'bg-white border-[#e8ded1] text-[#603620] hover:bg-[#f6efe2]'
+                      : 'bg-surface border-border-theme text-text-secondary hover:bg-surface-secondary'
                   }`}
                 >
                   {top}
@@ -268,16 +269,16 @@ export default function InterviewPrepStudio() {
             {filteredQuestions.map(q => {
               const isRevealed = revealedIds.includes(q.id);
               return (
-                <div key={q.id} className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-2xl p-6 shadow-2xs space-y-4 hover:border-[#b56b37] transition-all">
+                <div key={q.id} className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-2xl p-6 shadow-2xs space-y-4 hover:border-primary-blue transition-all">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-[#8c7569] uppercase tracking-wider">{q.company}</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#f3e4bd] text-[#603620]">
+                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{q.company}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#f3e4bd] text-text-secondary">
                           {q.category}
                         </span>
                       </div>
-                      <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white mt-1">{q.title}</h3>
+                      <h3 className="font-serif font-bold text-base text-text-primary dark:text-white mt-1">{q.title}</h3>
                     </div>
 
                     <span className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold ${
@@ -287,14 +288,14 @@ export default function InterviewPrepStudio() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-[#603620] dark:text-slate-300 leading-relaxed font-medium bg-[#fcf9f2] dark:bg-slate-800 p-4 rounded-xl border border-[#e8ded1] dark:border-slate-700">
+                  <p className="text-xs text-text-secondary dark:text-slate-300 leading-relaxed font-medium bg-background dark:bg-slate-800 p-4 rounded-xl border border-border-theme dark:border-slate-700">
                     {q.prompt}
                   </p>
 
                   <div className="flex items-center justify-between pt-2">
                     <button
                       onClick={() => toggleReveal(q.id)}
-                      className="px-4 py-2 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-2xs cursor-pointer"
+                      className="px-4 py-2 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-2xs cursor-pointer"
                     >
                       {isRevealed ? 'Hide AI Model Solution' : 'Reveal AI Model Solution'}
                     </button>
@@ -307,7 +308,7 @@ export default function InterviewPrepStudio() {
                   </div>
 
                   {isRevealed && (
-                    <div className="p-4 rounded-xl bg-[#63703d]/15 border border-[#63703d]/30 text-xs font-medium text-[#231f20] dark:text-slate-200 animate-fade-in space-y-1">
+                    <div className="p-4 rounded-xl bg-[#63703d]/15 border border-[#63703d]/30 text-xs font-medium text-text-primary dark:text-slate-200 animate-fade-in space-y-1">
                       <span className="font-bold text-[#63703d] uppercase tracking-wider block text-[10px]">AI Ideal Solution Strategy:</span>
                       <p>{q.idealAnswer}</p>
                     </div>
@@ -321,11 +322,11 @@ export default function InterviewPrepStudio() {
 
       {/* Tab 2: Timed Simulator */}
       {activeTab === 'simulator' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs max-w-2xl mx-auto">
-          <div className="border-b border-[#e8ded1] dark:border-slate-800 pb-4 flex justify-between items-center">
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs max-w-2xl mx-auto">
+          <div className="border-b border-border-theme dark:border-slate-800 pb-4 flex justify-between items-center">
             <div>
-              <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white">30-Minute Mock Session</h2>
-              <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">Simulate real interview conditions with AI evaluation.</p>
+              <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white">30-Minute Mock Session</h2>
+              <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">Simulate real interview conditions with AI evaluation.</p>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-[#603620] text-[#f3e4bd] font-serif font-bold text-sm flex items-center gap-1.5">
               <Clock className="w-4 h-4 text-[#f3e4bd]" /> 30:00
@@ -333,20 +334,20 @@ export default function InterviewPrepStudio() {
           </div>
 
           <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-2xl bg-[#fcf9f2] border border-[#e8ded1]">
-              <span className="text-[10px] font-bold text-[#8c7569] uppercase">Question 1 of 3</span>
-              <h3 className="font-serif font-bold text-sm text-[#231f20] mt-1">{questions[0].title}</h3>
-              <p className="text-xs text-[#603620] mt-2 font-medium">{questions[0].prompt}</p>
+            <div className="p-4 rounded-2xl bg-background border border-border-theme">
+              <span className="text-[10px] font-bold text-text-muted uppercase">Question 1 of 3</span>
+              <h3 className="font-serif font-bold text-sm text-text-primary mt-1">{questions[0].title}</h3>
+              <p className="text-xs text-text-secondary mt-2 font-medium">{questions[0].prompt}</p>
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-[#603620] uppercase">Your Solution / Architecture Strategy</label>
+              <label className="font-bold text-text-secondary uppercase">Your Solution / Architecture Strategy</label>
               <textarea
                 rows={5}
                 placeholder="Write your explanation or code solution here..."
                 value={simAnswer}
                 onChange={e => setSimAnswer(e.target.value)}
-                className="w-full bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl p-3 text-xs text-[#231f20] dark:text-white outline-none resize-none font-mono"
+                className="w-full bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-xl p-3 text-xs text-text-primary dark:text-white outline-none resize-none font-mono"
               />
             </div>
 
@@ -355,7 +356,7 @@ export default function InterviewPrepStudio() {
                 setNotification({ type: 'success', message: 'Submitted answer for AI evaluation!' });
                 setSimAnswer('');
               }}
-              className="w-full py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2"
             >
               <Play className="w-4 h-4" /> Submit Solution to AI Evaluator
             </button>
@@ -366,19 +367,19 @@ export default function InterviewPrepStudio() {
       {/* Tab 3: STAR Behavioral Builder */}
       {activeTab === 'star' && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs max-w-2xl mx-auto">
-            <div className="border-b border-[#e8ded1] dark:border-slate-800 pb-4">
-              <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white">STAR Behavioral Story Builder</h2>
-              <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">Draft Situation, Task, Action, and Result framework stories for behavioral interviews.</p>
+          <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs max-w-2xl mx-auto">
+            <div className="border-b border-border-theme dark:border-slate-800 pb-4">
+              <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white">STAR Behavioral Story Builder</h2>
+              <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">Draft Situation, Task, Action, and Result framework stories for behavioral interviews.</p>
             </div>
 
             <form onSubmit={handleAddStarStory} className="space-y-3 text-xs">
-              <input type="text" required placeholder="Situation (What happened?)" value={newSit} onChange={e => setNewSit(e.target.value)} className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none" />
-              <input type="text" placeholder="Task (What was required?)" value={newTask} onChange={e => setNewTask(e.target.value)} className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none" />
-              <input type="text" required placeholder="Action (What did YOU do?)" value={newAct} onChange={e => setNewAct(e.target.value)} className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none" />
-              <input type="text" placeholder="Result (Quantifiable outcome)" value={newRes} onChange={e => setNewRes(e.target.value)} className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none" />
+              <input type="text" required placeholder="Situation (What happened?)" value={newSit} onChange={e => setNewSit(e.target.value)} className="w-full bg-background border border-border-theme rounded-xl p-3 text-xs text-text-primary outline-none" />
+              <input type="text" placeholder="Task (What was required?)" value={newTask} onChange={e => setNewTask(e.target.value)} className="w-full bg-background border border-border-theme rounded-xl p-3 text-xs text-text-primary outline-none" />
+              <input type="text" required placeholder="Action (What did YOU do?)" value={newAct} onChange={e => setNewAct(e.target.value)} className="w-full bg-background border border-border-theme rounded-xl p-3 text-xs text-text-primary outline-none" />
+              <input type="text" placeholder="Result (Quantifiable outcome)" value={newRes} onChange={e => setNewRes(e.target.value)} className="w-full bg-background border border-border-theme rounded-xl p-3 text-xs text-text-primary outline-none" />
 
-              <button type="submit" className="w-full py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
+              <button type="submit" className="w-full py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2">
                 <Plus className="w-4 h-4" /> Save STAR Behavioral Story
               </button>
             </form>
@@ -386,9 +387,9 @@ export default function InterviewPrepStudio() {
 
           <div className="space-y-3 max-w-2xl mx-auto">
             {starStories.map((st, idx) => (
-              <div key={st.id} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 shadow-2xs space-y-2">
-                <h4 className="font-serif font-bold text-sm text-[#231f20] dark:text-white">Story #{idx + 1}: {st.situation}</h4>
-                <p className="text-xs text-[#603620] font-semibold">Action: {st.action}</p>
+              <div key={st.id} className="p-5 rounded-2xl bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 shadow-2xs space-y-2">
+                <h4 className="font-serif font-bold text-sm text-text-primary dark:text-white">Story #{idx + 1}: {st.situation}</h4>
+                <p className="text-xs text-text-secondary font-semibold">Action: {st.action}</p>
                 <p className="text-xs text-[#63703d] font-bold">Result: {st.result}</p>
               </div>
             ))}
@@ -398,15 +399,15 @@ export default function InterviewPrepStudio() {
 
       {/* Tab 4: Export */}
       {activeTab === 'export' && (
-        <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
-          <div className="w-16 h-16 bg-[#f6efe2] text-[#b56b37] flex items-center justify-center rounded-full mx-auto border border-[#e8ded1]">
-            <Download className="w-8 h-8 text-[#b56b37]" />
+        <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-8 text-center space-y-4 shadow-2xs max-w-xl mx-auto">
+          <div className="w-16 h-16 bg-surface-secondary text-primary-blue flex items-center justify-center rounded-full mx-auto border border-border-theme">
+            <Download className="w-8 h-8 text-primary-blue" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white">Export Interview Transcript</h2>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium">
+          <h2 className="text-2xl font-serif font-bold text-text-primary dark:text-white">Export Interview Transcript</h2>
+          <p className="text-xs text-text-secondary dark:text-slate-400 font-medium">
             Download full solved question history and STAR behavioral stories in JSON format.
           </p>
-          <button onClick={handleExportManifest} className="px-6 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer inline-flex items-center gap-2">
+          <button onClick={handleExportManifest} className="px-6 py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer inline-flex items-center gap-2">
             <Download className="w-4 h-4" /> Download Interview Prep JSON Manifest
           </button>
         </div>

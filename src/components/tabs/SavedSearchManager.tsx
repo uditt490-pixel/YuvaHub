@@ -191,7 +191,7 @@ export default function SavedSearchManager() {
 
       {/* Create Form */}
       {isCreating && (
-        <div className="bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+        <div className="bg-surface dark:bg-[#1E293B] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">Create New Search</h3>
             <button onClick={() => { setIsCreating(false); resetForm(); }} className="p-2 text-gray-400 hover:text-gray-600">
@@ -315,7 +315,7 @@ export default function SavedSearchManager() {
               {previewMatches.length > 0 ? (
                 <div className="space-y-3">
                   {previewMatches.map(match => (
-                    <div key={match.id} className="p-3 bg-white dark:bg-[#1E293B] rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-sm">
+                    <div key={match.id} className="p-3 bg-surface dark:bg-[#1E293B] rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-sm">
                       <div className="font-medium text-blue-600 dark:text-blue-400">{match.title}</div>
                       <div className="text-gray-600 dark:text-gray-400 mt-1">{match.company || match.sourceName} • {match.location || 'Online'}</div>
                     </div>
@@ -336,7 +336,7 @@ export default function SavedSearchManager() {
             <p className="text-gray-500 col-span-2">Loading...</p>
           ) : searches.length > 0 ? (
             searches.map(search => (
-              <div key={search.id} className={`bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm ${!search.isActive ? 'opacity-70' : ''}`}>
+              <div key={search.id} className={`bg-surface dark:bg-[#1E293B] border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm ${!search.isActive ? 'opacity-70' : ''}`}>
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
@@ -385,7 +385,7 @@ export default function SavedSearchManager() {
               </div>
             ))
           ) : (
-            <div className="col-span-2 text-center py-12 bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-gray-800 rounded-xl border-dashed">
+            <div className="col-span-2 text-center py-12 bg-surface dark:bg-[#1E293B] border border-gray-200 dark:border-gray-800 rounded-xl border-dashed">
               <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Saved Searches Yet</h3>
               <p className="text-gray-500 mb-6">Create a search to get notified about new opportunities.</p>

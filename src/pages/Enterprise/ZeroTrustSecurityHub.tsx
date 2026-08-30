@@ -133,51 +133,51 @@ export const ZeroTrustSecurityHub: React.FC = () => {
       case 'CRITICAL_BREACH':
         return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-300';
       case 'HIGH':
-        return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300';
+        return 'bg-orange-500/200/20 text-orange-800 border-orange-500/30 dark:bg-orange-950 dark:text-orange-300';
       case 'MEDIUM':
-        return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300';
+        return 'bg-amber-500/200/20 text-amber-800 border-amber-500/30 dark:bg-amber-950 dark:text-amber-300';
       case 'LOW':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300';
+        return 'bg-emerald-500/200/20 text-emerald-800 border-emerald-500/30 dark:bg-emerald-950 dark:text-emerald-300';
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-10 font-sans space-y-8">
+    <div className="min-h-screen bg-surface dark:bg-slate-950 text-text-primary dark:text-slate-100 p-4 sm:p-6 lg:p-10 font-sans space-y-8">
       {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl shadow-xl flex items-center gap-3 bg-slate-900 text-white dark:bg-white dark:text-slate-900 border border-slate-700 animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl shadow-xl flex items-center gap-3 bg-primary-blue text-white dark:bg-surface dark:text-text-primary border border-border-theme animate-in fade-in slide-in-from-bottom-5 duration-200">
           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           <span className="text-xs font-bold">{toastMessage.text}</span>
         </div>
       )}
 
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-surface dark:bg-primary-blue p-6 rounded-3xl border border-border-theme dark:border-border-theme shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 text-[11px] font-bold uppercase tracking-widest flex items-center gap-1.5 border border-rose-200 dark:border-rose-900">
               <Lock className="w-3.5 h-3.5" /> Zero-Trust Ingress Gateway
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-mono font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-surface-secondary dark:bg-surface-secondary text-text-secondary dark:text-slate-300 text-[10px] font-mono font-bold">
               SOC-2 Type II / NIST 800-207
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-text-primary dark:text-white tracking-tight">
             Zero-Trust Campus Security & Access Gateway
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-text-muted dark:text-text-muted mt-1">
             Continuous identity verification, automated IP threat quarantine, and ephemeral token governance.
           </p>
         </div>
 
         {/* View Switchers */}
-        <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center bg-surface-secondary dark:bg-surface-secondary p-1.5 rounded-2xl border border-border-theme dark:border-border-theme">
           <button
             onClick={() => setActiveView('grid')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               activeView === 'grid'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-surface dark:bg-primary-blue text-blue-400 dark:text-blue-400 shadow-sm'
+                : 'text-text-muted hover:text-text-primary dark:hover:text-white'
             }`}
           >
             <LayoutGrid className="w-4 h-4" /> Ingress Stream
@@ -186,8 +186,8 @@ export const ZeroTrustSecurityHub: React.FC = () => {
             onClick={() => setActiveView('table')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               activeView === 'table'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-surface dark:bg-primary-blue text-blue-400 dark:text-blue-400 shadow-sm'
+                : 'text-text-muted hover:text-text-primary dark:hover:text-white'
             }`}
           >
             <List className="w-4 h-4" /> Audit Ledger
@@ -196,8 +196,8 @@ export const ZeroTrustSecurityHub: React.FC = () => {
             onClick={() => setActiveView('policies')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               activeView === 'policies'
-                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-surface dark:bg-primary-blue text-blue-400 dark:text-blue-400 shadow-sm'
+                : 'text-text-muted hover:text-text-primary dark:hover:text-white'
             }`}
           >
             <Sliders className="w-4 h-4" /> Access Policies
@@ -221,7 +221,7 @@ export const ZeroTrustSecurityHub: React.FC = () => {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center p-20 space-y-4">
           <div className="w-10 h-10 border-4 border-rose-600 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          <p className="text-xs font-bold uppercase tracking-wider text-text-muted">
             Analyzing Ingress Cryptographic Packets...
           </p>
         </div>
@@ -232,14 +232,14 @@ export const ZeroTrustSecurityHub: React.FC = () => {
             <div
               key={event.id}
               onClick={() => setSelectedEvent(event)}
-              className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-rose-500 transition-all cursor-pointer space-y-4"
+              className="p-5 rounded-3xl bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme shadow-sm hover:shadow-md hover:border-rose-500 transition-all cursor-pointer space-y-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                  <div className="font-mono text-xs font-bold text-text-primary dark:text-white">
                     {event.eventId}
                   </div>
-                  <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                  <div className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
                     <Globe className="w-3 h-3 text-blue-500" />
                     <span>{event.location}</span>
                   </div>
@@ -249,19 +249,19 @@ export const ZeroTrustSecurityHub: React.FC = () => {
                 </span>
               </div>
 
-              <div className="text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 truncate">
+              <div className="text-xs font-mono font-semibold text-text-primary dark:text-slate-300 truncate">
                 {event.userPrincipal}
               </div>
 
               {/* Risk Meter */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 space-y-1.5 text-xs">
+              <div className="p-3 rounded-2xl bg-surface dark:bg-surface-secondary/60 space-y-1.5 text-xs">
                 <div className="flex justify-between font-bold">
-                  <span className="text-slate-500">Threat Risk Score</span>
-                  <span className={event.riskScore > 70 ? 'text-rose-600 font-extrabold' : 'text-blue-600 font-extrabold'}>
+                  <span className="text-text-muted">Threat Risk Score</span>
+                  <span className={event.riskScore > 70 ? 'text-rose-600 font-extrabold' : 'text-blue-400 font-extrabold'}>
                     {event.riskScore}/100
                   </span>
                 </div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+                <div className="w-full bg-border-theme dark:bg-slate-700 h-2 rounded-full overflow-hidden">
                   <div
                     className={event.riskScore > 70 ? 'bg-rose-600 h-full rounded-full' : 'bg-blue-600 h-full rounded-full'}
                     style={{ width: `${event.riskScore}%` }}
@@ -271,22 +271,22 @@ export const ZeroTrustSecurityHub: React.FC = () => {
 
               {/* Target & Protocol */}
               <div className="grid grid-cols-2 gap-2 text-center text-xs">
-                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-                  <div className="text-[10px] text-slate-400 font-bold uppercase">Protocol</div>
-                  <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate">
+                <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/40">
+                  <div className="text-[10px] text-text-muted font-bold uppercase">Protocol</div>
+                  <div className="font-bold text-text-primary dark:text-slate-200 mt-0.5 truncate">
                     {event.gateProtocol.replace(/_/g, ' ')}
                   </div>
                 </div>
-                <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-                  <div className="text-[10px] text-slate-400 font-bold uppercase">Status</div>
-                  <div className="font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                <div className="p-2 rounded-xl bg-surface dark:bg-surface-secondary/40">
+                  <div className="text-[10px] text-text-muted font-bold uppercase">Status</div>
+                  <div className="font-bold text-text-primary dark:text-slate-200 mt-0.5">
                     {event.status}
                   </div>
                 </div>
               </div>
 
               {/* Actions Footer */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="pt-3 border-t border-border-theme dark:border-border-theme flex items-center justify-between">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -296,7 +296,7 @@ export const ZeroTrustSecurityHub: React.FC = () => {
                 >
                   <Lock className="w-3.5 h-3.5" /> Quarantine
                 </button>
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-0.5">
+                <span className="text-xs font-bold text-blue-400 dark:text-blue-400 flex items-center gap-0.5">
                   Inspect <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
@@ -305,10 +305,10 @@ export const ZeroTrustSecurityHub: React.FC = () => {
         </div>
       ) : activeView === 'table' ? (
         /* Table View */
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
+        <div className="bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme rounded-3xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+              <thead className="bg-surface dark:bg-surface-secondary/80 border-b border-border-theme dark:border-border-theme text-text-muted dark:text-text-muted font-bold uppercase tracking-wider text-[10px]">
                 <tr>
                   <th className="p-4">Event ID & IP</th>
                   <th className="p-4">Principal User</th>
@@ -322,18 +322,18 @@ export const ZeroTrustSecurityHub: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {events.map((event) => (
-                  <tr key={event.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <tr key={event.id} className="hover:bg-surface dark:hover:bg-surface-secondary/50 transition-colors">
                     <td className="p-4">
-                      <div className="font-mono font-bold text-slate-900 dark:text-white">{event.eventId}</div>
-                      <div className="text-[11px] font-mono text-slate-500">{event.sourceIp}</div>
+                      <div className="font-mono font-bold text-text-primary dark:text-white">{event.eventId}</div>
+                      <div className="text-[11px] font-mono text-text-muted">{event.sourceIp}</div>
                     </td>
-                    <td className="p-4 font-mono text-slate-800 dark:text-slate-200">
+                    <td className="p-4 font-mono text-text-primary dark:text-slate-200">
                       {event.userPrincipal}
                     </td>
-                    <td className="p-4 font-mono text-slate-600 dark:text-slate-400 truncate max-w-[200px]">
+                    <td className="p-4 font-mono text-text-secondary dark:text-text-muted truncate max-w-[200px]">
                       {event.targetResource}
                     </td>
-                    <td className="p-4 font-semibold text-blue-600 dark:text-blue-400">
+                    <td className="p-4 font-semibold text-blue-400 dark:text-blue-400">
                       {event.gateProtocol.replace(/_/g, ' ')}
                     </td>
                     <td className="p-4">
@@ -344,13 +344,13 @@ export const ZeroTrustSecurityHub: React.FC = () => {
                     <td className="p-4 font-extrabold text-rose-600">
                       {event.riskScore}/100
                     </td>
-                    <td className="p-4 font-bold text-slate-700 dark:text-slate-300">
+                    <td className="p-4 font-bold text-text-primary dark:text-slate-300">
                       {event.status}
                     </td>
                     <td className="p-4 text-right space-x-2">
                       <button
                         onClick={() => setSelectedEvent(event)}
-                        className="px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-100"
+                        className="px-3 py-1 rounded-lg bg-blue-500/20 dark:bg-blue-950 text-blue-400 dark:text-blue-400 font-bold hover:bg-blue-500/200/20"
                       >
                         Inspect
                       </button>
@@ -370,41 +370,41 @@ export const ZeroTrustSecurityHub: React.FC = () => {
       ) : (
         /* Policy Rules Engine */
         <div className="space-y-4">
-          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-blue-600" />
+          <h3 className="text-base font-bold text-text-primary dark:text-white flex items-center gap-2">
+            <Sliders className="w-5 h-5 text-blue-400" />
             Zero-Trust Boundary Enforcement Policies
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {policies.map((policy) => (
               <div
                 key={policy.id}
-                className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 flex flex-col justify-between"
+                className="p-6 rounded-3xl bg-surface dark:bg-primary-blue border border-border-theme dark:border-border-theme shadow-sm space-y-4 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <span className="font-bold text-sm text-slate-900 dark:text-white">
+                    <span className="font-bold text-sm text-text-primary dark:text-white">
                       {policy.ruleName}
                     </span>
                     <button
                       onClick={() => handleTogglePolicy(policy.id, policy.enabled)}
-                      className="text-blue-600 dark:text-blue-400 cursor-pointer"
+                      className="text-blue-400 dark:text-blue-400 cursor-pointer"
                     >
-                      {policy.enabled ? <ToggleRight className="w-7 h-7 text-emerald-500" /> : <ToggleLeft className="w-7 h-7 text-slate-400" />}
+                      {policy.enabled ? <ToggleRight className="w-7 h-7 text-emerald-500" /> : <ToggleLeft className="w-7 h-7 text-text-muted" />}
                     </button>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs text-text-muted dark:text-text-muted leading-relaxed">
                     {policy.description}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs">
+                <div className="pt-4 border-t border-border-theme dark:border-border-theme space-y-2 text-xs">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Gate Protocol:</span>
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">{policy.gateProtocol}</span>
+                    <span className="text-text-muted">Gate Protocol:</span>
+                    <span className="font-semibold text-blue-400 dark:text-blue-400">{policy.gateProtocol}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Matched Ingress Packets:</span>
-                    <span className="font-bold text-emerald-600">{policy.matchedCount.toLocaleString()}</span>
+                    <span className="text-text-muted">Matched Ingress Packets:</span>
+                    <span className="font-bold text-emerald-400">{policy.matchedCount.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

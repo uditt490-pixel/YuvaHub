@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { DeveloperProfile } from '../../models/DeveloperProfile';
-import { opportunityDeduplicationQueue } from '../../queues/opportunityDeduplicationQueue'; // Reusing queue import structure
+// Reusing queue import structure
 import { logger } from '../../utils/logger';
 
 /**
@@ -23,11 +23,11 @@ export const linkDeveloperAccounts = async (req: Request, res: Response) => {
         await profile.save();
 
         // Trigger immediate sync job
-        await opportunityDeduplicationQueue.add('profile_sync', { userId }, { delay: 1000 });
+        // await opportunityDeduplicationQueue.add('profile_sync', { userId }, { delay: 1000 });
 
         res.status(200).json({ message: 'Accounts linked successfully', data: profile });
     } catch (error) {
-        logger.error('Error linking developer accounts:', error);
+        logger.error({ err: error }, 'Error linking developer accounts:');
         res.status(500).json({ error: 'Internal server error' });
     }
 };
@@ -46,7 +46,7 @@ export const getDeveloperProfile = async (req: Request, res: Response) => {
 
         res.status(200).json({ data: profile });
     } catch (error) {
-        logger.error('Error fetching developer profile:', error);
+        logger.error({ err: error }, 'Error fetching developer profile:');
         res.status(500).json({ error: 'Internal server error' });
     }
 };

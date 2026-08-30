@@ -52,6 +52,12 @@ Students in India currently search dozens of platforms daily—such as LinkedIn,
 - **Dedicated Hubs:** Detailed sections for active scholarships, hackathon schedules, and freshers jobs.
 - **Peer Community forums:** Post discussion threads, share study materials, and network with mentors.
 
+## Resume Builder (Planned)
+
+**Problem:** While YuvaHub can analyze existing resumes, many freshers don't even have a basic, ATS‑friendly resume to begin with.
+
+**Why It's Needed:** A built‑in resume builder ensures users create high‑quality, standardized resumes that are optimized for both human recruiters and ATS software, directly from their YuvaHub profile data.
+
 ---
 
 ## Tech Stack

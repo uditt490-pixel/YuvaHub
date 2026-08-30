@@ -1,7 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import {
   LayoutDashboard, Globe, PlusCircle, Users, User, Menu, X, Bookmark, Sparkles, MessageSquare, Settings, Sun, Moon, Mic, Trophy,
-  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket, Compass, Map, Swords
+  Brain, TrendingUp, FileText, Video, FolderGit2, GraduationCap, Coins, Code2, Building2, Award, Cpu, Terminal, ShieldCheck, ShieldAlert, Briefcase, Clock, BookOpen, Target, Activity, Calendar, HeartPulse, Rocket, Shield, Megaphone, Search, Ticket, Compass, Map, Swords, Code
 } from 'lucide-react';
 import { signInWithGoogle, logout } from './lib/firebase';
 import { UserProfile } from './types';
@@ -52,6 +52,7 @@ const GrantFellowshipStudio = lazy(() => import('./components/tabs/GrantFellowsh
 const CampusAlumniHub = lazy(() => import('./components/tabs/CampusAlumniHub'));
 const ResumeAtsStudio = lazy(() => import('./components/tabs/ResumeAtsStudio'));
 const SkillGapStudio = lazy(() => import('./components/tabs/SkillGapStudio'));
+const CopilotSimulator = lazy(() => import('./components/tabs/CopilotSimulator'));
 const CodingChallengeArena = lazy(() => import("./components/tabs/CodingChallengeArena"));
 const LearningPathBuilder = lazy(() => import("./components/tabs/LearningPathBuilder"));
 const InterviewPrepStudio = lazy(() => import('./components/tabs/InterviewPrepStudio'));
@@ -322,6 +323,7 @@ function App() {
       title: "AI & Career Studios",
       items: [
         { id: 'degree_planner', label: 'Degree Planner Hub', icon: Target },
+        { id: 'copilot_sim', label: 'Copilot Simulator', icon: Code }
         { id: 'skill_gap', label: 'Skill Gap Analyzer', icon: Target },
         { id: 'coding_arena', label: 'Coding Challenge Arena', icon: Swords },
         { id: 'learning_path', label: 'Learning Path Builder', icon: Map },
@@ -424,6 +426,7 @@ function App() {
       case 'campus_alumni': return <CampusAlumniHub />;
       case 'resume_ats': return <ResumeAtsStudio />;
       case 'skill_gap': return <SkillGapStudio />;
+      case 'copilot_sim': return <CopilotSimulator />;
       case 'coding_arena': return <CodingChallengeArena />;
       case 'learning_path': return <LearningPathBuilder />;
       case 'interview_prep': return <InterviewPrepStudio />;

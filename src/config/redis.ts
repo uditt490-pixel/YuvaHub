@@ -1,4 +1,5 @@
-import { redisClient } from '../api/redis.js';
+import { redisClient as apiRedisClient } from '../api/redis.js';
 
-export { redisClient };
-export const redis = redisClient;
+export const redisClient = apiRedisClient;
+export const redis = apiRedisClient;
+export default redisClient;

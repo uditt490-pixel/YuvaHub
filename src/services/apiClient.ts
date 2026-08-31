@@ -467,6 +467,30 @@ export async function generateApplyAssistBackend(opportunity: any, profile: any)
   }
 }
 
+export async function generateContextualCoverLetter(params: {
+  opportunityTitle: string;
+  organization?: string;
+  jobDescription?: string;
+  candidateProfile?: any;
+  customMotivation?: string;
+  tone?: string;
+}) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/ai/cover-letter`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to generate cover letter");
+  }
+
+  const data = await response.json();
+  return data.data?.coverLetter || data.coverLetter || "";
+}
+
+
 export async function refineQueryBackend(query: string, profile: any) {
   try {
     const result = await geminiService.refineSearchQuery(query, profile);
@@ -830,19 +854,25 @@ export async function fetchOpportunityById(id: string) {
   }
 }
 
-export async function getApplications() {
-  const response = await fetchWithRetry(
-    `${API_BASE_URL}/applications`,
-    {
-      method: "GET",
-    }
-  );
+export async function saveOpportunityToTracker(opportunity: any, status: string = "saved", notes?: string) {
+  const oppId = opportunity._id || opportunity.id || opportunity.opportunityId;
+  const payload = {
+    opportunityId: oppId,
+    opportunity: {
+      title: opportunity.title,
+      organization: opportunity.organization || opportunity.org || "",
+      platform: opportunity.platform || "YuvaHub",
+      applyUrl: opportunity.applyUrl || opportunity.apply_link || "",
+      type: opportunity.type || "",
+      location: opportunity.location || "",
+      deadline: opportunity.deadline || "",
+    },
+    status,
+    notes,
+    deadline: opportunity.deadline ? new Date(opportunity.deadline) : undefined,
+  };
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch applications");
-  }
-
-  return response.json();
+  return createApplicationTrackerEntry(payload);
 }
 
 export async function createApplicationTrackerEntry(data: any) {

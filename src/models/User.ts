@@ -6,6 +6,13 @@ export interface IUser extends Document {
     reputation_score: number;
     level: number;
     badges: string[];
+    graduation_year?: number | null;
+    current_company?: string;
+    alumni_status?: boolean;
+    is_open_to_mentoring?: boolean;
+    mentoring_interests?: string[];
+    alumni_profile_bio?: string;
+    current_role?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -17,6 +24,13 @@ const userSchema = new Schema<IUser>(
         reputation_score: { type: Number, default: 0, min: 0 },
         badges: { type: [String], default: [] },
         level: { type: Number, default: 1, min: 1 },
+        graduation_year: { type: Number, default: null },
+        current_company: { type: String, default: "" },
+        alumni_status: { type: Boolean, default: false },
+        is_open_to_mentoring: { type: Boolean, default: false },
+        mentoring_interests: { type: [String], default: [] },
+        alumni_profile_bio: { type: String, default: "" },
+        current_role: { type: String, default: "" },
     },
     { timestamps: true }
 );
@@ -36,4 +50,4 @@ userSchema.pre('save', function (this: any) {
     }
 });
 
-export const User = mongoose.model<IUser>('User', userSchema);
+export const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);

@@ -41,7 +41,7 @@ export const eventWaitlistWorker = new Worker(
             await nextInLine.save();
 
             // 4. Fetch user and event details for notification
-            const user = await User.findById(nextInLine.userId);
+            const user = await (User as any).findById(nextInLine.userId);
             const event = await Event.findById(eventId);
 
             if (user && event) {

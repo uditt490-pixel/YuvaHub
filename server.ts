@@ -1673,6 +1673,110 @@ Return JSON strictly in this format:
     }
   });
 
+  app.post("/api/v1/ai/cover-letter", chatRateLimiter, async (req, res) => {
+    try {
+      const { opportunityTitle, organization, jobDescription, candidateProfile, customMotivation, tone } = req.body;
+
+      if (!opportunityTitle) {
+        return res.status(400).json({ error: "Opportunity title is required" });
+      }
+
+      const titleStr = opportunityTitle || "Target Role";
+      const orgStr = organization || "Hiring Team";
+      const descStr = jobDescription || "";
+      const candidateName = candidateProfile?.name || "Student";
+      const candidateSkills = Array.isArray(candidateProfile?.skills) ? candidateProfile.skills.join(", ") : (candidateProfile?.skills || "General Engineering, Problem Solving");
+      const candidateExperience = candidateProfile?.experience || candidateProfile?.summary || "Project and software development background";
+      const candidateEducation = candidateProfile?.education || "Undergraduate Degree in Engineering / Technology";
+      const motivation = customMotivation || "I am enthusiastic about this mission and excited to apply my skills to drive impactful results.";
+      const selectedTone = tone || "Professional & Enthusiastic";
+
+      const userId = resolveUserId(req);
+      const cacheKey = buildUserScopedCacheKey(userId, `cover_letter:${titleStr}:${orgStr}:${candidateName}:${motivation.slice(0, 50)}`);
+      const cached = getCachedResponse(cacheKey);
+      if (cached) {
+        return res.json({ success: true, coverLetter: cached });
+      }
+
+      const defaultFallback = `Dear Hiring Team at ${orgStr},
+
+I am writing to express my strong enthusiasm for the ${titleStr} position. With my background in ${candidateSkills} and practical experience building high-performance projects, I am eager to contribute to your team's success.
+
+${motivation}
+
+Throughout my academic journey (${candidateEducation}) and hands-on experience in ${candidateExperience}, I have developed deep technical foundations in ${candidateSkills}. My experience equips me to quickly ramp up, understand complex system requirements, and deliver clean, test-driven results.
+
+I admire ${orgStr}'s work in the domain and would welcome the opportunity to discuss how my skill set and dedication align with your goals for the ${titleStr} role.
+
+Thank you for your time and consideration.
+
+Sincerely,
+${candidateName}`;
+
+      const ai = getGenAI();
+      if (!ai) {
+        return res.json({ success: true, coverLetter: defaultFallback });
+      }
+
+      const prompt = `You are an elite career coach and executive recruiter. Write a compelling, highly contextual, and customized cover letter for an applicant.
+
+Opportunity Details:
+Role: ${wrapUserInput(titleStr)}
+Company/Organization: ${wrapUserInput(orgStr)}
+Job Description / Requirements:
+${wrapUserInput(descStr || "Not provided")}
+
+Candidate Profile:
+Name: ${wrapUserInput(candidateName)}
+Skills: ${wrapUserInput(candidateSkills)}
+Experience / Background: ${wrapUserInput(candidateExperience)}
+Education: ${wrapUserInput(candidateEducation)}
+
+Candidate's Custom Motivation / "Why I want this role":
+${wrapUserInput(motivation)}
+
+Tone: ${selectedTone}
+
+Guidelines:
+1. Explicitly connect the candidate's specific skills and projects to the key responsibilities and requirements of the role/organization.
+2. Weave in the candidate's custom motivation seamlessly into the letter.
+3. Use a clear, persuasive opening, 2 well-structured body paragraphs mapping skills to role requirements, and a confident call-to-action closing.
+4. Format in clean, readable paragraphs with standard business letter greeting and sign-off.
+5. Return ONLY the text of the complete cover letter. Do not include markdown meta-commentary, notes, or explanations.`;
+
+      let responseText = "";
+      try {
+        const response = await ai.models.generateContent({
+          model: "gemini-3.5-flash",
+          contents: prompt
+        });
+        responseText = response.text || "";
+      } catch (err: any) {
+        console.warn("Primary AI model generation failed for cover letter:", err?.message);
+        try {
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: prompt
+          });
+          responseText = response.text || "";
+        } catch (liteErr) {
+          responseText = defaultFallback;
+        }
+      }
+
+      if (!responseText || responseText.trim().length < 50) {
+        responseText = defaultFallback;
+      }
+
+      setCachedResponse(cacheKey, responseText.trim());
+      return res.json({ success: true, coverLetter: responseText.trim() });
+    } catch (err) {
+      console.error("/api/v1/ai/cover-letter error:", err);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+
   app.get("/api/v1/search", async (req, res) => {
     try {
       const q = (req.query.q as string) || "";

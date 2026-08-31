@@ -1,3 +1,4 @@
+import { logger } from "../lib/logger.js";
 import * as amqp from "amqplib";
 import { sendAdminAlert } from "../services/adminAlertService.js";
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://localhost";
@@ -41,7 +42,7 @@ class EventBus {
       await this.channel.assertExchange(RETRY_EXCHANGE, "topic", { durable: true });
       await this.channel.assertExchange(DLX_EXCHANGE, "topic", { durable: true });
 
-      console.log("[EventBus] Connected to RabbitMQ (ConfirmChannel + DLX enabled)");
+      logger.info("[EventBus] Connected to RabbitMQ (ConfirmChannel + DLX enabled)");
     } catch (error) {
       // Clean up on topology failure so reconnect is possible
       if (this.channel) {
@@ -52,7 +53,7 @@ class EventBus {
         try { await this.connection.close(); } catch {}
         this.connection = null;
       }
-      console.warn("[EventBus] Offline (RabbitMQ server not running locally):", (error as Error).message);
+      logger.warn({ err: (error as Error).message }, "[EventBus] Offline (RabbitMQ server not running locally):");
       throw error;
     }
   }
@@ -67,7 +68,7 @@ class EventBus {
     return new Promise((resolve) => {
       this.channel!.publish(MAIN_EXCHANGE, routingKey, payload, { persistent: true }, (err) => {
         if (err) {
-          console.error(`[EventBus] Publish failed for ${routingKey}:`, err);
+          logger.error({ err: err }, `[EventBus] Publish failed for ${routingKey}:`);
           resolve(false);
         } else {
           resolve(true);
@@ -122,7 +123,7 @@ class EventBus {
         await handler(event);
         this.channel!.ack(msg);
       } catch (error) {
-        console.error(`[EventBus] Error handling message from ${queueName}:`, error);
+        logger.error({ err: error }, `[EventBus] Error handling message from ${queueName}:`);
 
         const retries = Number(msg.properties.headers?.["x-retry-count"] ?? 0);
 
@@ -138,7 +139,7 @@ class EventBus {
           });
           this.channel!.ack(msg);
         } else {
-          console.error(
+          logger.error(
             `[EventBus] Max retries (${MAX_RETRIES}) exceeded for ${queueName}. Routing to DLQ.`,
           );
           msg.properties.headers = {
@@ -157,7 +158,7 @@ class EventBus {
         }      }
     });
 
-    console.log(`[EventBus] Subscribed to ${routingKey} via queue ${queueName} (DLX: ${DLX_EXCHANGE})`);
+    logger.info(`[EventBus] Subscribed to ${routingKey} via queue ${queueName} (DLX: ${DLX_EXCHANGE})`);
   }
 
   async getDlqStats(queueName: string): Promise<DlqStats> {
@@ -265,7 +266,7 @@ class EventBus {
       }
     }
 
-    console.log(`[EventBus] Replayed ${replayedCount} messages from DLQ ${dlqName} to ${targetRoutingKey}`);
+    logger.info(`[EventBus] Replayed ${replayedCount} messages from DLQ ${dlqName} to ${targetRoutingKey}`);
     return replayedCount;
   }
 
@@ -291,7 +292,7 @@ class EventBus {
       await this.connection.close();
       this.connection = null;
     }
-    console.log("[EventBus] Disconnected");
+    logger.info("[EventBus] Disconnected");
   }
 }
 

@@ -1,61 +1,3 @@
-import { Worker, Job } from 'bullmq';
-import { redisClient } from '../config/redis';
-import { getApprovedChannels, dispatchEmail, dispatchPush } from '../services/multiChannelDeliveryService';
-import { User } from '../models/User';
-import { logger } from '../utils/logger';
-
-/**
- * BullMQ Worker for processing and routing multi-channel notifications.
- */
-export const notificationWorker = new Worker(
-    'multi_channel_notifications',
-    async (job: Job) => {
-        const { userId, eventType, payload, isCritical } = job.data;
-        logger.info(`Processing notification for user ${userId}, type: ${eventType}`);
-
-        try {
-            // 1. Determine approved channels based on user preferences
-            const approvedChannels = await getApprovedChannels(userId, eventType, isCritical);
-
-            if (approvedChannels.length === 0) {
-                logger.info(`No approved channels for user ${userId}, type ${eventType}. Skipping.`);
-                return { status: 'skipped', reason: 'no_approved_channels' };
-            }
-
-            // 2. Fetch user details for delivery
-            const user = await User.findById(userId);
-            if (!user) {
-                throw new Error('User not found');
-            }
-
-            // 3. Dispatch to approved channels
-            const results = [];
-
-            if (approvedChannels.includes('inApp')) {
-                // Mock in-app notification save
-                // await InAppNotification.create({ userId, ...payload });
-                results.push('inApp: queued');
-            }
-
-            if (approvedChannels.includes('email') && user.email) {
-                await dispatchEmail(user.email, payload.subject || 'New Notification', payload.html || 'You have a new update.');
-                results.push('email: sent');
-            }
-
-            if (approvedChannels.includes('push')) {
-                await dispatchPush(userId, payload.title || 'Update', payload.body || 'Check the app for details.');
-                results.push('push: sent');
-            }
-
-            logger.info(`Successfully dispatched notification to channels: ${results.join(', ')}`);
-            return { status: 'success', channels: results };
-        } catch (error) {
-            logger.error(`Notification dispatch failed for user ${userId}:`, error);
-            throw error; // BullMQ will retry based on attempts config
-        }
-    },
-    { connection: redisClient }
-);
 import { Worker, Job } from "bullmq";
 import { connection } from "../queues/connection";
 import { NotificationDispatchJobData } from "../queues/notificationQueue";
@@ -64,8 +6,11 @@ import { generateSavedSearchDigestHtml } from "./emailTemplates";
 import { dbCommand, dbQuery } from "../api/db";
 import { logger } from "../utils/logger";
 import { runSavedSearchMatcher } from "../services/savedSearchMatcherService";
+import { getApprovedChannels, dispatchEmail, dispatchPush } from '../services/multiChannelDeliveryService';
+import { User } from '../models/User';
 
-export const notificationWorker = new Worker<any>(
+// 1. Worker for dispatch-digest and daily-matcher
+export const notificationDigestWorker = new Worker<any>(
   "notificationQueue",
   async (job: Job) => {
     if (job.name === "daily-matcher") {
@@ -114,18 +59,70 @@ export const notificationWorker = new Worker<any>(
   { connection: connection as any }
 );
 
-notificationWorker.on("completed", (job) => {
+notificationDigestWorker.on("completed", (job) => {
   logger.info(`[NotificationWorker] Job ${job.name} (${job.id}) completed successfully`);
 });
 
-notificationWorker.on("failed", (job, err) => {
+notificationDigestWorker.on("failed", (job, err) => {
   logger.error({ err, jobId: job?.id }, `[NotificationWorker] Job ${job?.name} failed`);
 });
 
-let notificationWorkerErrorLogged = false;
-notificationWorker.on("error", (err) => {
-  if (!notificationWorkerErrorLogged) {
+let notificationDigestWorkerErrorLogged = false;
+notificationDigestWorker.on("error", (err) => {
+  if (!notificationDigestWorkerErrorLogged) {
     logger.warn('[NotificationWorker] Redis connection offline. Worker listening paused.');
-    notificationWorkerErrorLogged = true;
+    notificationDigestWorkerErrorLogged = true;
   }
 });
+
+
+// 2. Worker for multi-channel notifications
+export const notificationWorker = new Worker(
+    'multi_channel_notifications',
+    async (job: Job) => {
+        const { userId, eventType, payload, isCritical } = job.data;
+        logger.info(`Processing notification for user ${userId}, type: ${eventType}`);
+
+        try {
+            // 1. Determine approved channels based on user preferences
+            const approvedChannels = await getApprovedChannels(userId, eventType, isCritical);
+
+            if (approvedChannels.length === 0) {
+                logger.info(`No approved channels for user ${userId}, type ${eventType}. Skipping.`);
+                return { status: 'skipped', reason: 'no_approved_channels' };
+            }
+
+            // 2. Fetch user details for delivery
+            const user = await User.findById(userId);
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // 3. Dispatch to approved channels
+            const results = [];
+
+            if (approvedChannels.includes('inApp')) {
+                // Mock in-app notification save
+                // await InAppNotification.create({ userId, ...payload });
+                results.push('inApp: queued');
+            }
+
+            if (approvedChannels.includes('email') && user.email) {
+                await dispatchEmail(user.email, payload.subject || 'New Notification', payload.html || 'You have a new update.');
+                results.push('email: sent');
+            }
+
+            if (approvedChannels.includes('push')) {
+                await dispatchPush(userId, payload.title || 'Update', payload.body || 'Check the app for details.');
+                results.push('push: sent');
+            }
+
+            logger.info(`Successfully dispatched notification to channels: ${results.join(', ')}`);
+            return { status: 'success', channels: results };
+        } catch (error) {
+            logger.error({ err: error }, `Notification dispatch failed for user ${userId}`);
+            throw error;
+        }
+    },
+    { connection: connection as any }
+);

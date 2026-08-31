@@ -1,21 +1,18 @@
 import { Queue, QueueOptions } from 'bullmq';
-import { redisClient } from '../config/redis';
+import { connection, isRedisReady } from "./connection";
 
 /**
  * Queue options for the notification pipeline, including rate limiting and retries.
  */
 const queueOptions: QueueOptions = {
-    connection: redisClient,
+    connection: connection as any,
     defaultJobOptions: {
         attempts: 3,
         backoff: {
             type: 'exponential',
             delay: 2000,
         },
-        rateLimiter: {
-            max: 10, // Max 10 notifications per user per minute
-            duration: 60000,
-        },
+
         removeOnComplete: {
             age: 86400,
             count: 5000,
@@ -47,10 +44,7 @@ export const queueNotification = async (
             jobId: `notif-${userId}-${eventType}-${Date.now()}`,
         }
     );
-import { Queue } from "bullmq";
-import { connection, isRedisReady } from "./connection";
-
-export const notificationQueue = new Queue("notificationQueue", { connection: connection as any });
+};
 
 export interface NotificationDispatchJobData {
   userId: string;

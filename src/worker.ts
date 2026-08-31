@@ -6,7 +6,7 @@ import { initAgentWorker, stopAgentWorker } from "./workers/applicationAgentWork
 import { mentorshipWorker } from "./workers/mentorshipWorker";
 import { mockInterviewWorker } from "./workers/mockInterviewWorker";
 import { exportWorker, closeExportWorker } from "./workers/exportWorker";
-import { notificationWorker } from "./workers/notificationWorker";
+import { notificationWorker, notificationDigestWorker } from "./workers/notificationWorker";
 import { scheduleDailyMatcher } from "./queues/notificationQueue";
 import { opportunityExpiryWorker } from "./workers/opportunityExpiryWorker";
 import { opportunityExpiryQueue } from "./queues/opportunityExpiryQueue";
@@ -50,6 +50,7 @@ const shutdown = async () => {
     mockInterviewWorker.close(),
     opportunityExpiryWorker.close(),
     notificationWorker.close(),
+    notificationDigestWorker.close(),
     closeExportWorker(),
     stopAgentWorker()
   ]);

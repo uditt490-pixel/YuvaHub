@@ -1139,29 +1139,6 @@ export async function createCareerGoal(goalTitle: string, targetRole: string, ta
   return await response.json();
 }
 
-export async function generateContextualCoverLetter(params: {
-  opportunityTitle: string;
-  organization?: string;
-  jobDescription?: string;
-  candidateProfile?: any;
-  customMotivation?: string;
-  tone?: string;
-}) {
-  const response = await fetchWithRetry(`${API_BASE_URL}/ai/cover-letter`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.error || "Failed to generate cover letter");
-  }
-
-  const data = await response.json();
-  return data.data?.coverLetter || data.coverLetter || "";
-}
-
 export async function fetchEmployerPostings() {
   try {
     const headers = await getAuthHeaders();

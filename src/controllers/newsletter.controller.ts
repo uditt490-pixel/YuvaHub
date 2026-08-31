@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { UserPreferences } from '../models/UserPreferences';
 
+import mongoose from 'mongoose';
+
 export const handleUnsubscribe = async (req: Request, res: Response) => {
   try {
     const { userId } = req.query;
@@ -9,7 +11,7 @@ export const handleUnsubscribe = async (req: Request, res: Response) => {
     }
 
     await UserPreferences.updateOne(
-      { userId },
+      { userId: new mongoose.Types.ObjectId(String(userId)) as any },
       { $set: { subscribedToNewsletter: false, unsubscribedAt: new Date() } }
     );
 

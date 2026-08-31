@@ -372,7 +372,6 @@ function App() {
         { id: 'research_patents', label: 'Research IP & Patents', icon: Cpu, badge: 'NEW' },
         { id: 'tech_ecosystem', label: 'Tech Ecosystem Studio', icon: Cpu },
         { id: 'developer_api', label: 'Developer API Portal', icon: Terminal },
-        { id: 'employer_analytics', label: 'Employer Analytics', icon: BarChart3, badge: 'PRO' },
         { id: 'weekly_newsletter', label: 'Weekly Newsletter', icon: Mail, badge: 'AI' },
       ]
     },
@@ -394,20 +393,20 @@ function App() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard />;
-      case 'tech_trends': return <TechTrends />;
-      case 'portfolio_settings': return <PortfolioSettings />;
-      case 'scholarship_screener': return <ScholarshipScreener />;
-      case 'mock_interview_simulator': return <MockInterviewStudio />;
+      case 'dashboard': return <Dashboard/>;
+      case 'tech_trends': return <TechTrends/>;
+      case 'portfolio_settings': return <PortfolioSettings/>;
+      case 'scholarship_screener': return <ScholarshipScreener/>;
+      case 'mock_interview_simulator': return <MockInterviewStudio/>;
 
-      case 'opportunities': return <Opportunities />;
-      case 'application_tracker': return <ApplicationTracker />;
-      case 'deadline_calendar': return <DeadlineCalendar />;
-      case 'teams': return <Teams />;
-      case 'experiences': return <ExperiencesHub />;
-      case 'saved-searches': return <SavedSearchManager />;
-      case 'bookmarks': return <Bookmarks />;
-      case 'leaderboard': return <Leaderboard />;
+      case 'opportunities': return <Opportunities/>;
+      case 'application_tracker': return <ApplicationTracker/>;
+      case 'deadline_calendar': return <DeadlineCalendar/>;
+      case 'teams': return <Teams/>;
+      case 'experiences': return <ExperiencesHub/>;
+      case 'saved-searches': return <SavedSearchManager/>;
+      case 'bookmarks': return <Bookmarks/>;
+      case 'leaderboard': return <Leaderboard/>;
       case 'ai_assistant': return (
         <Suspense fallback={
           <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4">
@@ -419,44 +418,44 @@ function App() {
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Loading AI Assistant...</p>
           </div>
         }>
-          <AIAssistant />
+          <AIAssistant/>
         </Suspense>
       );
-      case 'career_match': return <CareerMatchStudio />;
-      case 'career_goals': return <CareerGoalTracker />;
-      case 'degree_planner': return <DegreePlannerHub />;
-      case 'hackathon_studio': return <HackathonStudio />;
-      case 'developer_api': return <DeveloperApiPortal />;
-      case 'grant_studio': return <GrantFellowshipStudio />;
-      case 'alumni_endowments': return <CampusAlumniEndowmentStudioPage />;
-      case 'student_venture': return <CampusStudentVentureStudioPage />;
+      case 'career_match': return <CareerMatchStudio/>;
+      case 'career_goals': return <CareerGoalTracker/>;
+      case 'degree_planner': return <DegreePlannerHub/>;
+      case 'hackathon_studio': return <HackathonStudio/>;
+      case 'developer_api': return <DeveloperApiPortal/>;
+      case 'grant_studio': return <GrantFellowshipStudio/>;
+      case 'alumni_endowments': return <CampusAlumniEndowmentStudioPage/>;
+      case 'student_venture': return <CampusStudentVentureStudioPage/>;
       case 'mental_wellness': return <div className="p-8 text-center text-gray-500">Mental Wellness Module Coming Soon</div>;
-      case 'campus_alumni': return <CampusAlumniHub />;
-      case 'resume_ats': return <ResumeAtsStudio />;
-      case 'skill_gap': return <SkillGapStudio />;
-      case 'coding_arena': return <CodingChallengeArena />;
-      case 'learning_path': return <LearningPathBuilder />;
-      case 'interview_prep': return <InterviewPrepStudio />;
+      case 'campus_alumni': return <CampusAlumniHub/>;
+      case 'resume_ats': return <ResumeAtsStudio/>;
+      case 'skill_gap': return <SkillGapStudio/>;
+      case 'coding_arena': return <CodingChallengeArena/>;
+      case 'learning_path': return <LearningPathBuilder/>;
+      case 'interview_prep': return <InterviewPrepStudio/>;
       case 'career_sim': return <div className="p-8 text-center text-gray-500">Career Simulator Coming Soon</div>;
-      case 'opensource_bounties': return <OpenSourceBountyStudio />;
-      case 'opportunity_match': return <OpportunityMatchStudio />;
-      case 'tech_ecosystem': return <TechEcosystemStudio />;
-      case 'hackathon_judge': return <HackathonJudgeStudio />;
-      case 'mentorship_advisory': return <MentorshipAdvisoryStudio />;
-      case 'mentor_network': return <MentorshipNetwork />;
-      case 'research_grants': return <ResearchGrantPortal />;
+      case 'opensource_bounties': return <OpenSourceBountyStudio/>;
+      case 'opportunity_match': return <OpportunityMatchStudio/>;
+      case 'tech_ecosystem': return <TechEcosystemStudio/>;
+      case 'hackathon_judge': return <HackathonJudgeStudio/>;
+      case 'mentorship_advisory': return <MentorshipAdvisoryStudio/>;
+      case 'mentor_network': return <MentorshipNetwork/>;
+      case 'research_grants': return <ResearchGrantPortal/>;
       case 'research_patents': return <div className="p-8 text-center text-gray-500">Research & IP Module Coming Soon</div>;
-      case 'project_showcase': return <ProjectShowcaseVault />;
-      case 'portfolio': return <PortfolioShowcase />;
-      case 'achievement_center': return <AchievementCenter />;
-      case 'star_interview': return <StarInterviewStudio />;
-      case 'submit': return <SubmitOpportunity />;
-      case 'mentorship': return <MentorshipAdvisoryStudio />;
-      case 'focus_room': return <FocusRoom />;
+      case 'project_showcase': return <ProjectShowcaseVault/>;
+      case 'portfolio': return <PortfolioShowcase/>;
+      case 'achievement_center': return <AchievementCenter/>;
+      case 'star_interview': return <StarInterviewStudio/>;
+      case 'submit': return <SubmitOpportunity/>;
+      case 'mentorship': return <MentorshipAdvisoryStudio/>;
+      case 'focus_room': return <FocusRoom/>;
       case 'study_groups': return <div className="p-8 text-center text-gray-500">Study Groups Coming Soon</div>;
-      case 'bounty_board': return <BountyBoard />;
-      case 'interview_experiences': return <ExperiencesHub />;
-      case 'community': return <Community />;
+      case 'bounty_board': return <BountyBoard/>;
+      case 'interview_experiences': return <ExperiencesHub/>;
+      case 'community': return <Community/>;
       case 'resource_vault': return <div className="p-8 text-center text-gray-500">Resource Vault Coming Soon</div>;
       case 'poll_studio': return <PollStudio />;
       case 'student_wellness': return <StudentMentalWellnessDeskPage />;
@@ -484,20 +483,20 @@ function App() {
       case 'mock_interview': return <MockInterviewRoom />;
       case 'research_grant_telemetry':
       case 'grant_telemetry': return <div>Telemetry Lab (WIP)</div>;
-      case 'watchlist_manager': return <WatchlistManager />;
-      case 'faq': return <FAQ />;
-      case 'audit_log': return <AuditLogCenter />;
-      case 'devops_pipelines': return <DevopsPipelineHub />;
-      case 'sso_identity': return <SsoIdentityHub />;
-      case 'api_gateway': return <ApiGatewayHub />;
-      case 'comparison_studio': return <ComparisonStudio />;
+      case 'watchlist_manager': return <WatchlistManager/>;
+      case 'faq': return <FAQ/>;
+      case 'audit_log': return <AuditLogCenter/>;
+      case 'devops_pipelines': return <DevopsPipelineHub/>;
+      case 'sso_identity': return <SsoIdentityHub/>;
+      case 'api_gateway': return <ApiGatewayHub/>;
+      case 'comparison_studio': return <ComparisonStudio/>;
 
-      default: return <Dashboard />;
+      default: return <Dashboard/>;
     }
   };
 
   if (loading) {
-    return <LoadingScreen fullScreen={true} />;
+    return <LoadingScreen fullScreen={true}/>;
   }
 
   if ((activeTab === 'legal' || activeTab === 'security' || activeTab === 'support' || activeTab === 'about' || activeTab === 'guidelines') && !user) {
@@ -525,7 +524,7 @@ function App() {
               className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label="Toggle Dark Mode"
             >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {theme === 'dark' ? <Sun className="w-5 h-5"/> : <Moon className="w-5 h-5"/>}
             </button>
             <button onClick={signInWithGoogle} className="px-5 py-2 text-[14px] font-medium bg-blue-600 text-white rounded-[8px] hover:bg-blue-700 transition-colors cursor-pointer">
               Login
@@ -535,11 +534,7 @@ function App() {
 
         {/* Centralized SEO component for public pages */}
         {selectedOppId ? null : (
-          <SEO 
-            title={getSeoPropsForTab(activeTab).title}
-            description={getSeoPropsForTab(activeTab).description}
-            noindex={false}
-          />
+          <SEO description={getSeoPropsForTab(activeTab).description} noindex={false} title={getSeoPropsForTab(activeTab).title}/>
         )}
 
         {/* Content Area */}
@@ -552,8 +547,8 @@ function App() {
               ← Back to Home
             </button>
           </div>
-          <Suspense fallback={<LoadingScreen />}>
-            {activeTab === 'legal' ? <Legal /> : activeTab === 'security' ? <Security /> : activeTab === 'about' ? <AboutTab /> : activeTab === 'guidelines' ? <Guidelines /> : <Support />}
+          <Suspense fallback={<LoadingScreen/>}>
+            {activeTab === 'legal' ? <Legal/> : activeTab === 'security' ? <Security/> : activeTab === 'about' ? <AboutTab/> : activeTab === 'guidelines' ? <Guidelines/> : <Support/>}
           </Suspense>
         </main>
       </div>
@@ -562,8 +557,8 @@ function App() {
 
   if (!user) {
     return (
-      <Suspense fallback={<LoadingScreen fullScreen={true} />}>
-        <SplashAuth />
+      <Suspense fallback={<LoadingScreen fullScreen={true}/>}>
+        <SplashAuth/>
       </Suspense>
     );
   }
@@ -583,8 +578,8 @@ function App() {
 
   if (user && profile && !hasOnboarded) {
     return (
-      <Suspense fallback={<LoadingScreen fullScreen={true} />}>
-        <OnboardingFlow user={user} profile={profile} onComplete={(updated) => {
+      <Suspense fallback={<LoadingScreen fullScreen={true}/>}>
+        <OnboardingFlow profile={profile} user={user} onComplete={(updated) => {
           const finishedProfile = { ...updated, onboarded: true };
           setProfile(finishedProfile);
           if (typeof localStorage !== 'undefined') {
@@ -601,7 +596,7 @@ function App() {
     <CompareProvider>
     <div className="flex h-screen bg-background text-text-primary font-sans overflow-hidden">
       {/* Global accessibility enhancer: focus trap, ARIA labels, Esc handling */}
-      <AccessibilityEnhancer />
+      <AccessibilityEnhancer/>
 
       {/* Skip to main content link for keyboard users */}
       <a
@@ -613,17 +608,13 @@ function App() {
 
       {/* PWA Install Prompt + Global Announcement Banner */}
       <div className="absolute top-0 left-0 right-0 z-[60]">
-        <InstallPrompt />
-        <AnnouncementBanner />
+        <InstallPrompt/>
+        <AnnouncementBanner/>
       </div>
 
       {/* Centralized SEO component for logged-in views */}
       {selectedOppId ? null : (
-        <SEO 
-          title={getSeoPropsForTab(activeTab).title}
-          description={getSeoPropsForTab(activeTab).description}
-          noindex={!PUBLIC_TABS.includes(activeTab)}
-        />
+        <SEO description={getSeoPropsForTab(activeTab).description} noindex={!PUBLIC_TABS.includes(activeTab)} title={getSeoPropsForTab(activeTab).title}/>
       )}
       
       {/* Sidebar Desktop - Fixed 240px */}
@@ -667,7 +658,7 @@ function App() {
                     }`}
                   >
                     <div className="flex items-center gap-2.5 truncate">
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-primary-blue' : 'text-text-muted'}`} aria-hidden="true" />
+                      <Icon aria-hidden="true" className={`w-4 h-4 shrink-0 ${isActive ? 'text-primary-blue dark:text-blue-400' : 'text-text-muted dark:text-gray-500'}`} />
                       <span className="truncate">{tab.label}</span>
                     </div>
                     {tab.badge && (
@@ -709,9 +700,9 @@ function App() {
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          <NotificationDropdown profile={profile} />
+          <NotificationDropdown profile={profile}/>
           <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-text-secondary hover:text-gray-900" aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}>
-            {isMobileMenuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            {isMobileMenuOpen ? <X aria-hidden="true"/> : <Menu aria-hidden="true"/>}
           </button>
         </div>
       </div>
@@ -747,7 +738,7 @@ function App() {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-primary-blue' : 'text-text-muted'}`} aria-hidden="true" />
+                        <Icon aria-hidden="true" className={`w-4 h-4 shrink-0 ${isActive ? 'text-primary-blue' : 'text-text-muted'}`} />
                         <span>{tab.label}</span>
                       </div>
                       {tab.badge && (
@@ -807,7 +798,7 @@ function App() {
            <div className="flex items-center gap-4">
               {user && (
                 <div className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs bg-surface-secondary text-text-secondary border border-border-theme ${karmaBumpFlag ? 'animate-karma-bounce' : ''}`}>
-                  <Sparkles className="w-3.5 h-3.5 text-primary-blue" />
+                  <Sparkles className="w-3.5 h-3.5 text-primary-blue"/>
                   <span>{karmaBalance} Karma</span>
                 </div>
               )}
@@ -817,7 +808,7 @@ function App() {
                   {!isConnected ? 'Disconnected' : (transportMode === 'websocket' ? 'Connected' : 'Polling active')}
                 </span>
               </div>
-              <NotificationDropdown profile={profile} />
+              <NotificationDropdown profile={profile}/>
               {(() => {
                 const avatarSrc = profile?.avatarUrl || user?.photoURL;
                 if (avatarSrc && !avatarError) {
@@ -845,19 +836,19 @@ function App() {
         </div>
 
         <div className="flex-1 p-4 lg:p-6 overflow-y-auto no-scrollbar pb-24">
-          <Suspense fallback={<LoadingScreen />}>
+          <Suspense fallback={<LoadingScreen/>}>
             {selectedOppId ? (
-              <OpportunityDetail />
+              <OpportunityDetail/>
             ) : (
-              <Suspense fallback={<LoadingScreen />}>
+              <Suspense fallback={<LoadingScreen/>}>
                 {renderContent()}
               </Suspense>
             )}
           </Suspense>
         </div>
 
-        <CompareBottomBar />
-        <BackToTopButton />
+        <CompareBottomBar/>
+        <BackToTopButton/>
       </main>
 
     </div>

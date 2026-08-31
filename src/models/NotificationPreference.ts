@@ -58,7 +58,7 @@ const notificationPreferenceSchema = new Schema<INotificationPreference>(
 );
 
 // Ensure all event types are initialized for new users
-notificationPreferenceSchema.pre('save', function (next) {
+notificationPreferenceSchema.pre('save', function (next: any) {
     const defaultEventTypes = [
         'new_match', 'event_reminder', 'waitlist_promoted',
         'message_received', 'badge_earned', 'system_announcement'

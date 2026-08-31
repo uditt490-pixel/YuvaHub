@@ -1,3 +1,4 @@
+import { logger } from "./src/lib/logger.js";
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
@@ -28,6 +29,10 @@ import { shutdownGuard } from "./src/api/middlewares/security/shutdownGuard.js";
 
 dotenv.config();
 
+import { requestLogger } from "./src/lib/requestLogger.js";
+import { registry } from "./src/lib/metrics/registry.js";
+
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -48,16 +53,16 @@ try {
   let redisErrorLogged = false;
   redisClient.on('error', (err) => {
     if (!redisErrorLogged) {
-      console.warn('[Redis] Connection failed or Redis is not running. Bypassing rate limiting (fail-open mode).');
+      logger.warn('[Redis] Connection failed or Redis is not running. Bypassing rate limiting (fail-open mode).');
       redisErrorLogged = true;
     }
   });
   redisClient.on('connect', () => {
-    console.log('[Redis] Connected successfully');
+    logger.info('[Redis] Connected successfully');
     redisErrorLogged = false;
   });
 } catch (e: any) {
-  console.error('[Redis] Init error:', e.message);
+  logger.error({ err: e.message }, '[Redis] Init error:');
 }
 
 const createFailOpenStore = (prefix: string) => {
@@ -73,13 +78,13 @@ const createFailOpenStore = (prefix: string) => {
     ...store,
     increment: async (key: string) => {
       if (!redisClient || redisClient.status !== 'ready') {
-        console.error(`[RateLimit] Redis disconnected. Failing open for key: ${key}`);
+        logger.error(`[RateLimit] Redis disconnected. Failing open for key: ${key}`);
         return { totalHits: 1, resetTime: new Date(Date.now() + 60000) };
       }
       try {
         return await store.increment(key);
       } catch (err: any) {
-        console.error(`[RateLimit] Redis error. Failing open for key: ${key}`);
+        logger.error(`[RateLimit] Redis error. Failing open for key: ${key}`);
         return { totalHits: 1, resetTime: new Date(Date.now() + 60000) };
       }
     },
@@ -121,7 +126,7 @@ let _genAI: GoogleGenAI | null = null;
 function getGenAI() {
   if (!_genAI) {
     if (!process.env.GEMINI_API_KEY) {
-       console.warn("GEMINI_API_KEY not set. AI features will fallback.");
+       logger.warn("GEMINI_API_KEY not set. AI features will fallback.");
        return null;
     }
     _genAI = new GoogleGenAI({
@@ -441,7 +446,7 @@ async function getRankedOpportunities(database: any, profile: any, page: number,
       next_page
     };
   } catch (scoreErr) {
-    console.error("Scoring failure:", scoreErr);
+    logger.error({ err: scoreErr }, "Scoring failure:");
     return { items: [], next_page: null };
   }
 }
@@ -542,9 +547,9 @@ function setupDNL(database: any) {
     dispatcher.registerAdapter(new DevpostAdapter());
     dispatcher.registerAdapter(new InternshalaAdapter());
     dispatcher.start(3600000); // 1 hour
-    console.log("[DNL] Scheduler initialized and started.");
+    logger.info("[DNL] Scheduler initialized and started.");
   }).catch(err => {
-    console.error("[DNL] Setup failed:", err);
+    logger.error({ err: err }, "[DNL] Setup failed:");
   });
 }
 
@@ -552,20 +557,20 @@ if (uri) {
   const client = new MongoClient(uri);
   client.connect().then(() => {
     db = client.db(dbName);
-    console.log(`[Database] Connected to MongoDB: ${dbName}`);
+    logger.info(`[Database] Connected to MongoDB: ${dbName}`);
     setupDNL(db);
     
     // Create required compound indexes asynchronously
     db.collection("opportunities").createIndex({ created_at: -1, source_quality_score: -1 })
-      .then(() => console.log(`[Database] Created compound index on opportunities`))
-      .catch((err: any) => console.error(`[Database] Failed to create index:`, err));
+      .then(() => logger.info(`[Database] Created compound index on opportunities`))
+      .catch((err: any) => logger.error({ err: err }, `[Database] Failed to create index:`));
   }).catch(err => {
-    console.error("[Database] Connection failed, falling back to Mock Data:", err);
+    logger.error({ err: err }, "[Database] Connection failed, falling back to Mock Data:");
     db = new MockDB();
     setupDNL(db);
   });
 } else {
-  console.log("[Database] No MONGODB_URI provided. Running in Offline Mock mode.");
+  logger.info("[Database] No MONGODB_URI provided. Running in Offline Mock mode.");
   db = new MockDB();
   setupDNL(db);
 }
@@ -591,7 +596,7 @@ class AnalyticsBuffer {
 
   private startInterval() {
     this.flushInterval = setInterval(() => {
-      this.flush().catch(err => console.error("[AnalyticsBuffer] Auto-flush error:", err));
+      this.flush().catch(err => logger.error({ err: err }, "[AnalyticsBuffer] Auto-flush error:"));
     }, this.intervalMs);
   }
 
@@ -612,13 +617,13 @@ class AnalyticsBuffer {
           bulk.insert(doc);
         }
         await bulk.execute();
-        console.log(`[AnalyticsBuffer] Flushed ${batch.length} events to MongoDB.`);
+        logger.info(`[AnalyticsBuffer] Flushed ${batch.length} events to MongoDB.`);
       } else {
         this.buffer.unshift(...batch);
-        console.warn(`[AnalyticsBuffer] DB not ready. Re-queued ${batch.length} events.`);
+        logger.warn(`[AnalyticsBuffer] DB not ready. Re-queued ${batch.length} events.`);
       }
     } catch (err) {
-      console.error("[AnalyticsBuffer] Error flushing batch:", err);
+      logger.error({ err: err }, "[AnalyticsBuffer] Error flushing batch:");
       this.buffer.unshift(...batch);
     } finally {
       this.isFlushing = false;
@@ -639,13 +644,13 @@ let isShuttingDown = false;
 const gracefulShutdown = async (signal: string) => {
   if (isShuttingDown) return;
   isShuttingDown = true;
-  console.log(`[System] Received ${signal}. Starting graceful shutdown...`);
+  logger.info(`[System] Received ${signal}. Starting graceful shutdown...`);
   try {
     analyticsBuffer.stop();
     await analyticsBuffer.flush();
-    console.log("[System] Analytics buffer flushed successfully.");
+    logger.info("[System] Analytics buffer flushed successfully.");
   } catch (err) {
-    console.error("[System] Error during graceful shutdown analytics flush:", err);
+    logger.error({ err: err }, "[System] Error during graceful shutdown analytics flush:");
   } finally {
     process.exit(0);
   }
@@ -659,6 +664,7 @@ export let io: Server;
 
 async function startServer() {
   const app = express();
+  app.use(requestLogger);
   const server = http.createServer(app);
   
   const frontendUrl = process.env.FRONTEND_URL;
@@ -677,6 +683,16 @@ async function startServer() {
   });
 
   app.use(securityPipeline());
+
+  app.get("/api/v1/metrics", async (req, res) => {
+    try {
+      res.set("Content-Type", registry.contentType);
+      res.end(await registry.metrics());
+    } catch (err) {
+      res.status(500).end(err);
+    }
+  });
+
 
   app.post("/api/analytics/track", validateRequest(z.object({ body: analyticsTrackSchema })), (req, res) => {
     analyticsBuffer.push(req.body);
@@ -838,7 +854,7 @@ async function startServer() {
         items: result.items
       });
     } catch(err) {
-      console.error("/api/v1/opportunities error:", err);
+      logger.error({ err: err }, "/api/v1/opportunities error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -894,7 +910,7 @@ async function startServer() {
         items
       });
     } catch(err) {
-      console.error("/api/v1/opportunities/latest error:", err);
+      logger.error({ err: err }, "/api/v1/opportunities/latest error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -916,7 +932,7 @@ async function startServer() {
           const config = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
           firebaseApiKey = config.apiKey || "";
         } catch (e) {
-          console.error("[Auth] Error parsing firebase-applet-config.json:", e);
+          logger.error({ err: e }, "[Auth] Error parsing firebase-applet-config.json:");
         }
       }
 
@@ -936,7 +952,7 @@ async function startServer() {
 
         if (!verifyRes.ok) {
           const errData = await verifyRes.json().catch(() => ({}));
-          console.error("[Auth] Firebase token verification failed:", errData);
+          logger.error({ err: errData }, "[Auth] Firebase token verification failed:");
           return res.status(401).json({ error: "Unauthorized: Invalid token" });
         }
 
@@ -1043,7 +1059,7 @@ async function startServer() {
       });
 
     } catch (err: any) {
-      console.error("[Auth] Error syncing user:", err);
+      logger.error({ err: err }, "[Auth] Error syncing user:");
       res.status(500).json({ error: "Internal Server Error during auth sync" });
     }
   });
@@ -1064,7 +1080,7 @@ async function startServer() {
         const config = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
         firebaseApiKey = config.apiKey || "";
       } catch (e) {
-        console.error("[Auth] Error parsing firebase-applet-config.json:", e);
+        logger.error({ err: e }, "[Auth] Error parsing firebase-applet-config.json:");
       }
     }
 
@@ -1183,7 +1199,7 @@ async function startServer() {
       });
 
     } catch (err: any) {
-      console.error("[Storage] Error generating signature:", err);
+      logger.error({ err: err }, "[Storage] Error generating signature:");
       res.status(err.message?.startsWith("Unauthorized") ? 401 : 500).json({ error: err.message || "Internal Server Error" });
     }
   };
@@ -1240,7 +1256,7 @@ async function startServer() {
       });
 
     } catch (err: any) {
-      console.error("[Storage] Error saving upload metadata:", err);
+      logger.error({ err: err }, "[Storage] Error saving upload metadata:");
       res.status(err.message?.startsWith("Unauthorized") ? 401 : 500).json({ error: err.message || "Internal Server Error" });
     }
   };
@@ -1457,7 +1473,7 @@ Sincerely,
         const isTimeout = err?.message?.toLowerCase().includes('timeout') || err?.message?.toLowerCase().includes('abort');
         const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Quota exceeded') || err?.message?.includes('RESOURCE_EXHAUSTED');
         if (is503 || isTimeout || is429) {
-          console.log(`[AI Routing] Switchover triggered due to temporary limit.`);
+          logger.info(`[AI Routing] Switchover triggered due to temporary limit.`);
           try {
             const response = await ai.models.generateContent({
               model: "gemini-3.1-flash-lite",
@@ -1465,7 +1481,7 @@ Sincerely,
             });
             responseText = response.text || "";
           } catch (liteErr: any) {
-            console.log(`[AI Routing] Alternate model restriction. Invoking static fallback strategy.`);
+            logger.info(`[AI Routing] Alternate model restriction. Invoking static fallback strategy.`);
             responseText = getAIFallback(prompt, !!expectJson);
           }
         } else {
@@ -1536,7 +1552,7 @@ Return JSON strictly in this format:
         const isTimeout = err?.message?.toLowerCase().includes('timeout') || err?.message?.toLowerCase().includes('abort');
         const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Quota exceeded') || err?.message?.includes('RESOURCE_EXHAUSTED');
         if (is503 || isTimeout || is429) {
-          console.log(`[AI Routing] Review switchover active.`);
+          logger.info(`[AI Routing] Review switchover active.`);
           try {
             const response = await ai.models.generateContent({
               model: "gemini-3.1-flash-lite",
@@ -1545,7 +1561,7 @@ Return JSON strictly in this format:
             });
             responseText = response.text || "";
           } catch (liteErr) {
-            console.log(`[AI Routing] Review fallback activated.`);
+            logger.info(`[AI Routing] Review fallback activated.`);
           }
         }
       }
@@ -1607,7 +1623,7 @@ Return JSON strictly in this format:
 
       const ai = getGenAI();
       if (!ai) {
-        console.warn("Gemini AI client not available, returning fallback.");
+        logger.warn("Gemini AI client not available, returning fallback.");
         return res.json(defaultFallback);
       }
 
@@ -1651,7 +1667,7 @@ Return JSON strictly in this format:
         });
         responseText = response.text || "";
       } catch (err: any) {
-        console.error("Gemini API call failed:", err);
+        logger.error({ err: err }, "Gemini API call failed:");
         // Fallback to older model if rate limited or failed
         try {
           const response = await ai.models.generateContent({
@@ -1661,7 +1677,7 @@ Return JSON strictly in this format:
           });
           responseText = response.text || "";
         } catch (liteErr) {
-          console.error("Gemini Alternate model failed:", liteErr);
+          logger.error({ err: liteErr }, "Gemini Alternate model failed:");
         }
       }
 
@@ -1683,7 +1699,7 @@ Return JSON strictly in this format:
       setCachedResponse(cacheKey, parsed);
       res.json(parsed);
     } catch (err) {
-      console.error("/api/ai/analyze-resume error:", err);
+      logger.error({ err: err }, "/api/ai/analyze-resume error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -1768,7 +1784,7 @@ Guidelines:
         });
         responseText = response.text || "";
       } catch (err: any) {
-        console.warn("Primary AI model generation failed for cover letter:", err?.message);
+        logger.warn({ err: err?.message }, "Primary AI model generation failed for cover letter:");
         try {
           const response = await ai.models.generateContent({
             model: "gemini-3.1-flash-lite",
@@ -1787,7 +1803,7 @@ Guidelines:
       setCachedResponse(cacheKey, responseText.trim());
       return res.json({ success: true, coverLetter: responseText.trim() });
     } catch (err) {
-      console.error("/api/v1/ai/cover-letter error:", err);
+      logger.error({ err: err }, "/api/v1/ai/cover-letter error:");
       return res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -1929,7 +1945,7 @@ Guidelines:
         meta: { query: q, total_found: mapped.length }
       });
     } catch(err) {
-      console.error("/api/v1/search error:", err);
+      logger.error({ err: err }, "/api/v1/search error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -1969,7 +1985,7 @@ Guidelines:
       delete mapped._id;
       res.json(mapped);
     } catch (err) {
-      console.error("/api/v1/opportunity/:id error:", err);
+      logger.error({ err: err }, "/api/v1/opportunity/:id error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2013,36 +2029,36 @@ Guidelines:
   // --- Native Node.js Background Scheduler Daemon Service ---
   try {
     const { spawn } = await import("child_process");
-    console.log("[System] Initializing centralized Node.js Background Scheduler...");
+    logger.info("[System] Initializing centralized Node.js Background Scheduler...");
     
     // Periodically run the Native scraping pipeline every 12 hours (43200000ms)
     setInterval(() => {
-      console.log("[System] Triggering scheduled Node.js pipeline run...");
+      logger.info("[System] Triggering scheduled Node.js pipeline run...");
       const schedulerProc = spawn("npx", ["tsx", "scrape-cli.ts"], {
         cwd: process.cwd(),
         env: { ...process.env }
       });
       
       schedulerProc.stdout.on("data", (data) => {
-        console.log(`[Node Scheduler Log]: ${data.toString().trim()}`);
+        logger.info(`[Node Scheduler Log]: ${data.toString().trim()}`);
       });
       
       schedulerProc.stderr.on("data", (data) => {
-        console.error(`[Node Scheduler Error]: ${data.toString().trim()}`);
+        logger.error(`[Node Scheduler Error]: ${data.toString().trim()}`);
       });
 
       schedulerProc.on("error", (err) => {
-        console.error("[System] Node Background Scheduler failed to spawn or run:", err);
+        logger.error({ err: err }, "[System] Node Background Scheduler failed to spawn or run:");
       });
 
       schedulerProc.on("close", (code) => {
-        console.log(`[System] Scheduled Native Pipeline exited with code ${code}.`);
+        logger.info(`[System] Scheduled Native Pipeline exited with code ${code}.`);
       });
     }, 43200000); // 12 hours
     
-    console.log("[System] Scheduled pipeline initialized to run natively every 12 hours.");
+    logger.info("[System] Scheduled pipeline initialized to run natively every 12 hours.");
   } catch (err) {
-    console.error("[System] Failed to initialize Node Background Scheduler:", err);
+    logger.error({ err: err }, "[System] Failed to initialize Node Background Scheduler:");
   }
 
   // --- Admin Routes ---
@@ -2155,7 +2171,7 @@ Guidelines:
       
       res.json(adminScrapers);
     } catch (err) {
-      console.error("Admin scrapers fetch error:", err);
+      logger.error({ err: err }, "Admin scrapers fetch error:");
       res.status(500).json([]);
     }
   });
@@ -2202,14 +2218,14 @@ Guidelines:
         cwd: process.cwd(),
         env: { ...process.env }
       });
-      child.stdout.on("data", (data) => console.log(`[Manual Node Trigger Stdout]: ${data}`));
-      child.stderr.on("data", (data) => console.error(`[Manual Node Trigger Stderr]: ${data}`));
+      child.stdout.on("data", (data) => logger.info(`[Manual Node Trigger Stdout]: ${data}`));
+      child.stderr.on("data", (data) => logger.error(`[Manual Node Trigger Stderr]: ${data}`));
       child.on("error", (err) => {
-        console.error("[Manual Node Trigger] Child process error (failed to spawn or crashed):", err);
+        logger.error({ err: err }, "[Manual Node Trigger] Child process error (failed to spawn or crashed):");
       });
       res.json({ message: "Node.js Central Ingestion pipeline triggered asynchronously." });
     } catch (err: any) {
-      console.error("Manual Node trigger failed:", err);
+      logger.error({ err: err }, "Manual Node trigger failed:");
       res.status(500).json({ error: "Failed to run Node.js central pipeline." });
     }
   });
@@ -2280,7 +2296,7 @@ Guidelines:
           }
         });
       } catch (err) {
-        console.error("[Sitemap] Error fetching dynamic opportunity links:", err);
+        logger.error({ err: err }, "[Sitemap] Error fetching dynamic opportunity links:");
       }
     }
     
@@ -2351,7 +2367,7 @@ Guidelines:
         }
         item = await db.collection("opportunities").findOne(query);
       } catch (err) {
-        console.error("[SEO Interceptor] MongoDB fetch failed:", err);
+        logger.error({ err: err }, "[SEO Interceptor] MongoDB fetch failed:");
       }
     }
 
@@ -2365,7 +2381,7 @@ Guidelines:
       const fs = await import("fs");
       indexHtml = fs.readFileSync(indexPath, "utf-8");
     } catch (err) {
-      console.error("[SEO Interceptor] Failed to read index.html template:", err);
+      logger.error({ err: err }, "[SEO Interceptor] Failed to read index.html template:");
       return res.status(500).send("System template error");
     }
 
@@ -2499,7 +2515,7 @@ Guidelines:
       const result = await collection.insertOne(report);
       res.status(201).json({ id: result.insertedId, ...report });
     } catch (err) {
-      console.error("Error submitting report:", err);
+      logger.error({ err: err }, "Error submitting report:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2530,7 +2546,7 @@ Guidelines:
         next_page: skip + limit < total ? page + 1 : null
       });
     } catch (err) {
-      console.error("Error fetching reports:", err);
+      logger.error({ err: err }, "Error fetching reports:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2583,7 +2599,7 @@ Guidelines:
 
       res.json(updatedReport);
     } catch (err) {
-      console.error("Error updating report:", err);
+      logger.error({ err: err }, "Error updating report:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2764,7 +2780,7 @@ ${JSON.stringify(userProfile, null, 2)}
 
       res.json(validatedOutput);
     } catch (err: any) {
-      console.error("AI Validation Error:", err);
+      logger.error({ err: err }, "AI Validation Error:");
       if (err instanceof z.ZodError) {
          return res.status(502).json({ error: "AI generated invalid schema", details: err.issues });
       }
@@ -2798,7 +2814,7 @@ ${JSON.stringify(userProfile, null, 2)}
       const result = await db.collection("posts").insertOne(post);
       res.status(201).json({ ...post, _id: result.insertedId });
     } catch (err) {
-      console.error("Create Post Error:", err);
+      logger.error({ err: err }, "Create Post Error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2822,7 +2838,7 @@ ${JSON.stringify(userProfile, null, 2)}
       }
       res.json(post);
     } catch (err) {
-      console.error("Fetch Post Error:", err);
+      logger.error({ err: err }, "Fetch Post Error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2873,7 +2889,7 @@ ${JSON.stringify(userProfile, null, 2)}
       await db.collection("comments").insertOne(comment);
       res.status(201).json(comment);
     } catch (err) {
-      console.error("Create Comment Error:", err);
+      logger.error({ err: err }, "Create Comment Error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2910,7 +2926,7 @@ ${JSON.stringify(userProfile, null, 2)}
       }
       res.json(updatedComment);
     } catch (err) {
-      console.error("Edit Comment Error:", err);
+      logger.error({ err: err }, "Edit Comment Error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2928,7 +2944,7 @@ ${JSON.stringify(userProfile, null, 2)}
 
       res.json(comments);
     } catch (err) {
-      console.error("Fetch Comments Error:", err);
+      logger.error({ err: err }, "Fetch Comments Error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2966,7 +2982,7 @@ ${JSON.stringify(userProfile, null, 2)}
 
       res.json({ success: true, message: "Post upvoted successfully" });
     } catch (err) {
-      console.error("Upvote Post Error:", err);
+      logger.error({ err: err }, "Upvote Post Error:");
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
@@ -2987,11 +3003,11 @@ ${JSON.stringify(userProfile, null, 2)}
 
   // --- Socket.io Real-Time Pipeline ---
   io.on("connection", (socket) => {
-    console.log(`[Socket] Client connected: ${socket.id}`);
+    logger.info(`[Socket] Client connected: ${socket.id}`);
     socket.emit("connected", { status: "ready" });
     
     socket.on("disconnect", () => {
-      console.log(`[Socket] Client disconnected: ${socket.id}`);
+      logger.info(`[Socket] Client disconnected: ${socket.id}`);
     });
   });
 
@@ -3011,7 +3027,7 @@ ${JSON.stringify(userProfile, null, 2)}
   }, 45000); // every 45s for demo
 
   server.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    logger.info(`Server running on http://localhost:${PORT}`);
 
     // Run startup health checks for all configured services
     logStartupHealthReport({
@@ -3019,7 +3035,7 @@ ${JSON.stringify(userProfile, null, 2)}
       geminiApiKey: process.env.GEMINI_API_KEY,
       firebaseInitialized: !!process.env.FIREBASE_SERVICE_ACCOUNT_BASE64,
     }).catch((err) => {
-      console.error("[Health] Startup health check failed:", err);
+      logger.error({ err: err }, "[Health] Startup health check failed:");
     });
     
     // Auto-open browser in development mode

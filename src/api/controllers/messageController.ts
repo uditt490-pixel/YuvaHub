@@ -17,7 +17,7 @@ export const getConversationHistory = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, error: 'User IDs are required' });
         }
 
-        const conversationId = getConversationId(userId, otherUserId);
+        const conversationId = getConversationId(String(userId), String(otherUserId));
 
         const messages = await DirectMessage.find({ conversationId })
             .sort({ createdAt: -1 })

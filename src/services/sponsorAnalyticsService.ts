@@ -1,5 +1,5 @@
 import { redisClient } from '../config/redis';
-import { SponsorTier } from '../models/SponsorTier';
+import { SponsorTier, ISponsorTier } from '../models/SponsorTier';
 import { logger } from '../utils/logger';
 
 /**
@@ -23,15 +23,16 @@ export const recordSponsorEngagement = async (sponsorId: string, actionType: key
     try {
         const points = ENGAGEMENT_WEIGHTS[actionType];
         const redisKey = `sponsor_engagement:${sponsorId}`;
+        const client = redisClient as any;
 
         // Increment score in Redis sorted set (or simple string for single value)
-        const newScore = await redisClient.incrBy(redisKey, points);
+        const newScore = await (client.incrBy ? client.incrBy(redisKey, points) : client.incrby(redisKey, points));
 
         // Update specific metric counters in Redis hashes
         if (actionType === 'RESOURCE_DOWNLOAD') {
-            await redisClient.hIncrBy(`sponsor_metrics:${sponsorId}`, 'resourcesProvided', 1);
+            await (client.hIncrBy ? client.hIncrBy(`sponsor_metrics:${sponsorId}`, 'resourcesProvided', 1) : client.hincrby(`sponsor_metrics:${sponsorId}`, 'resourcesProvided', 1));
         } else if (actionType === 'BOOTH_VISIT') {
-            await redisClient.hIncrBy(`sponsor_metrics:${sponsorId}`, 'boothVisits', 1);
+            await (client.hIncrBy ? client.hIncrBy(`sponsor_metrics:${sponsorId}`, 'boothVisits', 1) : client.hincrby(`sponsor_metrics:${sponsorId}`, 'boothVisits', 1));
         }
 
         // Check for tier upgrade
@@ -82,7 +83,8 @@ export const syncSponsorMetricsToDB = async () => {
 
             if (scoreStr) {
                 const score = parseInt(scoreStr, 10);
-                const metrics = await redisClient.hGetAll(`sponsor_metrics:${sponsor._id}`);
+                const client = redisClient as any;
+                const metrics = await (client.hGetAll ? client.hGetAll(`sponsor_metrics:${sponsor._id}`) : client.hgetall(`sponsor_metrics:${sponsor._id}`));
 
                 sponsor.engagementScore = score;
                 if (metrics.resourcesProvided) sponsor.resourcesProvided = parseInt(metrics.resourcesProvided, 10);

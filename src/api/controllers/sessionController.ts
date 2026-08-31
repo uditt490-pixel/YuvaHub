@@ -53,7 +53,7 @@ export const proposeSession = async (req: Request, res: Response) => {
         }
 
         const newSession = await EventSession.create({
-            eventId,
+            eventId: String(eventId),
             title,
             description,
             proposerId: userId,

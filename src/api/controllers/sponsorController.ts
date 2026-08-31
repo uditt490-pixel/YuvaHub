@@ -20,7 +20,7 @@ export const getSponsorLeaderboard = async (req: Request, res: Response) => {
             data: sponsors,
         });
     } catch (error) {
-        logger.error('Error fetching sponsor leaderboard:', error);
+        logger.error({ error }, 'Error fetching sponsor leaderboard:');
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 };
@@ -54,7 +54,7 @@ export const getSponsorAnalytics = async (req: Request, res: Response) => {
             },
         });
     } catch (error) {
-        logger.error('Error fetching sponsor analytics:', error);
+        logger.error({ error }, 'Error fetching sponsor analytics:');
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 };
@@ -74,7 +74,7 @@ export const trackSponsorInteraction = async (req: Request, res: Response) => {
 
         res.status(200).json({ success: true, message: 'Interaction recorded' });
     } catch (error) {
-        logger.error('Error tracking sponsor interaction:', error);
+        logger.error({ error }, 'Error tracking sponsor interaction:');
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 };

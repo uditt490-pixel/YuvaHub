@@ -7,6 +7,10 @@ import cors from "cors";
 import { fileURLToPath } from "url";
 import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
+const wrapUserInput = (input: string | undefined | null) => {
+  return input ? `"""${input}"""` : "";
+};
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { z } from "zod";
 import { ScholarshipSchema, AIEvaluationResponseSchema } from "./src/models/scholarshipSchema.js";
@@ -19,6 +23,8 @@ import { authMiddleware } from "./src/api/middlewares/auth.js";
 import { requestExport, getExportHistory } from "./src/api/controllers/exportController.js";
 import { logStartupHealthReport } from "./src/api/services/healthService.js";
 import { AICacheMetrics } from "./src/api/services/aiCacheMetrics.js";
+import { securityPipeline } from "./src/api/middlewares/security/index.js";
+import { shutdownGuard } from "./src/api/middlewares/security/shutdownGuard.js";
 
 dotenv.config();
 
@@ -455,6 +461,16 @@ import { DNLDispatcher } from "./src/services/dnl/scheduler.js";
 import { DevpostAdapter } from "./src/services/dnl/adapters/DevpostAdapter.js";
 import { InternshalaAdapter } from "./src/services/dnl/adapters/InternshalaAdapter.js";
 
+import { validateRequest } from "./src/api/middlewares/validateRequest.js";
+import { authSyncSchema } from "./src/schemas/authSchema.js";
+import { interactionTrackSchema } from "./src/schemas/interactionSchema.js";
+import { aiGenerateSchema, aiResumeReviewSchema, aiCoverLetterSchema } from "./src/schemas/aiSchema.js";
+import { searchQuerySchema, opportunityQuerySchema, escapeRegex } from "./src/schemas/searchSchema.js";
+import { storageSignatureSchema, storageSaveSchema } from "./src/schemas/storageSchema.js";
+import { analyticsTrackSchema } from "./src/schemas/analyticsSchema.js";
+import { reportOpportunitySchema } from "./src/schemas/reportSchema.js";
+import { createPostSchema, commentPostSchema, upvotePostSchema } from "./src/schemas/postSchema.js";
+
 let db: any = null;
 
 // VERY simple mock DB for offline fallback
@@ -660,15 +676,14 @@ async function startServer() {
     next();
   });
 
-  app.use(cors(corsOptions));
-  app.use(express.json({ limit: '10mb' }));
+  app.use(securityPipeline());
 
-  app.post("/api/analytics/track", (req, res) => {
+  app.post("/api/analytics/track", validateRequest(z.object({ body: analyticsTrackSchema })), (req, res) => {
     analyticsBuffer.push(req.body);
     res.status(202).json({ status: "Accepted" });
   });
 
-  app.post("/api/analytics/shutdown", async (req, res) => {
+  app.post("/api/analytics/shutdown", shutdownGuard, async (req, res) => {
     res.status(200).json({ status: "Shutting down" });
     await gracefulShutdown("API_TRIGGER");
   });
@@ -793,7 +808,7 @@ async function startServer() {
   app.get("/api/v1/export/history", authMiddleware, getExportHistory);
 
   // --- Real API Routes ---
-  app.get("/api/v1/opportunities", async (req, res) => {
+  app.get("/api/v1/opportunities", validateRequest(z.object({ query: opportunityQuerySchema })), async (req, res) => {
     try {
       let page = parseInt((req.query.page as string) || "1", 10);
       if (req.query.cursor) {
@@ -828,7 +843,7 @@ async function startServer() {
     }
   });
 
-  app.get("/api/v1/opportunities/trending", async (req, res) => {
+  app.get("/api/v1/opportunities/trending", validateRequest(z.object({ query: opportunityQuerySchema })), async (req, res) => {
     try {
       if (!db) {
         return res.json({ num_results: 0, next_page: null, next_cursor: null, items: [] });
@@ -848,7 +863,7 @@ async function startServer() {
     }
   });
 
-  app.get("/api/v1/opportunities/latest", async (req, res) => {
+  app.get("/api/v1/opportunities/latest", validateRequest(z.object({ query: opportunityQuerySchema })), async (req, res) => {
     try {
       if (!db) {
         return res.json({ num_results: 0, items: [] });
@@ -884,7 +899,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/v1/auth/sync", async (req, res) => {
+  app.post("/api/v1/auth/sync", validateRequest(z.object({ body: authSyncSchema })), async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -1235,7 +1250,7 @@ async function startServer() {
   app.post("/api/storage/save", handleSaveUpload);
   app.post("/api/v1/storage/save", handleSaveUpload);
 
-  app.post("/api/v1/interactions/track", async (req, res) => {
+  app.post("/api/v1/interactions/track", validateRequest(z.object({ body: interactionTrackSchema })), async (req, res) => {
     try {
       if (db && req.body) {
         await db.collection("interactions").insertOne({
@@ -1411,7 +1426,7 @@ Sincerely,
     return "I am here to help you navigate academic choices, resume reviews, track development milestones, and match with elite engineering fellowships!";
   }
 
-  app.post("/api/v1/ai/generate", chatRateLimiter, async (req, res) => {
+  app.post("/api/v1/ai/generate", chatRateLimiter, validateRequest(z.object({ body: aiGenerateSchema })), async (req, res) => {
     try {
       const { prompt, expectJson } = req.body;
       if (!prompt) return res.status(400).json({ error: "No prompt" });
@@ -1474,7 +1489,7 @@ Sincerely,
     }
   });
 
-  app.post("/api/v1/ai/resume_review", resumeRateLimiter, async (req, res) => {
+  app.post("/api/v1/ai/resume_review", resumeRateLimiter, validateRequest(z.object({ body: aiResumeReviewSchema })), async (req, res) => {
     try {
       const { resume } = req.body;
       if (!resume) return res.status(400).json({ error: "No resume provided" });
@@ -1563,7 +1578,7 @@ Return JSON strictly in this format:
     }
   });
 
-  app.post("/api/ai/analyze-resume", resumeRateLimiter, async (req, res) => {
+  app.post("/api/ai/analyze-resume", resumeRateLimiter, validateRequest(z.object({ body: aiResumeReviewSchema })), async (req, res) => {
     try {
       const { resumeBase64, fileName, jobDescription, resumeText } = req.body;
       if (!resumeBase64 && !resumeText) {
@@ -1673,7 +1688,7 @@ Return JSON strictly in this format:
     }
   });
 
-  app.post("/api/v1/ai/cover-letter", chatRateLimiter, async (req, res) => {
+  app.post("/api/v1/ai/cover-letter", chatRateLimiter, validateRequest(z.object({ body: aiCoverLetterSchema })), async (req, res) => {
     try {
       const { opportunityTitle, organization, jobDescription, candidateProfile, customMotivation, tone } = req.body;
 
@@ -1714,6 +1729,7 @@ Sincerely,
 ${candidateName}`;
 
       const ai = getGenAI();
+      function wrapUserInput(text: string) { return text ? `\n<user_input>\n${text}\n</user_input>\n` : 'Not provided'; }
       if (!ai) {
         return res.json({ success: true, coverLetter: defaultFallback });
       }
@@ -1777,7 +1793,7 @@ Guidelines:
   });
 
 
-  app.get("/api/v1/search", async (req, res) => {
+  app.get("/api/v1/search", validateRequest(z.object({ query: searchQuerySchema })), async (req, res) => {
     try {
       const q = (req.query.q as string) || "";
       const typesStr = req.query.types as string;

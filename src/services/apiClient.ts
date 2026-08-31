@@ -1139,6 +1139,69 @@ export async function createCareerGoal(goalTitle: string, targetRole: string, ta
   return await response.json();
 }
 
+export async function generateContextualCoverLetter(params: {
+  opportunityTitle: string;
+  organization?: string;
+  jobDescription?: string;
+  candidateProfile?: any;
+  customMotivation?: string;
+  tone?: string;
+}) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/ai/cover-letter`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to generate cover letter");
+  }
+
+  const data = await response.json();
+  return data.data?.coverLetter || data.coverLetter || "";
+}
+
+export async function fetchEmployerPostings() {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetchWithRetry(`${API_BASE_URL}/employer/postings`, {
+      method: "GET",
+      headers,
+    });
+    if (!response.ok) {
+      return [];
+    }
+    const data = await response.json();
+    return data.data?.postings || data.postings || [];
+  } catch (error) {
+    console.error("Failed to fetch employer postings:", error);
+    return [];
+  }
+}
+
+export async function fetchEmployerAnalytics(params: { timeframe?: string; opportunityId?: string } = {}) {
+  try {
+    const headers = await getAuthHeaders();
+    const searchParams = new URLSearchParams();
+    if (params.timeframe) searchParams.append("timeframe", params.timeframe);
+    if (params.opportunityId) searchParams.append("opportunityId", params.opportunityId);
+
+    const response = await fetchWithRetry(`${API_BASE_URL}/employer/analytics?${searchParams.toString()}`, {
+      method: "GET",
+      headers,
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    return data.data || data;
+  } catch (error) {
+    console.error("Failed to fetch employer analytics:", error);
+    return null;
+  }
+}
+
 export async function fetchCareerGoals() {
   const response = await fetchWithRetry(`${API_BASE_URL}/career-goals`, {
     method: 'GET',

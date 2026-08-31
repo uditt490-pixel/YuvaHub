@@ -15,7 +15,7 @@ export const generateTextEmbedding = async (text: string): Promise<number[]> => 
         const result = await model.embedContent(text);
         return result.embedding.values;
     } catch (error) {
-        logger.error('Error generating text embedding:', error);
+        logger.error({ error }, 'Error generating text embedding:');
         throw new Error('Failed to generate embedding');
     }
 };
@@ -78,7 +78,7 @@ export const detectPlagiarism = async (
             matchedSource,
         };
     } catch (error) {
-        logger.error('Plagiarism detection failed:', error);
+        logger.error({ error }, 'Plagiarism detection failed:');
         throw new Error('Failed to analyze content for plagiarism');
     }
 };

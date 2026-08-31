@@ -14,6 +14,7 @@ import {
 interface Session {
     _id: string;
     title: string;
+    description?: string;
     proposerName: string;
     tags: string[];
     upvotes: number;
@@ -208,7 +209,7 @@ export const CollaborativeAgendaBoard: React.FC<CollaborativeAgendaBoardProps> =
                                     </div>
 
                                     <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">
-                                        {session.description}
+                                        {session.title}
                                     </p>
 
                                     <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">

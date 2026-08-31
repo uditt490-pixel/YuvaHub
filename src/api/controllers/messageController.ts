@@ -17,7 +17,7 @@ export const getConversationHistory = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, error: 'User IDs are required' });
         }
 
-        const conversationId = getConversationId(userId, otherUserId);
+        const conversationId = getConversationId(userId as string, otherUserId as string);
 
         const messages = await DirectMessage.find({ conversationId })
             .sort({ createdAt: -1 })
@@ -34,7 +34,7 @@ export const getConversationHistory = async (req: Request, res: Response) => {
             data: chronologicalMessages,
         });
     } catch (error) {
-        logger.error('Error fetching conversation history:', error);
+        logger.error({ error }, 'Error fetching conversation history:');
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 };
@@ -77,7 +77,7 @@ export const getUserConversations = async (req: Request, res: Response) => {
             data: conversations,
         });
     } catch (error) {
-        logger.error('Error fetching user conversations:', error);
+        logger.error({ error }, 'Error fetching user conversations:');
         res.status(500).json({ success: false, error: 'Internal server error' });
     }
 };

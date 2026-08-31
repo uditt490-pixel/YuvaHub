@@ -25,13 +25,13 @@ export const recordSponsorEngagement = async (sponsorId: string, actionType: key
         const redisKey = `sponsor_engagement:${sponsorId}`;
 
         // Increment score in Redis sorted set (or simple string for single value)
-        const newScore = await redisClient.incrBy(redisKey, points);
+        const newScore = await redisClient.incrby(redisKey, points);
 
         // Update specific metric counters in Redis hashes
         if (actionType === 'RESOURCE_DOWNLOAD') {
-            await redisClient.hIncrBy(`sponsor_metrics:${sponsorId}`, 'resourcesProvided', 1);
+            await redisClient.hincrby(`sponsor_metrics:${sponsorId}`, 'resourcesProvided', 1);
         } else if (actionType === 'BOOTH_VISIT') {
-            await redisClient.hIncrBy(`sponsor_metrics:${sponsorId}`, 'boothVisits', 1);
+            await redisClient.hincrby(`sponsor_metrics:${sponsorId}`, 'boothVisits', 1);
         }
 
         // Check for tier upgrade
@@ -39,7 +39,7 @@ export const recordSponsorEngagement = async (sponsorId: string, actionType: key
 
         logger.info(`Recorded ${actionType} for sponsor ${sponsorId}. New score: ${newScore}`);
     } catch (error) {
-        logger.error(`Failed to record engagement for sponsor ${sponsorId}:`, error);
+        logger.error({ error }, `Failed to record engagement for sponsor ${sponsorId}:`);
     }
 };
 
@@ -47,7 +47,7 @@ export const recordSponsorEngagement = async (sponsorId: string, actionType: key
  * Evaluates if a sponsor qualifies for a tier upgrade based on their engagement score.
  */
 const checkAndUpgradeTier = async (sponsorId: string, currentScore: number) => {
-    let newTier: ISponsorTier['currentTier'] | null = null;
+    let newTier: any = null;
 
     if (currentScore >= 5000) newTier = 'diamond';
     else if (currentScore >= 2500) newTier = 'platinum';
@@ -82,7 +82,7 @@ export const syncSponsorMetricsToDB = async () => {
 
             if (scoreStr) {
                 const score = parseInt(scoreStr, 10);
-                const metrics = await redisClient.hGetAll(`sponsor_metrics:${sponsor._id}`);
+                const metrics = await redisClient.hgetall(`sponsor_metrics:${sponsor._id}`);
 
                 sponsor.engagementScore = score;
                 if (metrics.resourcesProvided) sponsor.resourcesProvided = parseInt(metrics.resourcesProvided, 10);
@@ -94,6 +94,6 @@ export const syncSponsorMetricsToDB = async () => {
         }
         logger.info('Successfully synced sponsor metrics to MongoDB.');
     } catch (error) {
-        logger.error('Error syncing sponsor metrics to DB:', error);
+        logger.error({ error }, 'Error syncing sponsor metrics to DB:');
     }
 };

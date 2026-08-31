@@ -48,7 +48,7 @@ export async function runSavedSearchMatcher() {
     }
 
     // Group matches by user
-    const userMatches = new Map<string, { preferences: string, matches: any[] }>();
+    const userMatches = new Map<string, { preferences: "email" | "none" | "both" | "in_app", matches: any[] }>();
     const searchIdsToUpdate = [];
 
     for (const search of activeSearches) {
@@ -129,7 +129,7 @@ export async function runSavedSearchMatcher() {
     let usersNotified = 0;
     for (const [userId, { preferences, matches }] of userMatches.entries()) {
       if (matches.length > 0 && preferences !== "none") {
-        await enqueueNotificationDispatch({ userId, preferences, matches: matches.map(m => ({
+        await enqueueNotificationDispatch({ userId, preferences: preferences as any, matches: matches.map(m => ({
            id: m._id.toString(),
            title: m.title,
            org: m.company || m.sourceName,

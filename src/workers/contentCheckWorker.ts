@@ -52,7 +52,7 @@ export const contentCheckWorker = new Worker(
             logger.info(`Content ${postId} passed plagiarism check.`);
             return { status: 'cleared' };
         } catch (error) {
-            logger.error(`Content check failed for ${postId}:`, error);
+            logger.error({ error }, `Content check failed for ${postId}:`);
             throw error;
         }
     },

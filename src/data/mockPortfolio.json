@@ -1,0 +1,25 @@
+{
+  "name": "Alex Developer",
+  "headline": "Full-Stack Software Engineer",
+  "bio": "Passionate about building scalable web applications, algorithm optimization, and open-source contribution.",
+  "socials": {
+    "github": "https://github.com/opensource-dev",
+    "linkedin": "https://linkedin.com/in/alexdev",
+    "email": "alex@example.com"
+  },
+  "badges": ["Top Contributor", "UI/UX Specialist", "Hackathon Winner"],
+  "projects": [
+    {
+      "title": "CampusConnect Platform",
+      "description": "An academic platform organizing study materials and community resources.",
+      "link": "#",
+      "tags": ["React", "Node.js", "MongoDB"]
+    },
+    {
+      "title": "AlgoVisualizer",
+      "description": "Real-time data structure and algorithm sorting visualizer.",
+      "link": "#",
+      "tags": ["JavaScript", "CSS", "Algorithms"]
+    }
+  ]
+}

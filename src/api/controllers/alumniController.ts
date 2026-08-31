@@ -30,7 +30,7 @@ const sanitizeUserForDirectory = (user: any) => {
   return publicView;
 };
 
-const normalizeUserId = (value?: string) => Array.isArray(value) ? value[0] : value;
+const normalizeUserId = (value?: any): string | undefined => Array.isArray(value) ? value[0] : value;
 
 export const updateUserProfile = async (req: Request, res: Response) => {
   try {

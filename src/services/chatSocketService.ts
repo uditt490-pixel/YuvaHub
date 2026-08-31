@@ -71,7 +71,7 @@ export const initializeChatSocketService = (io: SocketIOServer) => {
                 // Acknowledge sender
                 socket.emit('message-sent', { messageId: newMessage._id, status: 'delivered' });
             } catch (error) {
-                logger.error(`Error sending message from ${userId} to ${receiverId}:`, error);
+                logger.error({ error }, `Error sending message from ${userId} to ${receiverId}:`);
                 socket.emit('error', { message: 'Failed to send message' });
             }
         });
@@ -94,7 +94,7 @@ export const initializeChatSocketService = (io: SocketIOServer) => {
                     readerId: userId,
                 });
             } catch (error) {
-                logger.error(`Error marking messages as read for ${userId}:`, error);
+                logger.error({ error }, `Error marking messages as read for ${userId}:`);
             }
         });
 

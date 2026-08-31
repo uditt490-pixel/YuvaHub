@@ -54,7 +54,7 @@ export const encryptMessage = (text: string, conversationId: string): { encrypte
             iv: iv.toString('hex'),
         };
     } catch (error) {
-        logger.error('Encryption failed:', error);
+        logger.error({ error }, 'Encryption failed:');
         throw new Error('Failed to encrypt message');
     }
 };
@@ -89,7 +89,7 @@ export const decryptMessage = (encryptedContent: string, ivHex: string, conversa
 
         return decrypted;
     } catch (error) {
-        logger.error('Decryption failed:', error);
+        logger.error({ error }, 'Decryption failed:');
         throw new Error('Failed to decrypt message');
     }
 };

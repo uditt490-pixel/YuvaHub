@@ -559,7 +559,7 @@ export default function OpportunityDetail() {
         isOpen={isCoverLetterModalOpen}
         onClose={() => setIsCoverLetterModalOpen(false)}
         opportunity={opp}
-        profile={profile}
+        profile={profile as any}
       />
     </div>
   );

@@ -38,7 +38,7 @@ export const initializeSessionVotingService = (io: SocketIOServer) => {
 
                 socket.emit('initial-state', { eventId, sessions });
             } catch (error) {
-                logger.error(`Error fetching initial state for event ${eventId}:`, error);
+                logger.error({ error }, `Error fetching initial state for event ${eventId}:`);
                 socket.emit('error', { message: 'Failed to load session data' });
             }
         });
@@ -94,11 +94,11 @@ export const initializeSessionVotingService = (io: SocketIOServer) => {
                     sessionId: session._id,
                     upvotes: session.upvotes,
                     downvotes: session.downvotes,
-                    netVotes: session.netVotes,
+                    netVotes: session.upvotes - session.downvotes,
                 });
 
             } catch (error) {
-                logger.error(`Error processing vote for session ${sessionId}:`, error);
+                logger.error({ error }, `Error processing vote for session ${sessionId}:`);
                 socket.emit('error', { message: 'Failed to process vote' });
             }
         });
@@ -131,7 +131,7 @@ export const initializeSessionVotingService = (io: SocketIOServer) => {
 
                 socket.emit('success', { message: 'Session proposed successfully!' });
             } catch (error) {
-                logger.error(`Error proposing session for event ${eventId}:`, error);
+                logger.error({ error }, `Error proposing session for event ${eventId}:`);
                 socket.emit('error', { message: 'Failed to propose session' });
             }
         });

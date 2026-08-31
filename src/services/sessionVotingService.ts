@@ -94,7 +94,7 @@ export const initializeSessionVotingService = (io: SocketIOServer) => {
                     sessionId: session._id,
                     upvotes: session.upvotes,
                     downvotes: session.downvotes,
-                    netVotes: session.netVotes,
+                    netVotes: (session as any).netVotes ?? (session.upvotes - session.downvotes),
                 });
 
             } catch (error) {

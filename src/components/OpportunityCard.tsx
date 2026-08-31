@@ -1,10 +1,11 @@
 import React, { KeyboardEvent, MouseEvent, useState, useRef, useCallback } from "react";
-import { Bookmark, Shield, ExternalLink, X, CheckCircle, MapPin, Clock, ArrowRight, Sparkles, Building2, Coins, Calendar, Flag, Scale, Briefcase } from "lucide-react";
+import { Bookmark, Shield, ExternalLink, X, CheckCircle, MapPin, Clock, ArrowRight, Sparkles, Building2, Coins, Calendar, Flag, Scale, Briefcase, FileText } from "lucide-react";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { OpportunityReportModal } from "./ui/OpportunityReportModal";
 import CoverLetterModal from "./ui/CoverLetterModal";
 import { useCompare } from "../context/CompareContext";
 import { saveOpportunityToTracker } from "../services/apiClient";
+import { useAppContext } from "../context/AppContext";
 
 export interface Opportunity {
     id: string;
@@ -60,8 +61,16 @@ export function OpportunityCard({
     useFocusTrap(auditModalRef, showAuditModal, closeAuditModal);
 
     const [showReportModal, setShowReportModal] = useState(false);
+    const [showCoverLetterModal, setShowCoverLetterModal] = useState(false);
     const [isSavedToTracker, setIsSavedToTracker] = useState(false);
     const [isSavingToTracker, setIsSavingToTracker] = useState(false);
+    
+    let appContext: any = null;
+    try {
+        appContext = useAppContext();
+    } catch (e) {
+        // AppContext optional
+    }
     
     // Attempt to use CompareContext if it exists in the tree
     let compareCtx: any = null;

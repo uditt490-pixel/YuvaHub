@@ -2,15 +2,22 @@ import { z } from "zod";
 
 export const ApplicationStatusSchema = z.enum([
   "draft",
+  "saved",
+  "interested",
+  "applied",
   "pending_confirmation",
   "queued",
   "submitting",
   "submitted",
-  "failed",
-  "retrying",
+  "under_review",
+  "interview",
+  "interview_scheduled",
   "interviewing",
   "offer",
+  "selected",
   "rejected",
+  "failed",
+  "retrying",
 ]);
 
 export type ApplicationStatus = z.infer<
@@ -25,6 +32,7 @@ export const ApplicationAuditActionSchema = z.enum([
   "SUBMITTED",
   "FAILED",
   "RETRY_TRIGGERED",
+  "UPDATED",
 ]);
 
 export const ApplicationAuditLogSchema = z.object({
@@ -46,7 +54,10 @@ export const ApplicationDocumentSchema = z.object({
     title: z.string().trim().min(1),
     organization: z.string().trim().optional(),
     platform: z.string().trim().optional(),
-    applyUrl: z.string().url().optional(),
+    applyUrl: z.string().url().optional().or(z.literal("")),
+    type: z.string().optional(),
+    location: z.string().optional(),
+    deadline: z.string().optional(),
   }),
   resume: z
     .object({
@@ -62,11 +73,13 @@ export const ApplicationDocumentSchema = z.object({
     .optional(),
   platform: z.string().trim().min(1).default("unknown"),
   status: ApplicationStatusSchema.default("pending_confirmation"),
+  notes: z.string().max(5000).optional(),
+  deadline: z.coerce.date().optional(),
   retryCount: z.number().int().min(0).max(20).default(0),
   lastError: z.string().max(4000).optional(),
   externalApplicationId: z.string().trim().optional(),
   userConfirmed: z.boolean().default(false),
-  auditLogs: z.array(ApplicationAuditLogSchema).max(200),
+  auditLogs: z.array(ApplicationAuditLogSchema).max(200).default([]),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

@@ -6,7 +6,8 @@ import { initAgentWorker, stopAgentWorker } from "./workers/applicationAgentWork
 import { mentorshipWorker } from "./workers/mentorshipWorker";
 import { mockInterviewWorker } from "./workers/mockInterviewWorker";
 import { exportWorker, closeExportWorker } from "./workers/exportWorker";
-import { runSavedSearchMatcher } from "./services/savedSearchMatcherService";
+import { notificationWorker } from "./workers/notificationWorker";
+import { scheduleDailyMatcher } from "./queues/notificationQueue";
 import { opportunityExpiryWorker } from "./workers/opportunityExpiryWorker";
 import { opportunityExpiryQueue } from "./queues/opportunityExpiryQueue";
 import { initOpportunityExpiredConsumer } from "./consumers/opportunityExpiredConsumer";
@@ -20,11 +21,10 @@ initOpportunityExpiredConsumer().catch(err => {
   logger.error({ err }, "Failed to initialize opportunity expired consumer");
 });
 
-const savedSearchInterval = setInterval(() => {
-  runSavedSearchMatcher().catch(err => {
-    logger.error({ err }, "Error running saved search matcher");
-  });
-}, 60 * 60 * 1000); // Run every 1 hour
+// Schedule the daily saved search matcher job via BullMQ
+scheduleDailyMatcher().catch(err => {
+  logger.error({ err }, "Failed to schedule daily saved search matcher job");
+});
 
 // Schedule opportunity expiry check every 12 hours
 opportunityExpiryQueue.add(
@@ -49,11 +49,10 @@ const shutdown = async () => {
     mentorshipWorker.close(),
     mockInterviewWorker.close(),
     opportunityExpiryWorker.close(),
+    notificationWorker.close(),
     closeExportWorker(),
     stopAgentWorker()
   ]);
-
-  clearInterval(savedSearchInterval);
 
   logger.info({ workerId }, "Shutdown complete.");
   process.exit(0);

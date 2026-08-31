@@ -6,6 +6,7 @@ import { CURATED_FALLBACKS } from '../../services/staticFallbacks';
 import ShareModal from '../ui/ShareModal';
 import ApplyAssistModal from '../ui/ApplyAssistModal';
 import FlashcardModal from '../ui/FlashcardModal';
+import CoverLetterModal from '../ui/CoverLetterModal';
 import { OpportunityCard } from '../OpportunityCard';
 import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -22,6 +23,7 @@ export default function OpportunityDetail() {
   const [error, setError] = useState<string | null>(null);
   const [relatedOpps, setRelatedOpps] = useState<any[]>([]);
   const [shareOpp, setShareOpp] = useState<{title: string, link: string} | null>(null);
+  const [isCoverLetterModalOpen, setIsCoverLetterModalOpen] = useState(false);
 
   const [eligibilityLoading, setEligibilityLoading] = useState(false);
   const [eligibility, setEligibility] = useState<any>(null);
@@ -383,12 +385,18 @@ export default function OpportunityDetail() {
               <p className="text-xs text-[#e8ded1] leading-relaxed max-w-xl">
                 Let YuvaHub AI analyze your profile metadata ({profile?.name || "Student"}) and draft an optimized cover letter, application response, or submission checklist in seconds!
               </p>
-              <div className="pt-2">
+              <div className="pt-2 flex flex-wrap items-center gap-3">
                 <button 
                   onClick={handleApplyAssist}
                   className="px-5 py-2.5 bg-primary-blue hover:bg-[#96552a] text-white rounded-xl text-xs font-bold transition-all shadow-md inline-flex items-center gap-2 cursor-pointer"
                 >
-                  <FileText className="w-4 h-4" /> Initialize Assistant Draft
+                  <FileText className="w-4 h-4" /> Application Assistant
+                </button>
+                <button 
+                  onClick={() => setIsCoverLetterModalOpen(true)}
+                  className="px-5 py-2.5 bg-[#f3e4bd] hover:bg-[#e8ded1] text-[#231f20] rounded-xl text-xs font-bold transition-all shadow-md inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4 text-primary-blue" /> Generate Tailored Cover Letter
                 </button>
               </div>
             </div>
@@ -545,6 +553,13 @@ export default function OpportunityDetail() {
         isLoading={flashcardLoading}
         flashcards={flashcards}
         opportunityTitle={opp.title}
+      />
+
+      <CoverLetterModal
+        isOpen={isCoverLetterModalOpen}
+        onClose={() => setIsCoverLetterModalOpen(false)}
+        opportunity={opp}
+        profile={profile as any}
       />
     </div>
   );

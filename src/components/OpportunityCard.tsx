@@ -1,8 +1,11 @@
 import React, { KeyboardEvent, MouseEvent, useState, useRef, useCallback } from "react";
-import { Bookmark, Shield, ExternalLink, X, CheckCircle, MapPin, Clock, ArrowRight, Sparkles, Building2, Coins, Calendar, Flag, Scale } from "lucide-react";
+import { Bookmark, Shield, ExternalLink, X, CheckCircle, MapPin, Clock, ArrowRight, Sparkles, Building2, Coins, Calendar, Flag, Scale, Briefcase, FileText } from "lucide-react";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { OpportunityReportModal } from "./ui/OpportunityReportModal";
+import CoverLetterModal from "./ui/CoverLetterModal";
 import { useCompare } from "../context/CompareContext";
+import { saveOpportunityToTracker } from "../services/apiClient";
+import { useAppContext } from "../context/AppContext";
 
 export interface Opportunity {
     id: string;
@@ -58,6 +61,14 @@ export function OpportunityCard({
     useFocusTrap(auditModalRef, showAuditModal, closeAuditModal);
 
     const [showReportModal, setShowReportModal] = useState(false);
+    const [showCoverLetterModal, setShowCoverLetterModal] = useState(false);
+    const [isSavedToTracker, setIsSavedToTracker] = useState(false);
+    const [isSavingToTracker, setIsSavingToTracker] = useState(false);
+
+    let appContext: any = null;
+    try {
+        appContext = useAppContext();
+    } catch (e) {}
     
     // Attempt to use CompareContext if it exists in the tree
     let compareCtx: any = null;
@@ -115,6 +126,20 @@ export function OpportunityCard({
     const handleAddToCalendar = (e: MouseEvent) => {
         e.stopPropagation();
         window.location.href = `/api/v1/opportunities/${opp.id}/calendar`;
+    };
+
+    const handleSaveToTracker = async (e: MouseEvent) => {
+        e.stopPropagation();
+        if (isSavingToTracker || isSavedToTracker) return;
+        try {
+            setIsSavingToTracker(true);
+            await saveOpportunityToTracker(opp, "saved");
+            setIsSavedToTracker(true);
+        } catch (err) {
+            console.error("Failed to save to application tracker:", err);
+        } finally {
+            setIsSavingToTracker(false);
+        }
     };
 
     const handleCompareClick = (e: MouseEvent) => {
@@ -192,6 +217,23 @@ export function OpportunityCard({
                                     className="text-text-muted dark:text-slate-500"
                                 />
                             </button>
+                            <button
+                                type="button"
+                                onClick={handleSaveToTracker}
+                                disabled={isSavingToTracker}
+                                aria-label={isSavedToTracker ? "Saved to Application Tracker" : "Save to Application Tracker"}
+                                title={isSavedToTracker ? "Saved to Tracker" : "Save to Tracker"}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                    isSavedToTracker 
+                                        ? "text-emerald-500 bg-emerald-500/10" 
+                                        : "text-text-muted hover:text-primary-blue hover:bg-surface-secondary dark:hover:bg-slate-800"
+                                }`}
+                            >
+                                <Briefcase
+                                    size={18}
+                                    className={isSavedToTracker ? "text-emerald-500" : "text-text-muted dark:text-slate-500"}
+                                />
+                            </button>
                             {compareCtx && (
                                 <button
                                     type="button"
@@ -217,6 +259,15 @@ export function OpportunityCard({
                                     size={18}
                                     className={isBookmarked ? "fill-[#b56b37] text-primary-blue" : "text-text-muted dark:text-slate-500"}
                                 />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setShowCoverLetterModal(true); }}
+                                aria-label="Generate AI Cover Letter"
+                                title="Generate tailored AI cover letter"
+                                className="p-1.5 rounded-lg text-text-muted hover:text-primary-blue hover:bg-surface-secondary dark:hover:bg-slate-800 transition-colors"
+                            >
+                                <FileText size={18} />
                             </button>
                             <button
                                 type="button"
@@ -366,6 +417,21 @@ export function OpportunityCard({
                 onClose={() => setShowReportModal(false)}
                 opportunityId={opp.id}
                 opportunityTitle={title}
+            />
+
+            <CoverLetterModal
+                isOpen={showCoverLetterModal}
+                onClose={() => setShowCoverLetterModal(false)}
+                opportunity={{
+                    id: opp.id,
+                    title: title,
+                    org: orgName,
+                    organization: orgName,
+                    description: (opp as any).description,
+                    location: locationLabel,
+                    type: (opp as any).type || (opp as any).category
+                }}
+                profile={undefined}
             />
         </>
     );

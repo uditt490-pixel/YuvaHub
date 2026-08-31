@@ -196,3 +196,40 @@ export function generateAdminAlertHtml(workerName: string, jobId: string, domain
     </div>
   `;
 }
+
+export function generateSavedSearchDigestHtml(userName: string, matches: Array<{ title: string; org: string; location: string }>): string {
+  const matchHtml = matches.map(match => `
+    <div style="background-color: #f8fafc; border-left: 4px solid #3b82f6; border-radius: 6px; padding: 14px; margin-bottom: 12px;">
+      <h4 style="margin: 0 0 4px 0; color: #0f172a; font-size: 15px; font-weight: 700;">${match.title}</h4>
+      <p style="margin: 0 0 6px 0; color: #475569; font-size: 13px;">${match.org ? `at <strong>${match.org}</strong>` : ''} ${match.location ? `• ${match.location}` : ''}</p>
+    </div>
+  `).join('');
+
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+      <div style="padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
+        <h2 style="color: #2563eb; margin: 0; font-size: 20px; font-weight: 800;">🔔 Daily Opportunity Matches</h2>
+        <p style="color: #64748b; font-size: 13px; margin: 4px 0 0 0;">Hello ${userName || 'there'}, here are new opportunities matching your saved searches.</p>
+      </div>
+
+      <div style="margin: 20px 0;">
+        ${matchHtml || '<p style="color: #64748b; font-size: 14px;">No new matches today.</p>'}
+      </div>
+
+      <div style="margin-top: 24px; text-align: center;">
+        <a href="https://yuvahub.xyz/opportunities" target="_blank" style="background-color: #2563eb; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px; display: inline-block;">
+          View All Opportunities
+        </a>
+      </div>
+
+      <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #f1f5f9; text-align: center;">
+        <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px 0;">
+          You received this digest based on your Saved Search preferences.
+        </p>
+        <p style="color: #94a3b8; font-size: 11px; margin: 0;">
+          <a href="https://yuvahub.xyz/settings" target="_blank" style="color: #64748b; text-decoration: underline;">Manage Alert Settings</a>
+        </p>
+      </div>
+    </div>
+  `;
+}

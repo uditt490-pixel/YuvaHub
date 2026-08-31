@@ -51,6 +51,13 @@ export interface UserProfile {
   badges?: string[];
   isPublicProfile?: boolean;
   role?: 'student' | 'alumni' | 'employer' | string;
+  current_role?: string;
+  graduation_year?: number | string | null;
+  current_company?: string;
+  alumni_status?: boolean;
+  is_open_to_mentoring?: boolean;
+  mentoring_interests?: string[];
+  alumni_profile_bio?: string;
   verified_skills?: string[];
   verifiedSkills?: string[];
 }

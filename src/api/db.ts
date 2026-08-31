@@ -409,6 +409,12 @@ export async function initializeDatabase(): Promise<void> {
       dbCommand.collection("users").createIndex({ firebaseUid: 1 }, { unique: true, sparse: true })
         .then(() => console.log(`[Database] Created unique sparse index on users.firebaseUid`))
         .catch((err: any) => console.error(`[Database] Failed to create unique index:`, err));
+      dbCommand.collection("users").createIndex({ alumni_status: 1, is_open_to_mentoring: 1, graduation_year: -1 })
+        .then(() => console.log(`[Database] Created alumni directory index on users`))
+        .catch((err: any) => console.error(`[Database] Failed to create alumni directory index:`, err));
+      dbCommand.collection("mentorship_requests").createIndex({ sender_id: 1, recipient_id: 1, created_at: -1 })
+        .then(() => console.log(`[Database] Created mentorship_requests index`))
+        .catch((err: any) => console.error(`[Database] Failed to create mentorship_requests index:`, err));
 
       dbCommand.collection("opportunity_notes").createIndex({ userId: 1, opportunityId: 1 }, { unique: true })
         .then(() => console.log(`[Database] Created compound unique index on opportunity_notes`))

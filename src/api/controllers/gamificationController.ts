@@ -12,10 +12,10 @@ export const getLeaderboard = async (req: Request, res: Response) => {
         const limit = parseInt(req.query.limit as string) || 10;
 
         // ZREVRANGE to get top scores
-        const topUsers = await redisClient.zrange('reputation_leaderboard_weekly', 0, limit - 1, 'REV');
+        const topUsers = await (redisClient as any).zrange('reputation_leaderboard_weekly', 0, limit - 1, 'REV');
 
         // Fetch user details for the top IDs
-        const userDetails = await User.find(
+        const userDetails = await (User as any).find(
             { _id: { $in: topUsers } },
             'name reputation_score level badges'
         ).sort({ reputation_score: -1 });

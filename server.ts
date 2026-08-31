@@ -1713,6 +1713,7 @@ Thank you for your time and consideration.
 Sincerely,
 ${candidateName}`;
 
+      const wrapUserInput = (val: any) => (val != null ? String(val) : '');
       const ai = getGenAI();
       if (!ai) {
         return res.json({ success: true, coverLetter: defaultFallback });

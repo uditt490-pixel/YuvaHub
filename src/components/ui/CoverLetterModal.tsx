@@ -10,7 +10,7 @@ interface CandidateProfile {
   skills?: string[];
   experience?: string;
   summary?: string;
-  education?: string;
+  education?: string | any;
 }
 
 interface CoverLetterModalProps {

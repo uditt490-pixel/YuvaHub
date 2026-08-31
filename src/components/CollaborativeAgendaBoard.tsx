@@ -14,6 +14,7 @@ import {
 interface Session {
     _id: string;
     title: string;
+    description?: string;
     proposerName: string;
     tags: string[];
     upvotes: number;

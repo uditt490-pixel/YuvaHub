@@ -42,7 +42,7 @@ export const getApprovedChannels = async (
 
         return channels;
     } catch (error) {
-        logger.error(`Error fetching notification preferences for user ${userId}:`, error);
+        logger.error({ err: error }, `Error fetching notification preferences for user ${userId}`);
         // Fallback to safe default
         return ['inApp'];
     }

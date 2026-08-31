@@ -1,3 +1,4 @@
+import { logger } from "../../lib/logger.js";
 import { createBreaker } from "../circuitBreaker";
 import { AdapterError, toAdapterError } from "./adapterError";
 import { ingestOpportunities } from "./deduplicator";
@@ -193,7 +194,7 @@ export class DNLDispatcher {
         proxyHealth: "red",
       });
 
-      console.error(
+      logger.error(
         `[DNLDispatcher] ${failure.source} failed during ${failure.stage} (${failure.code}): ${failure.message}`,
       );
 
@@ -232,7 +233,7 @@ export class DNLDispatcher {
   start(intervalMs = 3_600_000): void {
     if (this.intervalId) return;
 
-    console.log(
+    logger.info(
       `[DNLDispatcher] Scheduler started. Dispatching every ${intervalMs / 1000}s.`,
     );
 
@@ -246,7 +247,7 @@ export class DNLDispatcher {
 
     clearInterval(this.intervalId);
     this.intervalId = null;
-    console.log("[DNLDispatcher] Scheduler stopped.");
+    logger.info("[DNLDispatcher] Scheduler stopped.");
   }
 
   private async dispatchAll(): Promise<void> {
@@ -257,7 +258,7 @@ export class DNLDispatcher {
       const configuredUrl = process.env[environmentKey];
 
       if (!configuredUrl) {
-        console.warn(
+        logger.warn(
           `[DNLDispatcher] ${environmentKey} is not configured. Skipping ${adapter.sourceName}.`,
         );
         return [];
@@ -269,11 +270,11 @@ export class DNLDispatcher {
     const summary = await this.runAdapters(tasks);
 
     if (summary.failed > 0) {
-      console.error(
+      logger.error(
         `[DNLDispatcher] Completed with ${summary.failed}/${summary.total} adapter failure(s).`,
       );
     } else {
-      console.log(
+      logger.info(
         `[DNLDispatcher] All ${summary.succeeded} configured adapter run(s) completed.`,
       );
     }

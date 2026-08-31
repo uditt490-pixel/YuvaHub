@@ -1,3 +1,4 @@
+import { logger } from "../lib/logger.js";
 import { Worker, Job } from "bullmq";
 import { connection } from "../queues/connection";
 import { MongoClient } from "mongodb";
@@ -17,7 +18,7 @@ const dbName = process.env.MONGODB_DB_NAME || "yuvahub";
 const mongoClient = new MongoClient(uri);
 
 mongoClient.connect().catch((err) => {
-  console.error("[ScraperWorker] MongoDB connection error:", err);
+  logger.error({ err: err }, "[ScraperWorker] MongoDB connection error:");
 });
 
 export const scraperWorker = new Worker(
@@ -25,7 +26,7 @@ export const scraperWorker = new Worker(
   async (job: Job) => {
     const { domain, url, type } = job.data;
 
-    console.log(`[ScraperWorker] Processing job ${job.id} for domain: ${domain}, url: ${url}`);
+    logger.info(`[ScraperWorker] Processing job ${job.id} for domain: ${domain}, url: ${url}`);
 
     const realData = url ? await scrapeRealURL(url, domain, type) : null;
 
@@ -55,7 +56,7 @@ export const scraperWorker = new Worker(
     };
 
 
-    console.log(
+    logger.info(
       `[ScraperWorker] Processing job ${job.id} for domain: ${domain}, url: ${url}`
     );
 
@@ -106,11 +107,11 @@ export const scraperWorker = new Worker(
       );
 
       if (result.upsertedCount > 0) {
-        console.log(
+        logger.info(
           `[ScraperWorker] Inserted real opportunity: ${item.title}`
         );
       } else {
-        console.log(
+        logger.info(
           `[ScraperWorker] Updated existing opportunity: ${item.title}`
         );
       }
@@ -143,11 +144,11 @@ export const scraperWorker = new Worker(
 );
 
 scraperWorker.on("completed", (job) => {
-  console.log(`[ScraperWorker] Job ${job.id} completed successfully.`);
+  logger.info(`[ScraperWorker] Job ${job.id} completed successfully.`);
 });
 
 scraperWorker.on("failed", (job, err) => {
-  console.error(
+  logger.error(
     `[ScraperWorker] Job ${job?.id} failed with error: ${err.message}`
   );
 
@@ -156,7 +157,7 @@ scraperWorker.on("failed", (job, err) => {
     job.opts.attempts &&
     job.attemptsMade === job.opts.attempts
   ) {
-    console.error(
+    logger.error(
       `[ALERT] Scraper Job ${job.id} for domain ${job.data.domain} failed ${job.attemptsMade} times in a row! Maintenance required.`
     );
     sendAdminAlert("ScraperWorker", job, err);
@@ -166,7 +167,7 @@ scraperWorker.on("failed", (job, err) => {
 let scraperWorkerErrorLogged = false;
 scraperWorker.on("error", (err) => {
   if (!scraperWorkerErrorLogged) {
-    console.warn('[ScraperWorker] Redis connection offline. Worker listening paused.');
+    logger.warn('[ScraperWorker] Redis connection offline. Worker listening paused.');
     scraperWorkerErrorLogged = true;
 
   }

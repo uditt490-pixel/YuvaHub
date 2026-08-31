@@ -106,7 +106,7 @@ export default function EmployerAnalyticsDashboard() {
               </span>
             </div>
             <p className="text-xs text-text-muted mt-0.5">
-              Live engagement pipelines, conversion funnels, and student demographics for {profile?.org || profile?.organization || 'your organization'}.
+              Live engagement pipelines, conversion funnels, and student demographics for {(profile as any)?.org || (profile as any)?.organization || 'your organization'}.
             </p>
           </div>
         </div>

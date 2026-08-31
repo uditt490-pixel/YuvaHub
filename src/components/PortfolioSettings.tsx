@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Layout, Terminal as TerminalIcon, Globe, Save, ExternalLink } from 'lucide-react';
+import { Layout, Terminal as TerminalIcon, Globe, Save, ExternalLink, Eye } from 'lucide-react';
 
 // Import our templates and mock data
 import Minimalist from './portfolio-templates/Minimalist';

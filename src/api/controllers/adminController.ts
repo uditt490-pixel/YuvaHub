@@ -6,6 +6,10 @@ import { AppError } from "../../lib/AppError.js";
 import { sendSuccess, sendError, sendPaginated } from "../../lib/apiResponse.js";
 import mongoose from "mongoose";
 
+import { registry } from "../../lib/metrics/registry.js";
+import { io } from "../../../server.js";
+
+
 // Mock models to bypass typescript errors for missing models
 const User = mongoose.models.User || mongoose.model('User', new mongoose.Schema({}));
 const Opportunity = mongoose.models.Opportunity || mongoose.model('Opportunity', new mongoose.Schema({}));

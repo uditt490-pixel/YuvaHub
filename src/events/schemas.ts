@@ -6,7 +6,10 @@ export const EventType = z.enum([
   'ApplicationSubmitted',
   'SessionBooked',
   'SessionCompleted',
-  'MentorApplicationSubmitted'
+  'MentorApplicationSubmitted',
+  'PollVoted',
+  'PollClosed',
+  'OpportunityExpired'
 ]);
 
 export const BaseEventSchema = z.object({
@@ -72,8 +75,47 @@ export const MentorApplicationSubmittedEventSchema = BaseEventSchema.extend({
 
 export type MentorApplicationSubmittedEvent = z.infer<typeof MentorApplicationSubmittedEventSchema>;
 
+export const PollVotedPayloadSchema = z.object({
+  pollId: z.string(),
+  userId: z.string(),
+  optionId: z.string(),
+});
+
+export const PollVotedEventSchema = BaseEventSchema.extend({
+  eventType: z.literal(EventType.enum.PollVoted),
+  payload: PollVotedPayloadSchema,
+});
+
+export type PollVotedEvent = z.infer<typeof PollVotedEventSchema>;
+
+export const PollClosedPayloadSchema = z.object({
+  pollId: z.string(),
+});
+
+export const PollClosedEventSchema = BaseEventSchema.extend({
+  eventType: z.literal(EventType.enum.PollClosed),
+  payload: PollClosedPayloadSchema,
+});
+
+export type PollClosedEvent = z.infer<typeof PollClosedEventSchema>;
+
+export const OpportunityExpiredPayloadSchema = z.object({
+  opportunityId: z.string(),
+  title: z.string(),
+});
+
+export const OpportunityExpiredEventSchema = BaseEventSchema.extend({
+  eventType: z.literal(EventType.enum.OpportunityExpired),
+  payload: OpportunityExpiredPayloadSchema,
+});
+
+export type OpportunityExpiredEvent = z.infer<typeof OpportunityExpiredEventSchema>;
+
 export type EventPayloads =
   | OpportunityScrapedEvent
   | SessionBookedEvent
   | SessionCompletedEvent
-  | MentorApplicationSubmittedEvent;
+  | MentorApplicationSubmittedEvent
+  | PollVotedEvent
+  | PollClosedEvent
+  | OpportunityExpiredEvent;

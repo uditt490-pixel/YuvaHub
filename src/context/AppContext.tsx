@@ -12,6 +12,7 @@ interface AppContextType {
   user: any;
   profile: UserProfile | null;
   setProfile: (profile: UserProfile | null) => void;
+  updateProfile: (updates: Partial<UserProfile>) => void;
   loading: boolean;
 
   // Navigation
@@ -463,6 +464,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [bookmarkedIds]
   );
 
+  const updateProfile = useCallback((updates: Partial<UserProfile>) => {
+    setProfile(prev => (prev ? { ...prev, ...updates } : (updates as UserProfile)));
+  }, []);
+
   // ─── Context value ────────────────────────────────────────────────────────────
 
   return (
@@ -474,6 +479,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user,
       profile,
       setProfile,
+      updateProfile,
       loading,
       backendReady,
       lastSyncedTime,

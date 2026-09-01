@@ -9,9 +9,9 @@ export const validateRequest = (schema: ZodType<any>) => {
         query: req.query,
         params: req.params,
       });
-      req.body = parsed.body;
-      req.query = parsed.query;
-      req.params = parsed.params;
+      Object.defineProperty(req, 'body', { value: parsed.body, writable: true, enumerable: true, configurable: true });
+      Object.defineProperty(req, 'query', { value: parsed.query, writable: true, enumerable: true, configurable: true });
+      Object.defineProperty(req, 'params', { value: parsed.params, writable: true, enumerable: true, configurable: true });
       return next();
     } catch (error) {
       if (error instanceof ZodError) {

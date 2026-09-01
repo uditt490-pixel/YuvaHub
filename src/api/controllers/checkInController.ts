@@ -62,7 +62,7 @@ export const checkInAttendee = async (req: Request, res: Response) => {
       return sendError(res, "Only event organizers can check in attendees", 403);
     }
 
-    // Mark the RSVP as checked in
+    // Mark the checkin record
     const checkInResult = await dbCommand.collection("event_checkins").updateOne(
       { eventId, userId },
       {
@@ -82,6 +82,12 @@ export const checkInAttendee = async (req: Request, res: Response) => {
       { upsert: true }
     );
 
+    // Also update the event_rsvps collection
+    await dbCommand.collection("event_rsvps").updateOne(
+      { eventId, userId },
+      { $set: { status: "checked_in", updatedAt: new Date() } }
+    );
+
     // Fetch current check-in stats for this event
     const checkedInCount = await dbQuery
       .collection("event_checkins")
@@ -91,10 +97,14 @@ export const checkInAttendee = async (req: Request, res: Response) => {
       .collection("event_rsvps")
       .countDocuments({ eventId, status: "confirmed" });
 
+    // Fetch attendee details
+    const attendee = await dbQuery.collection("users").findOne({ _id: userId });
+
     return sendSuccess(res, {
       checkedInAt: new Date().toISOString(),
       attendeeCount: checkedInCount,
       totalRsvps,
+      attendeeName: attendee?.name || attendee?.email || userId,
     });
   } catch (err: any) {
     console.error("[CheckInController] checkInAttendee error:", err);

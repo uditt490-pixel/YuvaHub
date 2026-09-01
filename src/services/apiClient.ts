@@ -467,6 +467,30 @@ export async function generateApplyAssistBackend(opportunity: any, profile: any)
   }
 }
 
+export async function generateContextualCoverLetter(params: {
+  opportunityTitle: string;
+  organization?: string;
+  jobDescription?: string;
+  candidateProfile?: any;
+  customMotivation?: string;
+  tone?: string;
+}) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/ai/cover-letter`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to generate cover letter");
+  }
+
+  const data = await response.json();
+  return data.data?.coverLetter || data.coverLetter || "";
+}
+
+
 export async function refineQueryBackend(query: string, profile: any) {
   try {
     const result = await geminiService.refineSearchQuery(query, profile);
@@ -830,19 +854,25 @@ export async function fetchOpportunityById(id: string) {
   }
 }
 
-export async function getApplications() {
-  const response = await fetchWithRetry(
-    `${API_BASE_URL}/applications`,
-    {
-      method: "GET",
-    }
-  );
+export async function saveOpportunityToTracker(opportunity: any, status: string = "saved", notes?: string) {
+  const oppId = opportunity._id || opportunity.id || opportunity.opportunityId;
+  const payload = {
+    opportunityId: oppId,
+    opportunity: {
+      title: opportunity.title,
+      organization: opportunity.organization || opportunity.org || "",
+      platform: opportunity.platform || "YuvaHub",
+      applyUrl: opportunity.applyUrl || opportunity.apply_link || "",
+      type: opportunity.type || "",
+      location: opportunity.location || "",
+      deadline: opportunity.deadline || "",
+    },
+    status,
+    notes,
+    deadline: opportunity.deadline ? new Date(opportunity.deadline) : undefined,
+  };
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch applications");
-  }
-
-  return response.json();
+  return createApplicationTrackerEntry(payload);
 }
 
 export async function createApplicationTrackerEntry(data: any) {
@@ -1095,3 +1125,690 @@ export async function generateFlashcardsBackend(jobDescription: string) {
   }
 }
 
+// --- Career Goal Tracker ---
+
+export async function createCareerGoal(goalTitle: string, targetRole: string, targetDate: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/career-goals`, {
+    method: 'POST',
+    body: JSON.stringify({ goalTitle, targetRole, targetDate }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to create career goal");
+  }
+  return await response.json();
+}
+
+export async function fetchEmployerPostings() {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetchWithRetry(`${API_BASE_URL}/employer/postings`, {
+      method: "GET",
+      headers,
+    });
+    if (!response.ok) {
+      return [];
+    }
+    const data = await response.json();
+    return data.data?.postings || data.postings || [];
+  } catch (error) {
+    console.error("Failed to fetch employer postings:", error);
+    return [];
+  }
+}
+
+export async function fetchEmployerAnalytics(params: { timeframe?: string; opportunityId?: string } = {}) {
+  try {
+    const headers = await getAuthHeaders();
+    const searchParams = new URLSearchParams();
+    if (params.timeframe) searchParams.append("timeframe", params.timeframe);
+    if (params.opportunityId) searchParams.append("opportunityId", params.opportunityId);
+
+    const response = await fetchWithRetry(`${API_BASE_URL}/employer/analytics?${searchParams.toString()}`, {
+      method: "GET",
+      headers,
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    return data.data || data;
+  } catch (error) {
+    console.error("Failed to fetch employer analytics:", error);
+    return null;
+  }
+}
+
+export async function fetchCareerGoals() {
+  const response = await fetchWithRetry(`${API_BASE_URL}/career-goals`, {
+    method: 'GET',
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch career goals");
+  }
+  return await response.json();
+}
+
+export async function updateCareerGoalMilestone(goalId: string, milestoneId: string, status: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/career-goals/${goalId}/milestones/${milestoneId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to update milestone");
+  }
+  return await response.json();
+}
+
+export async function deleteCareerGoal(goalId: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/career-goals/${goalId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) {
+    throw new Error("Failed to delete career goal");
+  }
+  return await response.json();
+}
+
+export async function previewNewsletterClient(params: { email?: string; name?: string; skills?: string[]; field?: string } = {}) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/newsletter/preview`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to preview newsletter");
+  }
+  const data = await response.json();
+  return data.data || data;
+}
+
+export async function triggerNewsletterBatchClient(params: { batchSize?: number; dryRun?: boolean } = {}) {
+  const headers = await getAuthHeaders();
+  const response = await fetchWithRetry(`${API_BASE_URL}/newsletter/trigger`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(params),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to trigger newsletter batch");
+  }
+  const data = await response.json();
+  return data.data || data;
+}
+
+export async function unsubscribeNewsletterClient(email: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/newsletter/unsubscribe`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to unsubscribe");
+  }
+  return await response.json();
+}
+
+
+// --- Student Ventures & Campus Startup Capital ---
+
+export async function fetchStudentVentures(filters?: { campusName?: string; sectorDomain?: string; fundingStage?: string; search?: string }) {
+  const params = new URLSearchParams();
+  if (filters?.campusName && filters.campusName !== 'All') params.append('campusName', filters.campusName);
+  if (filters?.sectorDomain && filters.sectorDomain !== 'All') params.append('sectorDomain', filters.sectorDomain);
+  if (filters?.fundingStage && filters.fundingStage !== 'All') params.append('fundingStage', filters.fundingStage);
+  if (filters?.search) params.append('search', filters.search);
+
+  const query = params.toString() ? `?${params.toString()}` : '';
+  const response = await fetchWithRetry(`${API_BASE_URL}/campus/ventures${query}`, { method: 'GET' });
+  if (!response.ok) {
+    throw new Error("Failed to fetch campus student ventures");
+  }
+  return await response.json();
+}
+
+export async function registerStudentVenture(payload: any) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/campus/ventures`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to register student venture");
+  }
+  return await response.json();
+}
+
+export async function commitStudentVentureInvestment(id: string, investmentAmountUsd: number, investorName?: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/campus/ventures/${id}/invest`, {
+    method: 'POST',
+    body: JSON.stringify({ investmentAmountUsd, investorName }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || "Failed to invest in student venture");
+  }
+  return await response.json();
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* Compatibility API exports for feature tabs/pages.                         */
+/* These wrappers keep the frontend API surface aligned with the route views. */
+/* -------------------------------------------------------------------------- */
+
+async function apiClientRequest(path: string, method: string = 'GET', body?: any): Promise<any> {
+  const response = await fetchWithRetry(`${API_BASE_URL}${path}`, {
+    method,
+    ...(body === undefined ? {} : { body: JSON.stringify(body) })
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error || `Request failed: ${response.status}`);
+  }
+
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+  return response;
+}
+
+export async function fetchReviewRequests(...args: any[]): Promise<any> {
+  return apiClientRequest('/code-review/requests');
+}
+
+export async function createReviewRequest(payload: any): Promise<any> {
+  return apiClientRequest('/code-review/requests', 'POST', payload);
+}
+
+export async function claimReview(id: string, reviewerName?: string): Promise<any> {
+  return apiClientRequest(`/code-review/requests/${encodeURIComponent(id)}/claim`, 'POST', { reviewerName });
+}
+
+export async function submitReviewFeedback(id: string, payload: any): Promise<any> {
+  return apiClientRequest(`/code-review/requests/${encodeURIComponent(id)}/feedback`, 'POST', payload);
+}
+
+export async function fetchMyReviews(...args: any[]): Promise<any> {
+  return apiClientRequest('/code-review/my-reviews');
+}
+
+export async function fetchCalendarEvents(...args: any[]): Promise<any> {
+  return apiClientRequest('/calendar/events');
+}
+
+export async function setDeadlineReminder(...args: any[]): Promise<any> {
+  const payload = args.length === 1 ? args[0] : { opportunityId: args[0], reminder: args[1] };
+  return apiClientRequest('/deadline-reminders', 'POST', payload);
+}
+
+export async function deleteDeadlineReminder(id: string, ...args: any[]): Promise<any> {
+  return apiClientRequest(`/deadline-reminders/${encodeURIComponent(id)}`, 'DELETE');
+}
+
+export async function downloadCalendarICS(...args: any[]): Promise<any> {
+  return apiClientRequest('/calendar/ics');
+}
+
+export async function fetchConversations(...args: any[]): Promise<any> {
+  return apiClientRequest('/messages/conversations');
+}
+
+export async function fetchMessages(conversationId: string, ...args: any[]): Promise<any> {
+  return apiClientRequest(`/messages/conversations/${encodeURIComponent(conversationId)}`);
+}
+
+export async function sendDirectMessage(payload: any, ...args: any[]): Promise<any> {
+  return apiClientRequest('/messages', 'POST', payload);
+}
+
+export async function markConversationRead(conversationId: string, ...args: any[]): Promise<any> {
+  return apiClientRequest(`/messages/conversations/${encodeURIComponent(conversationId)}/read`, 'POST');
+}
+
+export async function fetchResources(...args: any[]): Promise<any> {
+  return apiClientRequest('/resources');
+}
+
+export async function fetchSavedResources(...args: any[]): Promise<any> {
+  return apiClientRequest('/resources/saved');
+}
+
+export async function submitResource(payload: any): Promise<any> {
+  return apiClientRequest('/resources', 'POST', payload);
+}
+
+export async function voteResource(id: string, ...args: any[]): Promise<any> {
+  return apiClientRequest(`/resources/${encodeURIComponent(id)}/vote`, 'POST', args[0]);
+}
+
+export async function saveResource(id: string, ...args: any[]): Promise<any> {
+  return apiClientRequest(`/resources/${encodeURIComponent(id)}/save`, 'POST', args[0]);
+}
+
+export async function flagResource(id: string, ...args: any[]): Promise<any> {
+  return apiClientRequest(`/resources/${encodeURIComponent(id)}/flag`, 'POST', args[0]);
+}
+
+export async function fetchStudyGroups(...args: any[]): Promise<any> {
+  return apiClientRequest('/study-groups');
+}
+
+export async function createStudyGroup(payload: any): Promise<any> {
+  return apiClientRequest('/study-groups', 'POST', payload);
+}
+
+export async function joinStudyGroup(id: string, ...args: any[]): Promise<any> {
+  return apiClientRequest(`/study-groups/${encodeURIComponent(id)}/join`, 'POST', args[0]);
+}
+
+export async function leaveStudyGroup(id: string, ...args: any[]): Promise<any> {
+  return apiClientRequest(`/study-groups/${encodeURIComponent(id)}/leave`, 'POST', args[0]);
+}
+
+export async function fetchAlumniEndowments(...args: any[]): Promise<any> {
+  return apiClientRequest('/campus/endowments');
+}
+
+export async function createAlumniEndowment(payload: any): Promise<any> {
+  return apiClientRequest('/campus/endowments', 'POST', payload);
+}
+
+export async function contributeToAlumniEndowment(id: string, payload?: any): Promise<any> {
+  return apiClientRequest(`/campus/endowments/${encodeURIComponent(id)}/contribute`, 'POST', payload);
+}
+
+export async function fetchAlumniMentorshipSlots(...args: any[]): Promise<any> {
+  return apiClientRequest('/campus/mentorship/slots');
+}
+
+export async function registerAlumniMentorshipSlot(payload: any): Promise<any> {
+  return apiClientRequest('/campus/mentorship/slots', 'POST', payload);
+}
+
+export async function bookAlumniMentorshipSession(id: string, studentId?: string, studentName?: string): Promise<any> {
+  return apiClientRequest(`/campus/mentorship/slots/${encodeURIComponent(id)}/book`, 'POST', { studentId, studentName });
+}
+
+export async function fetchResearchPatents(...args: any[]): Promise<any> {
+  return apiClientRequest('/campus/research-patents');
+}
+
+export async function registerResearchPatent(payload: any): Promise<any> {
+  return apiClientRequest('/campus/research-patents', 'POST', payload);
+}
+
+export async function executePatentLicensingAgreement(id: string, payload?: any): Promise<any> {
+  return apiClientRequest(`/campus/research-patents/${encodeURIComponent(id)}/license`, 'POST', payload);
+}
+
+
+export async function fetchMentalWellnessCheckIns(...args: any[]): Promise<any> {
+  return apiClientRequest('/campus/mental-wellness/check-ins');
+}
+
+export async function createMentalWellnessCheckIn(payload: any): Promise<any> {
+  return apiClientRequest('/campus/mental-wellness/check-ins', 'POST', payload);
+}
+
+export async function assignCounselorCheckIn(id: string, payload?: any): Promise<any> {
+  return apiClientRequest(`/campus/mental-wellness/check-ins/${encodeURIComponent(id)}/assign-counselor`, 'POST', payload);
+}
+
+// ─── Activity Feed & Digest Preferences ────────────────────────────────────────
+
+export async function fetchActivityFeed(page: number = 1, limit: number = 20, type?: string, startDate?: number, endDate?: number) {
+  try {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    if (type) params.append('type', type);
+    if (startDate) params.append('startDate', startDate.toString());
+    if (endDate) params.append('endDate', endDate.toString());
+
+    const response = await fetchWithRetry(`${API_BASE_URL}/activity/feed?${params.toString()}`, {
+      method: "GET"
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("fetchActivityFeed failed", error);
+    return { items: [], total: 0 };
+  }
+}
+
+export async function fetchActivityStats() {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/activity/stats`, {
+      method: "GET"
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("fetchActivityStats failed", error);
+    return { data: { totalActions: 0, weeklyKarma: 0, streak: 0 } };
+  }
+}
+
+export async function getDigestPreferences() {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/activity/digest-preferences`, {
+      method: "GET"
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("getDigestPreferences failed", error);
+    return { data: { frequency: "None" } };
+  }
+}
+
+export async function updateDigestPreferences(frequency: "Daily" | "Weekly" | "None") {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/activity/digest-preferences`, {
+      method: "PUT",
+      body: JSON.stringify({ frequency })
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("updateDigestPreferences failed", error);
+    throw error;
+  }
+}
+
+// ─── Announcements ────────────────────────────────────────────────────────────
+
+export async function fetchAnnouncements(page: number = 1, limit: number = 20, category?: string) {
+  try {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('limit', limit.toString());
+    if (category) params.append('category', category);
+
+    const response = await fetchWithRetry(`${API_BASE_URL}/announcements?${params.toString()}`, {
+      method: "GET"
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("fetchAnnouncements failed", error);
+    return { items: [], total: 0 };
+  }
+}
+
+export async function fetchActiveAnnouncements() {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/announcements/active`, {
+      method: "GET"
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("fetchActiveAnnouncements failed", error);
+    return { data: [] };
+  }
+}
+
+export async function createAnnouncement(data: any) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/announcements`, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error("Failed to create announcement");
+  return response.json();
+}
+
+export async function updateAnnouncement(id: string, data: any) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/announcements/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error("Failed to update announcement");
+  return response.json();
+}
+
+export async function deleteAnnouncement(id: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/announcements/${id}`, {
+    method: "DELETE"
+  });
+  if (!response.ok) throw new Error("Failed to delete announcement");
+  return response.json();
+}
+
+export async function dismissAnnouncement(id: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/announcements/${id}/dismiss`, {
+    method: "POST"
+  });
+  if (!response.ok) throw new Error("Failed to dismiss announcement");
+  return response.json();
+}
+
+// ─── Opportunity Notes ────────────────────────────────────────────────────────
+
+export async function fetchOpportunityNote(opportunityId: string) {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/opportunity-notes/${opportunityId}`, {
+      method: "GET"
+    });
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error("Failed to fetch opportunity note");
+    }
+    const data = await response.json();
+    return data.data?.note || null;
+  } catch (error) {
+    console.warn("fetchOpportunityNote failed", error);
+    return null;
+  }
+}
+
+export async function upsertOpportunityNote(opportunityId: string, content: string, color: string, isPinned: boolean) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/opportunity-notes`, {
+    method: "POST",
+    body: JSON.stringify({ opportunityId, content, color, isPinned })
+  });
+  if (!response.ok) throw new Error("Failed to save opportunity note");
+  const data = await response.json();
+  return data.data?.note;
+}
+
+export async function deleteOpportunityNote(opportunityId: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/opportunity-notes/${opportunityId}`, {
+    method: "DELETE"
+  });
+  if (!response.ok) throw new Error("Failed to delete opportunity note");
+  return response.json();
+}
+
+export async function bulkGetOpportunityNotes(opportunityIds: string[]) {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/opportunity-notes/bulk`, {
+      method: "POST",
+      body: JSON.stringify({ opportunityIds })
+    });
+    if (!response.ok) throw new Error("Failed to fetch bulk opportunity notes");
+    const data = await response.json();
+    return data.data?.notes || [];
+  } catch (error) {
+    console.warn("bulkGetOpportunityNotes failed", error);
+    return [];
+  }
+}
+
+// ─── Saved Searches ────────────────────────────────────────────────────────────
+
+export async function fetchSavedSearches() {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/saved-searches`, {
+      method: "GET"
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("fetchSavedSearches failed", error);
+    return { data: [], total: 0 };
+  }
+}
+
+export async function createSavedSearch(data: any) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/saved-searches`, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error("Failed to create saved search");
+  return response.json();
+}
+
+export async function updateSavedSearch(id: string, data: any) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/saved-searches/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) throw new Error("Failed to update saved search");
+  return response.json();
+}
+
+export async function deleteSavedSearch(id: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/saved-searches/${id}`, {
+    method: "DELETE"
+  });
+  if (!response.ok) throw new Error("Failed to delete saved search");
+  return response.json();
+}
+
+export async function previewSavedSearch(filters: any) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/saved-searches/preview`, {
+    method: "POST",
+    body: JSON.stringify({ filters })
+  });
+  if (!response.ok) throw new Error("Failed to preview saved search");
+  return response.json();
+}
+
+// ─── Forum Replies ─────────────────────────────────────────────────────────────
+
+export async function getForumReplies(postId: string) {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/community/posts/${postId}/replies`, {
+      method: "GET"
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("getForumReplies failed", error);
+    return { data: [] };
+  }
+}
+
+export async function createForumReply(postId: string, content: string, parentReplyId?: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/community/posts/${postId}/replies`, {
+    method: "POST",
+    body: JSON.stringify({ content, parentReplyId })
+  });
+  if (!response.ok) throw new Error("Failed to create forum reply");
+  return response.json();
+}
+
+export async function upvoteForumReply(postId: string, replyId: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/community/posts/${postId}/replies/${replyId}/upvote`, {
+    method: "POST"
+  });
+  if (!response.ok) throw new Error("Failed to upvote forum reply");
+  return response.json();
+}
+
+export async function acceptForumAnswer(postId: string, replyId: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/community/posts/${postId}/replies/${replyId}/accept`, {
+    method: "PUT"
+  });
+  if (!response.ok) throw new Error("Failed to accept forum answer");
+  return response.json();
+}
+
+// ─── Event RSVPs ─────────────────────────────────────────────────────────────
+
+export async function registerForEvent(eventId: string, notes?: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/event-rsvps/${eventId}`, {
+    method: "POST",
+    body: JSON.stringify({ notes })
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to register for event");
+  }
+  return response.json();
+}
+
+export async function cancelEventRegistration(eventId: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/event-rsvps/${eventId}`, {
+    method: "DELETE"
+  });
+  if (!response.ok) throw new Error("Failed to cancel RSVP");
+  return response.json();
+}
+
+export async function fetchUserRsvps() {
+  try {
+    const response = await fetchWithRetry(`${API_BASE_URL}/event-rsvps`, {
+      method: "GET"
+    });
+    if (!response.ok) throw new Error("API_ERROR");
+    return await response.json();
+  } catch (error) {
+    console.warn("fetchUserRsvps failed", error);
+    return { data: [] };
+  }
+}
+
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+
+export async function fetchPublicTestimonials(targetUid?: string) {
+  const url = targetUid ? `${API_BASE_URL}/testimonials/public?targetUid=${targetUid}` : `${API_BASE_URL}/testimonials/public`;
+  const response = await fetchWithRetry(url, {
+    method: "GET"
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch testimonials");
+  }
+  return response.json();
+}
+
+export async function createTestimonial(data: any) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/testimonials`, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+  if (!response.ok) {
+    throw new Error("Failed to create testimonial");
+  }
+  return response.json();
+}
+
+export async function fetchTestimonialInbox() {
+  const response = await fetchWithRetry(`${API_BASE_URL}/testimonials/inbox`, {
+    method: "GET"
+  });
+  if (!response.ok) throw new Error("Failed to fetch testimonial inbox");
+  return response.json();
+}
+
+export async function updateTestimonialStatus(id: string, status: string) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/testimonials/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status })
+  });
+  if (!response.ok) throw new Error("Failed to update testimonial status");
+  return response.json();
+}
+
+export async function highlightTestimonial(id: string, isHighlighted: boolean) {
+  const response = await fetchWithRetry(`${API_BASE_URL}/testimonials/${id}/highlight`, {
+    method: "PATCH",
+    body: JSON.stringify({ isHighlighted })
+  });
+  if (!response.ok) throw new Error("Failed to highlight testimonial");
+  return response.json();
+}

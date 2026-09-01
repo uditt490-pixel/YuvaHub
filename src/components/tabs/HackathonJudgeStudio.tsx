@@ -214,7 +214,7 @@ export default function HackathonJudgeStudio() {
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 isActive
                   ? 'bg-rose-600 text-white shadow-md shadow-rose-500/20'
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
+                  : 'bg-surface dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-gray-700'
               }`}
             >
               <Icon size={14} />
@@ -229,7 +229,7 @@ export default function HackathonJudgeStudio() {
       {/* TAB 1: EVALUATE */}
       {activeTab === 'evaluate' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
+          <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Select Project Submission</h3>
               <span className="px-2.5 py-1 text-[10px] font-bold bg-rose-100 text-rose-700 rounded-md">
@@ -322,7 +322,7 @@ export default function HackathonJudgeStudio() {
             </form>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
+          <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-4 shadow-sm">
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Evaluation Summary</h3>
             <div className="p-4 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 font-bold text-center">
               Weighted Consensus Score: {calculatedScore} / 100
@@ -333,7 +333,7 @@ export default function HackathonJudgeStudio() {
 
       {/* TAB 2: MATRIX */}
       {activeTab === 'matrix' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div>
             <h3 className="text-base font-bold text-gray-900 dark:text-white">Hackathon Leaderboard Matrix</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">Live ranking based on aggregated judge scorecards.</p>
@@ -363,7 +363,7 @@ export default function HackathonJudgeStudio() {
 
       {/* TAB 3: EXPORT */}
       {activeTab === 'export' && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
+        <div className="bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white">Judging Evaluation Manifest JSON</h3>

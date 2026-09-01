@@ -102,12 +102,12 @@ export default function ExperiencesHub() {
     <div className="max-w-6xl mx-auto space-y-6 animate-fade-in pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-serif font-bold text-[#231f20] dark:text-white">Interview Experiences</h2>
-          <p className="text-sm text-[#8c7569] dark:text-gray-400 mt-1">Read and share real interview experiences from various companies.</p>
+          <h2 className="text-2xl font-serif font-bold text-text-primary dark:text-white">Interview Experiences</h2>
+          <p className="text-sm text-text-muted dark:text-gray-400 mt-1">Read and share real interview experiences from various companies.</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#b56b37] text-white rounded-xl hover:bg-[#a05a2b] transition-colors font-medium text-sm shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-xl hover:bg-[#a05a2b] transition-colors font-medium text-sm shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Share Experience
@@ -121,7 +121,7 @@ export default function ExperiencesHub() {
           <input
             type="text"
             placeholder="Search by Company"
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e8ded1] dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-[#b56b37] outline-none"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border-theme dark:border-gray-700 bg-surface dark:bg-gray-800 text-sm focus:ring-2 focus:ring-[#b56b37] outline-none"
             value={searchCompany}
             onChange={(e) => setSearchCompany(e.target.value)}
           />
@@ -131,7 +131,7 @@ export default function ExperiencesHub() {
           <input
             type="text"
             placeholder="Search by Role"
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e8ded1] dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-[#b56b37] outline-none"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border-theme dark:border-gray-700 bg-surface dark:bg-gray-800 text-sm focus:ring-2 focus:ring-[#b56b37] outline-none"
             value={searchRole}
             onChange={(e) => setSearchRole(e.target.value)}
           />
@@ -140,9 +140,9 @@ export default function ExperiencesHub() {
 
       {/* Grid */}
       {loading ? (
-        <div className="text-center py-12 text-[#8c7569] dark:text-gray-400">Loading experiences...</div>
+        <div className="text-center py-12 text-text-muted dark:text-gray-400">Loading experiences...</div>
       ) : experiences.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-[#e8ded1] dark:border-gray-700">
+        <div className="text-center py-12 bg-surface dark:bg-gray-800 rounded-2xl border border-border-theme dark:border-gray-700">
           <ShieldAlert className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">No experiences found</h3>
           <p className="text-sm text-gray-500 mt-1">Be the first to share your interview experience!</p>
@@ -150,7 +150,7 @@ export default function ExperiencesHub() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {experiences.map((exp, idx) => (
-            <div key={exp._id || idx} className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-[#e8ded1] dark:border-gray-700 hover:shadow-lg transition-shadow">
+            <div key={exp._id || idx} className="bg-surface dark:bg-gray-800 rounded-2xl p-5 border border-border-theme dark:border-gray-700 hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-bold text-lg text-gray-900 dark:text-white">{exp.company}</h3>
                 <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs px-2 py-1 rounded font-medium">
@@ -186,7 +186,7 @@ export default function ExperiencesHub() {
       {/* Submission Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Share Interview Experience</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -258,7 +258,7 @@ export default function ExperiencesHub() {
                   <button
                     type="button"
                     onClick={addRound}
-                    className="mt-2 text-sm text-[#b56b37] hover:underline font-medium"
+                    className="mt-2 text-sm text-primary-blue hover:underline font-medium"
                   >
                     + Add Another Round
                   </button>
@@ -270,7 +270,7 @@ export default function ExperiencesHub() {
                     id="isAnon"
                     checked={isAnonymous}
                     onChange={(e) => setIsAnonymous(e.target.checked)}
-                    className="rounded border-gray-300 text-[#b56b37] focus:ring-[#b56b37]"
+                    className="rounded border-gray-300 text-primary-blue focus:ring-[#b56b37]"
                   />
                   <label htmlFor="isAnon" className="text-sm text-gray-700 dark:text-gray-300">
                     Post Anonymously (Hide my identity)
@@ -288,7 +288,7 @@ export default function ExperiencesHub() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-[#b56b37] rounded-lg hover:bg-[#a05a2b] transition-colors disabled:opacity-50"
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary-blue rounded-lg hover:bg-[#a05a2b] transition-colors disabled:opacity-50"
                   >
                     {submitting ? "Posting..." : "Post Experience"}
                   </button>

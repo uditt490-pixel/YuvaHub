@@ -18,7 +18,7 @@ function WorkflowStep({ step, isLast }: { step: AgentStep; isLast: boolean }) {
       >
         {/* Agent badge + name */}
         <div className="flex items-center gap-3 mb-3">
-          <span className="w-7 h-7 rounded-full bg-white/40 dark:bg-black/20 text-[12px] font-[800] flex items-center justify-center shrink-0">
+          <span className="w-7 h-7 rounded-full bg-surface/40 dark:bg-black/20 text-[12px] font-[800] flex items-center justify-center shrink-0">
             {step.step}
           </span>
           <h3 className="text-[15px] font-[700]">{step.agent}</h3>

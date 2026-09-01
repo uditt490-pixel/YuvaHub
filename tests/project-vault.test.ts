@@ -19,7 +19,7 @@ vi.mock('../src/api/db.js', () => {
 });
 
 import { ProjectSchema, CreateProjectInputSchema } from '../src/models/projectSchema.js';
-import { getProjects, getProjectById, createProject, toggleProjectUpvote, deleteProject, INITIAL_VAULT_PROJECTS } from '../src/api/controllers/projectController.js';
+import { getProjects, getProjectById, createProject, toggleProjectUpvote, deleteProject, updateProject, INITIAL_VAULT_PROJECTS } from '../src/api/controllers/projectController.js';
 
 describe('Project Vault Schema & Validation', () => {
   it('should validate a complete valid project schema', () => {
@@ -175,5 +175,52 @@ describe('Project Vault Controller API', () => {
     const body = mockRes.json.mock.calls[0][0];
     expect(body.success).toBe(true);
     expect(body.upvotes).toBe(initialUpvotes + 1);
+  });
+
+  it('should partially update a project (title and demoUrl)', async () => {
+    const sample = INITIAL_VAULT_PROJECTS[0];
+    const req = {
+      params: { id: sample.id },
+      body: {
+        title: 'YuvaHub Enterprise Career Discovery Engine v2',
+        demoUrl: 'https://v2.yuvahub.dev'
+      }
+    } as any;
+
+    await updateProject(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    const body = mockRes.json.mock.calls[0][0];
+    expect(body.success).toBe(true);
+    expect(body.project.title).toBe('YuvaHub Enterprise Career Discovery Engine v2');
+    expect(body.project.demoUrl).toBe('https://v2.yuvahub.dev');
+  });
+
+  it('should reject updateProject with empty body', async () => {
+    const sample = INITIAL_VAULT_PROJECTS[0];
+    const req = {
+      params: { id: sample.id },
+      body: {}
+    } as any;
+
+    await updateProject(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(400);
+    const body = mockRes.json.mock.calls[0][0];
+    expect(body.success).toBe(false);
+  });
+
+  it('should delete a project by id', async () => {
+    const sample = INITIAL_VAULT_PROJECTS[0];
+    const req = {
+      params: { id: sample.id }
+    } as any;
+
+    await deleteProject(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    const body = mockRes.json.mock.calls[0][0];
+    expect(body.success).toBe(true);
+    expect(body.message).toContain('removed');
   });
 });

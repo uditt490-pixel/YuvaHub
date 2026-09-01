@@ -96,17 +96,17 @@ export default function Security() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fcf9f2] text-[#231f20] font-sans pb-20 selection:bg-[#f3e4bd] selection:text-[#603620]">
+    <div className="min-h-screen bg-background text-text-primary font-sans pb-20 selection:bg-[#f3e4bd] selection:text-text-secondary">
 
       {/* Hero Banner */}
       <div className="max-w-5xl mx-auto text-center space-y-4 pt-10 pb-12 px-6">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-[#e8ded1] text-[#603620] text-xs font-bold uppercase tracking-widest rounded-full shadow-sm">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-border-theme text-text-secondary text-xs font-bold uppercase tracking-widest rounded-full shadow-sm">
           <ShieldCheck className="w-4 h-4 text-[#63703d]" /> SOC-2 Type II & ISO 27001 Aligned
         </div>
-        <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#231f20]">
-          Enterprise Security & <span className="italic text-[#b56b37] underline decoration-[#b5c37c] decoration-wavy decoration-2">Zero-Trust Architecture</span>
+        <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-text-primary">
+          Enterprise Security & <span className="italic text-primary-blue underline decoration-[#b5c37c] decoration-wavy decoration-2">Zero-Trust Architecture</span>
         </h1>
-        <p className="text-base text-[#603620]/90 leading-relaxed max-w-2xl mx-auto">
+        <p className="text-base text-text-secondary/90 leading-relaxed max-w-2xl mx-auto">
           YuvaHub employs defense-in-depth security to protect student profiles, resume data, AI prompts, and verified opportunity databases against unauthorized access.
         </p>
       </div>
@@ -158,11 +158,11 @@ export default function Security() {
                 onClick={() => setActiveSection(sec.id)}
                 className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${isActive
                     ? 'bg-[#603620] text-[#fcf9f2] border-[#603620] shadow-md'
-                    : 'bg-white text-[#603620] border-[#e8ded1] hover:border-[#b56b37]'
+                    : 'bg-surface text-text-secondary border-border-theme hover:border-primary-blue'
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-[#f3e4bd]' : 'text-[#b56b37]'}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-[#f3e4bd]' : 'text-primary-blue'}`} />
                   <span className="text-xs font-bold">{sec.title}</span>
                 </div>
               </button>
@@ -170,40 +170,40 @@ export default function Security() {
           })}
 
           {/* Quick Contact Card */}
-          <div className="mt-6 p-5 bg-[#f3e4bd]/50 border border-[#e8ded1] rounded-2xl text-left space-y-2">
-            <h4 className="text-xs font-serif font-bold text-[#603620]">Security Emergency?</h4>
-            <p className="text-[11px] text-[#603620]/80">Contact our Security Operations Center directly at <span className="font-bold underline">security@yuvahub.com</span>.</p>
+          <div className="mt-6 p-5 bg-[#f3e4bd]/50 border border-border-theme rounded-2xl text-left space-y-2">
+            <h4 className="text-xs font-serif font-bold text-text-secondary">Security Emergency?</h4>
+            <p className="text-[11px] text-text-secondary/80">Contact our Security Operations Center directly at <span className="font-bold underline">security@yuvahub.com</span>.</p>
           </div>
         </div>
 
         {/* Details Content Box */}
-        <div className="md:col-span-8 bg-white p-8 sm:p-10 rounded-3xl border border-[#e8ded1] shadow-sm space-y-8">
+        <div className="md:col-span-8 bg-surface p-8 sm:p-10 rounded-3xl border border-border-theme shadow-sm space-y-8">
 
           {activeSection !== 'bounty' ? (
             securitySections.filter(s => s.id === activeSection).map(s => {
               const Icon = s.icon;
               return (
                 <div key={s.id} className="space-y-6 text-left">
-                  <div className="flex items-center justify-between pb-4 border-b border-[#e8ded1]">
+                  <div className="flex items-center justify-between pb-4 border-b border-border-theme">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-2xl bg-[#f3e4bd] flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-[#b56b37]" />
+                        <Icon className="w-5 h-5 text-primary-blue" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-serif font-bold text-[#231f20]">{s.title}</h3>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#b56b37]">{s.badge}</span>
+                        <h3 className="text-xl font-serif font-bold text-text-primary">{s.title}</h3>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-primary-blue">{s.badge}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-6">
                     {s.details.map((detail, idx) => (
-                      <div key={idx} className="p-5 rounded-2xl bg-[#fcf9f2] border border-[#e8ded1] space-y-2">
-                        <h4 className="text-sm font-bold text-[#231f20] flex items-center gap-2">
+                      <div key={idx} className="p-5 rounded-2xl bg-background border border-border-theme space-y-2">
+                        <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-[#63703d] shrink-0" />
                           {detail.heading}
                         </h4>
-                        <p className="text-xs text-[#603620] leading-relaxed pl-6">
+                        <p className="text-xs text-text-secondary leading-relaxed pl-6">
                           {detail.text}
                         </p>
                       </div>
@@ -215,23 +215,23 @@ export default function Security() {
           ) : (
             /* Vulnerability Report Form Section */
             <div className="space-y-6 text-left">
-              <div className="flex items-center justify-between pb-4 border-b border-[#e8ded1]">
+              <div className="flex items-center justify-between pb-4 border-b border-border-theme">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-[#f3e4bd] flex items-center justify-center">
-                    <Terminal className="w-5 h-5 text-[#b56b37]" />
+                    <Terminal className="w-5 h-5 text-primary-blue" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-serif font-bold text-[#231f20]">Vulnerability Disclosure Form</h3>
+                    <h3 className="text-xl font-serif font-bold text-text-primary">Vulnerability Disclosure Form</h3>
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#63703d]">RESPONSIBLE DISCLOSURE PROGRAM</span>
                   </div>
                 </div>
               </div>
 
               {reportSubmitted ? (
-                <div className="p-8 bg-[#fcf9f2] border border-[#e8ded1] rounded-2xl text-center space-y-3">
+                <div className="p-8 bg-background border border-border-theme rounded-2xl text-center space-y-3">
                   <CheckCircle2 className="w-10 h-10 text-[#63703d] mx-auto" />
-                  <h4 className="text-lg font-serif font-bold text-[#231f20]">Report Received</h4>
-                  <p className="text-xs text-[#603620] max-w-sm mx-auto">
+                  <h4 className="text-lg font-serif font-bold text-text-primary">Report Received</h4>
+                  <p className="text-xs text-text-secondary max-w-sm mx-auto">
                     Thank you for contributing to YuvaHub security. Our security team will review your submission within 24 hours.
                   </p>
                   <button
@@ -245,36 +245,36 @@ export default function Security() {
                 <form onSubmit={handleReportSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Researcher Name</label>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">Researcher Name</label>
                       <input
                         type="text"
                         required
                         value={reportForm.name}
                         onChange={(e) => setReportForm({ ...reportForm, name: e.target.value })}
                         placeholder="Your full name or handle"
-                        className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37]"
+                        className="w-full text-xs px-3.5 py-2.5 bg-background border border-border-theme rounded-xl outline-none focus:border-primary-blue"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Email Address</label>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">Email Address</label>
                       <input
                         type="email"
                         required
                         value={reportForm.email}
                         onChange={(e) => setReportForm({ ...reportForm, email: e.target.value })}
                         placeholder="researcher@domain.com"
-                        className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37]"
+                        className="w-full text-xs px-3.5 py-2.5 bg-background border border-border-theme rounded-xl outline-none focus:border-primary-blue"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Severity Level</label>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">Severity Level</label>
                       <select
                         value={reportForm.severity}
                         onChange={(e) => setReportForm({ ...reportForm, severity: e.target.value })}
-                        className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37]"
+                        className="w-full text-xs px-3.5 py-2.5 bg-background border border-border-theme rounded-xl outline-none focus:border-primary-blue"
                       >
                         <option value="low">Low (UI glitch / Information Leak)</option>
                         <option value="medium">Medium (CSRF / Rate Limit bypass)</option>
@@ -284,11 +284,11 @@ export default function Security() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Affected Module</label>
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">Affected Module</label>
                       <select
                         value={reportForm.component}
                         onChange={(e) => setReportForm({ ...reportForm, component: e.target.value })}
-                        className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37]"
+                        className="w-full text-xs px-3.5 py-2.5 bg-background border border-border-theme rounded-xl outline-none focus:border-primary-blue"
                       >
                         <option value="auth">Firebase Auth / OAuth Sessions</option>
                         <option value="api">Backend API / Express Endpoints</option>
@@ -299,20 +299,20 @@ export default function Security() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-[#603620]">Vulnerability Description & Impact</label>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">Vulnerability Description & Impact</label>
                     <textarea
                       rows={3}
                       required
                       value={reportForm.description}
                       onChange={(e) => setReportForm({ ...reportForm, description: e.target.value })}
                       placeholder="Detailed description of the potential vulnerability..."
-                      className="w-full text-xs px-3.5 py-2.5 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl outline-none focus:border-[#b56b37] resize-none"
+                      className="w-full text-xs px-3.5 py-2.5 bg-background border border-border-theme rounded-xl outline-none focus:border-primary-blue resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#b56b37] hover:bg-[#603620] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-primary-blue hover:bg-[#603620] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
                   >
                     Submit Disclosure Report <Send className="w-4 h-4" />
                   </button>
@@ -322,13 +322,13 @@ export default function Security() {
           )}
 
           {/* Footer Back Action */}
-          <div className="pt-6 border-t border-[#e8ded1] flex items-center justify-between text-xs text-[#8c7569]">
+          <div className="pt-6 border-t border-border-theme flex items-center justify-between text-xs text-text-muted">
             <span className="flex items-center gap-1.5 text-[#63703d] font-bold">
               <ShieldCheck className="w-4 h-4" /> Continuous Vulnerability Scanning
             </span>
             <button
               onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="text-[#b56b37] hover:underline font-bold bg-transparent border-none cursor-pointer"
+              className="text-primary-blue hover:underline font-bold bg-transparent border-none cursor-pointer"
             >
               Back to Dashboard →
             </button>

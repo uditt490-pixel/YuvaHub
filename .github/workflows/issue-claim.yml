@@ -1,0 +1,115 @@
+name: Issue Claim Manager
+
+on:
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: '0 * * * *' # Run every hour
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  manage-claims:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Handle issue claims and unclaims
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const claimText = 'ye issue de de thakur';
+            const unclaimText = 'ye issue le le thakur';
+
+            if (context.eventName === 'issue_comment') {
+              // Only process comments on issues, not PRs
+              if (context.payload.issue.pull_request) return;
+
+              const commentBody = context.payload.comment.body.trim().toLowerCase();
+              
+              if (commentBody !== claimText && commentBody !== unclaimText) return;
+
+              const commenter = context.payload.comment.user.login;
+              const issueAuthor = context.payload.issue.user.login;
+              const issueAuthorAssociation = context.payload.issue.author_association;
+              const issueNumber = context.payload.issue.number;
+              const createdAt = new Date(context.payload.issue.created_at).getTime();
+              const now = new Date().getTime();
+              const hoursSinceCreated = (now - createdAt) / (1000 * 60 * 60);
+
+              if (commentBody === claimText) {
+                if (context.payload.issue.assignees && context.payload.issue.assignees.length > 0) {
+                  const assigneesList = context.payload.issue.assignees.map(a => `@${a.login}`).join(', ');
+                  await github.rest.issues.createComment({ ...context.repo, issue_number: issueNumber, body: `@${commenter}, this issue is already assigned to ${assigneesList}.` });
+                  return;
+                }
+                
+                // Contributor vs Owner 24-hour rule
+                if (issueAuthorAssociation !== 'OWNER' && hoursSinceCreated < 24) {
+                  if (commenter !== issueAuthor) {
+                    await github.rest.issues.createComment({ ...context.repo, issue_number: issueNumber, body: `@${commenter}, this issue was created by a contributor. Only the author can claim it within the first 24 hours.` });
+                    return;
+                  }
+                }
+
+                const userIssues = await github.rest.search.issuesAndPullRequests({
+                  q: `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open assignee:${commenter}`
+                });
+
+                if (userIssues.data.total_count >= 5) {
+                  await github.rest.issues.createComment({ ...context.repo, issue_number: issueNumber, body: `@${commenter}, you have reached the maximum limit of 5 assigned issues.` });
+                  return;
+                }
+
+                await github.rest.issues.addAssignees({ ...context.repo, issue_number: issueNumber, assignees: [commenter] });
+                await github.rest.issues.createComment({ ...context.repo, issue_number: issueNumber, body: `@${commenter} successfully claimed the issue! Please complete it within 24 hours or it will be automatically unassigned.` });
+
+              } else if (commentBody === unclaimText) {
+                const isAssigned = context.payload.issue.assignees && context.payload.issue.assignees.some(a => a.login === commenter);
+                if (isAssigned) {
+                  await github.rest.issues.removeAssignees({ ...context.repo, issue_number: issueNumber, assignees: [commenter] });
+                  await github.rest.issues.createComment({ ...context.repo, issue_number: issueNumber, body: `@${commenter} has unclaimed the issue.` });
+                } else {
+                  await github.rest.issues.createComment({ ...context.repo, issue_number: issueNumber, body: `@${commenter}, you are not currently assigned to this issue.` });
+                }
+              }
+            } else if (context.eventName === 'schedule' || context.eventName === 'workflow_dispatch') {
+              const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+                ...context.repo,
+                state: 'open'
+              });
+
+              const now = new Date().getTime();
+
+              for (const issue of openIssues) {
+                if (issue.assignees && issue.assignees.length > 0 && !issue.pull_request) {
+                  const events = await github.paginate(github.rest.issues.listEvents, {
+                    ...context.repo,
+                    issue_number: issue.number
+                  });
+                  
+                  for (const assignee of issue.assignees) {
+                    const assignEvents = events.filter(e => e.event === 'assigned' && e.assignee && e.assignee.login === assignee.login);
+                    if (assignEvents.length > 0) {
+                      // get the latest assignment event
+                      assignEvents.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                      const lastAssignEvent = assignEvents[0];
+                      const assignedAt = new Date(lastAssignEvent.created_at).getTime();
+                      const hoursSinceAssigned = (now - assignedAt) / (1000 * 60 * 60);
+
+                      if (hoursSinceAssigned >= 24) {
+                        await github.rest.issues.removeAssignees({
+                          ...context.repo,
+                          issue_number: issue.number,
+                          assignees: [assignee.login]
+                        });
+                        await github.rest.issues.createComment({
+                          ...context.repo,
+                          issue_number: issue.number,
+                          body: `@${assignee.login}, you have been unassigned from this issue because 24 hours have passed since you claimed it.`
+                        });
+                      }
+                    }
+                  }
+                }
+              }
+            }

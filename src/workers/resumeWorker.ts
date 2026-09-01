@@ -36,8 +36,6 @@ export const resumeWorker = new Worker(
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      // Parse PDF
-      console.log(`[Resume Worker] Parsing PDF for user ${userId}`);
       const parser = new PDFParse({ data: buffer });
       const pdfData = await parser.getText();
       const text = pdfData.text;

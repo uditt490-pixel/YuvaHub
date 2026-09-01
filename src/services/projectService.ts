@@ -90,3 +90,17 @@ export async function toggleProjectUpvoteApi(id: string): Promise<{ upvotes: num
   const data = await res.json();
   return data.data || data;
 }
+
+export async function updateProjectApi(id: string, payload: Partial<Omit<Project, '_id' | 'id' | 'createdAt' | 'views' | 'upvotes' | 'stars'>>): Promise<Project> {
+  const res = await fetch(`${API_BASE_URL}/projects/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error((errData as any).error || "Failed to update project");
+  }
+  const data = await res.json();
+  return data.data?.project || data.project;
+}

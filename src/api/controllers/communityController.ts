@@ -12,12 +12,19 @@ const containsProfanity = (text: string): boolean => {
   return profanityRegex.test(text);
 };
 
+import { calculateHotScore } from "./voteController.js";
+
 export const getPosts = async (req: Request, res: Response) => {
   try {
     const { page, limit, skip } = parsePagination(req.query);
-    const sort = req.query.sort === "trending" ? "trending" : "latest";
-    const sortOption: any =
-      sort === "trending" ? { upvotes: -1, createdAt: -1 } : { createdAt: -1 };
+    const sort = (req.query.sort as string) || "hot"; // Default forum view sorts by Hot score
+    
+    let sortOption: any = { hotScore: -1, createdAt: -1 };
+    if (sort === "latest" || sort === "newest") {
+      sortOption = { createdAt: -1 };
+    } else if (sort === "top") {
+      sortOption = { upvotes: -1, createdAt: -1 };
+    }
 
     if (dbQuery) {
       const posts = await dbQuery
@@ -33,7 +40,7 @@ export const getPosts = async (req: Request, res: Response) => {
       }
     }
 
-    const mockPosts = [
+    const mockPosts: any[] = [
       {
         _id: "post_1",
         id: "post_1",
@@ -46,6 +53,7 @@ export const getPosts = async (req: Request, res: Response) => {
         tags: ["GSoC", "OpenSource", "Linux"],
         upvotes: 24,
         upvoted_by: [],
+        downvotes: [],
         repliesCount: 3,
         createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
       },
@@ -61,6 +69,7 @@ export const getPosts = async (req: Request, res: Response) => {
         tags: ["Microsoft", "DSA", "Internship"],
         upvotes: 15,
         upvoted_by: [],
+        downvotes: [],
         repliesCount: 5,
         createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
       },
@@ -76,16 +85,30 @@ export const getPosts = async (req: Request, res: Response) => {
         tags: ["SystemDesign", "Backend", "Roadmap"],
         upvotes: 38,
         upvoted_by: [],
+        downvotes: [],
         repliesCount: 8,
         createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
       },
     ];
 
-    if (sort === "trending") {
-      mockPosts.sort((a, b) => b.upvotes - a.upvotes);
+    // Calculate HackerNews time decay hot score for mock posts
+    const enrichedMockPosts = mockPosts.map((p) => {
+      const upCount = typeof p.upvotes === "number" ? p.upvotes : Array.isArray(p.upvotes) ? p.upvotes.length : 0;
+      const downCount = Array.isArray(p.downvotes) ? p.downvotes.length : 0;
+      const hotScore = calculateHotScore(upCount, downCount, p.createdAt);
+      return { ...p, hotScore };
+    });
+
+    if (sort === "hot") {
+      enrichedMockPosts.sort((a, b) => b.hotScore - a.hotScore);
+    } else if (sort === "top") {
+      enrichedMockPosts.sort((a, b) => b.upvotes - a.upvotes);
+    } else if (sort === "latest" || sort === "newest") {
+      enrichedMockPosts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
-    const sliced = mockPosts.slice(skip, skip + limit);
-    return sendPaginated(res, sliced, page, limit, mockPosts.length);
+
+    const sliced = enrichedMockPosts.slice(skip, skip + limit);
+    return sendPaginated(res, sliced, page, limit, enrichedMockPosts.length);
   } catch (err) {
     console.error("Fetch Posts Error:", err);
     return sendError(res, "Internal Server Error", 500);

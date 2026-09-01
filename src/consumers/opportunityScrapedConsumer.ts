@@ -1,5 +1,6 @@
 import { OpportunityScrapedEvent } from '../events/schemas.js';
 import { generateOpportunityEmbedding } from '../services/embedding.js';
+import { matchOpportunityAgainstWatchlists } from '../services/watchlistMatcher.js';
 
 export async function createOpportunityScrapedConsumer(db: any) {
   return async (event: OpportunityScrapedEvent) => {
@@ -42,6 +43,10 @@ export async function createOpportunityScrapedConsumer(db: any) {
         await db.collection('opportunities').insertOne(doc);
       }
       console.log(`[DB Consumer] Inserted opportunity: ${payload.title}`);
+      
+      // Match against active watchlists and send alerts
+      await matchOpportunityAgainstWatchlists(doc);
+
     } catch (err: any) {
       if (err.code === 11000) {
         // Idempotency: Ignore duplicate key errors, simply ack the message

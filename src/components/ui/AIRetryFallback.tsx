@@ -59,7 +59,7 @@ export const AIRetryFallback: React.FC<AIRetryFallbackProps> = ({
       </div>
 
       {/* Actionable Fallback Guidance */}
-      <div className="bg-white/80 rounded-lg p-4 border border-amber-200 text-xs text-amber-900 space-y-2">
+      <div className="bg-surface/80 rounded-lg p-4 border border-amber-200 text-xs text-amber-900 space-y-2">
         <div className="flex items-center gap-1.5 font-semibold text-amber-800">
           <HelpCircle className="w-4 h-4 text-amber-600" />
           <span>Actionable Guidance & Troubleshooting:</span>
@@ -85,7 +85,7 @@ export const AIRetryFallback: React.FC<AIRetryFallbackProps> = ({
         {onUseFallback && (
           <button
             onClick={onUseFallback}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-amber-100/50 text-amber-900 border border-amber-300 rounded-lg text-sm font-semibold transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-surface hover:bg-amber-100/50 text-amber-900 border border-amber-300 rounded-lg text-sm font-semibold transition-all"
           >
             <Sparkles className="w-4 h-4 text-amber-600" />
             Use Offline Fallback Output

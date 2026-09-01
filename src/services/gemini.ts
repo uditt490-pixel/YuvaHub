@@ -376,3 +376,32 @@ Rules:
     roadmap: [],
   };
 }
+
+export async function generateCareerMilestones(
+  goalTitle: string,
+  targetRole: string,
+  targetDate: string
+) {
+  const prompt = `
+You are an AI Career Mentor. A student wants to achieve the following career goal:
+Goal Title: "${goalTitle}"
+Target Role: "${targetRole}"
+Target Date: "${targetDate}"
+
+Break this goal down into 5 to 7 concrete, time-bound, and actionable milestones.
+For each milestone, provide a title, a short description, and an estimated dueDate (in YYYY-MM-DD format) that logically precedes the target date.
+
+Return JSON ONLY using exactly this structure:
+[
+  {
+    "title": "...",
+    "description": "...",
+    "dueDate": "YYYY-MM-DD",
+    "status": "not_started"
+  }
+]
+`;
+
+  const text = await generatedContentProxy(prompt, true);
+  return robustParseJSON(text) || [];
+}

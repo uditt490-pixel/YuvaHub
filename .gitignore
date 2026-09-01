@@ -20,3 +20,9 @@ stats.html
 
 # Test Outputs
 tests/test-output.pdf
+
+# Patch files
+*.patch
+
+# Logs
+console.log

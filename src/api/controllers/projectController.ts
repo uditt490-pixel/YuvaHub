@@ -517,3 +517,52 @@ export const deleteProject = async (req: Request, res: Response) => {
     return sendError(res, "Failed to delete project", 500);
   }
 };
+
+/**
+ * PATCH /projects/:id
+ * Partial update — only the fields provided in the request body are changed.
+ * Automatically refreshes `updatedAt`.
+ */
+export const updateProject = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  if (!id) return sendBadRequest(res, "Project ID is required");
+
+  // Strip server-managed fields so callers can't spoof them
+  const { _id, id: _bodyId, createdAt, views, upvotes, stars, ...allowedUpdates } = req.body;
+
+  if (!allowedUpdates || Object.keys(allowedUpdates).length === 0) {
+    return sendBadRequest(res, "No valid update fields provided");
+  }
+
+  const patch: Record<string, any> = { ...allowedUpdates, updatedAt: new Date() };
+
+  // In-memory fallback
+  if (!dbCommand || !dbQuery) {
+    const found = INITIAL_VAULT_PROJECTS.find(p => p.id === id);
+    if (!found) return sendNotFound(res, "Project not found");
+    Object.assign(found, patch);
+    return sendSuccess(res, { project: found, message: "Project updated successfully" });
+  }
+
+  try {
+    const oid = safeObjectId(id);
+    const query = oid ? { $or: [{ _id: oid }, { id }] } : { id };
+
+    const result = await dbCommand.collection("projects").findOneAndUpdate(
+      query,
+      { $set: patch },
+      { returnDocument: "after" }
+    );
+
+    if (!result) return sendNotFound(res, "Project not found");
+
+    const docId = result.id || (result._id ? result._id.toString() : "");
+    const mapped = { ...result, id: docId };
+    delete mapped._id;
+
+    return sendSuccess(res, { project: mapped, message: "Project updated successfully" });
+  } catch (err: any) {
+    console.error("[updateProject] Error:", err);
+    return sendError(res, "Failed to update project", 500);
+  }
+};

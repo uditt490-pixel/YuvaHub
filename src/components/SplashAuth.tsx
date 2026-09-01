@@ -198,7 +198,7 @@ export default function SplashAuth() {
       org: 'Microsoft India',
       orgBadge: 'MSFT',
       badge: 'FEATURED · STIPEND ₹1.2L/mo',
-      badgeClass: 'bg-[#b56b37] text-white',
+      badgeClass: 'bg-primary-blue text-white',
       dates: 'Apply by May 15, 2026',
       stipend: '₹1,25,000 / month',
       tags: ['React', 'Node.js', 'System Design']
@@ -223,10 +223,10 @@ export default function SplashAuth() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fcf9f2] text-[#231f20] font-sans overflow-x-hidden selection:bg-[#f3e4bd] selection:text-[#603620]">
+    <div className="min-h-screen bg-background text-text-primary font-sans overflow-x-hidden selection:bg-[#f3e4bd] selection:text-text-secondary">
 
       {/* Editorial Header / Navbar */}
-      <header className="sticky top-0 z-50 bg-[#fcf9f2]/90 backdrop-blur-md border-b border-[#e8ded1] transition-colors duration-300">
+      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border-theme transition-colors duration-300">
         <div className="max-w-7xl mx-auto h-[72px] px-6 lg:px-12 flex items-center justify-between">
 
           {/* Logo Mark */}
@@ -234,24 +234,24 @@ export default function SplashAuth() {
             <div className="w-9 h-9 rounded-full bg-[#603620] flex items-center justify-center shadow-md">
               <Zap className="w-4 h-4 text-[#f3e4bd]" />
             </div>
-            <span className="font-serif font-bold text-2xl tracking-tight text-[#231f20]">
-              Yuva<span className="text-[#b56b37] italic">Hub</span>
+            <span className="font-serif font-bold text-2xl tracking-tight text-text-primary">
+              Yuva<span className="text-primary-blue italic">Hub</span>
             </span>
           </div>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-10 text-xs uppercase tracking-widest font-bold text-[#603620]">
-            <a href="#explore" onClick={(e) => { e.preventDefault(); document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-[#b56b37] transition-colors">Explore</a>
-            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-[#b56b37] transition-colors">AI Suite</a>
-            <a href="#stats" onClick={(e) => { e.preventDefault(); document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-[#b56b37] transition-colors">Impact</a>
-            <a href="#faq" onClick={(e) => { e.preventDefault(); document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-[#b56b37] transition-colors">FAQ</a>
+          <nav className="hidden md:flex items-center gap-10 text-xs uppercase tracking-widest font-bold text-text-secondary">
+            <a href="#explore" onClick={(e) => { e.preventDefault(); document.getElementById('explore')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-primary-blue transition-colors">Explore</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-primary-blue transition-colors">AI Suite</a>
+            <a href="#stats" onClick={(e) => { e.preventDefault(); document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-primary-blue transition-colors">Impact</a>
+            <a href="#faq" onClick={(e) => { e.preventDefault(); document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' }); }} className="hover:text-primary-blue transition-colors">FAQ</a>
           </nav>
 
           {/* Actions */}
           <div className="flex items-center gap-4">
             <button
               onClick={handleLogin}
-              className="px-6 py-2.5 text-xs font-extrabold uppercase tracking-wider bg-[#b56b37] text-white rounded-full shadow-md hover:bg-[#603620] hover:shadow-lg transition-all cursor-pointer"
+              className="px-6 py-2.5 text-xs font-extrabold uppercase tracking-wider bg-primary-blue text-white rounded-full shadow-md hover:bg-[#603620] hover:shadow-lg transition-all cursor-pointer"
             >
               Sign In
             </button>
@@ -271,33 +271,33 @@ export default function SplashAuth() {
               {/* Left Content */}
               <div className="lg:col-span-7 space-y-7 text-left">
 
-                <div ref={heroBadgeRef} className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-[#e8ded1] text-[#603620] text-xs font-bold uppercase tracking-widest rounded-full shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5 text-[#b56b37]" /> India's AI-Powered Student Ecosystem
+                <div ref={heroBadgeRef} className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-border-theme text-text-secondary text-xs font-bold uppercase tracking-widest rounded-full shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5 text-primary-blue" /> India's AI-Powered Student Ecosystem
                 </div>
 
-                <h1 ref={heroTitleRef} className="text-4xl sm:text-6xl font-serif font-normal tracking-tight text-[#231f20] leading-[1.12]">
-                  Unlocking student potential with <span className="italic font-serif text-[#b56b37] underline decoration-[#b5c37c] decoration-wavy decoration-2">intelligent matching.</span>
+                <h1 ref={heroTitleRef} className="text-4xl sm:text-6xl font-serif font-normal tracking-tight text-text-primary leading-[1.12]">
+                  Unlocking student potential with <span className="italic font-serif text-primary-blue underline decoration-[#b5c37c] decoration-wavy decoration-2">intelligent matching.</span>
                 </h1>
 
-                <p ref={heroParaRef} className="text-base sm:text-lg text-[#603620]/90 font-sans leading-relaxed max-w-xl">
+                <p ref={heroParaRef} className="text-base sm:text-lg text-text-secondary/90 font-sans leading-relaxed max-w-xl">
                   YuvaHub aggregates, normalizes, and ranks verified scholarships, hackathons, and software engineering roles for ambitious developers across India.
                 </p>
 
                 {/* Editorial Search Bar */}
-                <div ref={heroSearchRef} className="relative max-w-xl p-2 bg-white border border-[#e8ded1] rounded-2xl shadow-xl shadow-[#231f20]/5 flex flex-col sm:flex-row items-center gap-2">
+                <div ref={heroSearchRef} className="relative max-w-xl p-2 bg-surface border border-border-theme rounded-2xl shadow-xl shadow-[#231f20]/5 flex flex-col sm:flex-row items-center gap-2">
                   <div className="flex items-center flex-1 w-full px-3">
-                    <Search className="w-5 h-5 text-[#8c7569] shrink-0 mr-2" />
+                    <Search className="w-5 h-5 text-text-muted shrink-0 mr-2" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search Google AI hackathons, SDE roles, Reliance scholarship..."
-                      className="w-full bg-transparent border-none outline-none text-sm text-[#231f20] placeholder:text-[#8c7569] py-2"
+                      className="w-full bg-transparent border-none outline-none text-sm text-text-primary placeholder:text-text-muted py-2"
                     />
                   </div>
                   <button
                     onClick={handleLogin}
-                    className="w-full sm:w-auto px-7 py-3 bg-[#603620] hover:bg-[#b56b37] text-[#fcf9f2] font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0"
+                    className="w-full sm:w-auto px-7 py-3 bg-[#603620] hover:bg-primary-blue text-[#fcf9f2] font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shrink-0"
                   >
                     Search <ArrowRight className="w-4 h-4" />
                   </button>
@@ -305,12 +305,12 @@ export default function SplashAuth() {
 
                 {/* Trending Tags */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-xs font-bold text-[#8c7569] uppercase tracking-wider">Popular:</span>
+                  <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Popular:</span>
                   {['Generative AI', 'Web3 Hackathons', 'SDE Internships', 'Reliance Scholarship'].map((tag) => (
                     <button
                       key={tag}
                       onClick={() => { setSearchQuery(tag); handleLogin(); }}
-                      className="px-3.5 py-1 bg-[#f3e4bd]/60 border border-[#e8ded1] text-[#603620] text-xs font-semibold rounded-full hover:bg-[#b5c37c]/30 hover:border-[#63703d] transition-all cursor-pointer"
+                      className="px-3.5 py-1 bg-[#f3e4bd]/60 border border-border-theme text-text-secondary text-xs font-semibold rounded-full hover:bg-[#b5c37c]/30 hover:border-[#63703d] transition-all cursor-pointer"
                     >
                       {tag}
                     </button>
@@ -321,16 +321,16 @@ export default function SplashAuth() {
               {/* Right Hero Showcase Cards */}
               <div className="lg:col-span-5 relative perspective-1000">
 
-                <div ref={heroCardRef} className="relative z-10 bg-[#ffffff] border border-[#e8ded1] rounded-3xl p-7 shadow-2xl shadow-[#231f20]/10 space-y-6">
+                <div ref={heroCardRef} className="relative z-10 bg-[#ffffff] border border-border-theme rounded-3xl p-7 shadow-2xl shadow-[#231f20]/10 space-y-6">
 
-                  <div className="flex items-center justify-between border-b border-[#e8ded1] pb-4">
+                  <div className="flex items-center justify-between border-b border-border-theme pb-4">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-11 h-11 rounded-2xl bg-[#f3e4bd] text-[#603620] flex items-center justify-center font-bold">
-                        <Zap className="w-6 h-6 text-[#b56b37]" />
+                      <div className="w-11 h-11 rounded-2xl bg-[#f3e4bd] text-text-secondary flex items-center justify-center font-bold">
+                        <Zap className="w-6 h-6 text-primary-blue" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-serif font-bold text-[#231f20]">Gemini AI Matcher</h4>
-                        <p className="text-xs text-[#8c7569]">Curated for CS Undergraduate</p>
+                        <h4 className="text-sm font-serif font-bold text-text-primary">Gemini AI Matcher</h4>
+                        <p className="text-xs text-text-muted">Curated for CS Undergraduate</p>
                       </div>
                     </div>
                     <span className="px-3 py-1 bg-[#63703d]/10 text-[#63703d] text-xs font-extrabold rounded-full flex items-center gap-1.5">
@@ -339,43 +339,43 @@ export default function SplashAuth() {
                   </div>
 
                   {/* Opportunity Sample 1 */}
-                  <div className="p-4 rounded-2xl bg-[#fcf9f2] border border-[#e8ded1] space-y-1.5">
+                  <div className="p-4 rounded-2xl bg-background border border-border-theme space-y-1.5">
                     <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-[#b56b37] uppercase tracking-wide">GOOGLE AI ODYSSEY 2026</span>
+                      <span className="text-primary-blue uppercase tracking-wide">GOOGLE AI ODYSSEY 2026</span>
                       <span className="text-[#63703d]">$50,000 Pool</span>
                     </div>
-                    <p className="text-xs text-[#603620]/80">Building LLM-powered applications for social impact.</p>
+                    <p className="text-xs text-text-secondary/80">Building LLM-powered applications for social impact.</p>
                   </div>
 
                   {/* Opportunity Sample 2 */}
-                  <div className="p-4 rounded-2xl bg-[#fcf9f2] border border-[#e8ded1] space-y-1.5">
+                  <div className="p-4 rounded-2xl bg-background border border-border-theme space-y-1.5">
                     <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-[#603620] uppercase tracking-wide">ATS RESUME AUDITOR</span>
-                      <span className="text-[#b56b37]">94/100 Match</span>
+                      <span className="text-text-secondary uppercase tracking-wide">ATS RESUME AUDITOR</span>
+                      <span className="text-primary-blue">94/100 Match</span>
                     </div>
-                    <p className="text-xs text-[#603620]/80">Keywords aligned with Microsoft SDE role descriptions.</p>
+                    <p className="text-xs text-text-secondary/80">Keywords aligned with Microsoft SDE role descriptions.</p>
                   </div>
                 </div>
 
                 {/* Floating Micro Badge 1 */}
-                <div ref={floatBadge1Ref} className="absolute -top-6 -left-6 z-20 bg-white border border-[#e8ded1] p-4 rounded-2xl shadow-xl flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-[#f3e4bd] text-[#603620] flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-[#b56b37]" />
+                <div ref={floatBadge1Ref} className="absolute -top-6 -left-6 z-20 bg-surface border border-border-theme p-4 rounded-2xl shadow-xl flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#f3e4bd] text-text-secondary flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-primary-blue" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-[#231f20]">ETHGlobal Winner</p>
-                    <p className="text-[10px] text-[#8c7569]">$10,000 Grant Awarded</p>
+                    <p className="text-xs font-bold text-text-primary">ETHGlobal Winner</p>
+                    <p className="text-[10px] text-text-muted">$10,000 Grant Awarded</p>
                   </div>
                 </div>
 
                 {/* Floating Micro Badge 2 */}
-                <div ref={floatBadge2Ref} className="absolute -bottom-6 -right-4 z-20 bg-white border border-[#e8ded1] p-4 rounded-2xl shadow-xl flex items-center gap-3">
+                <div ref={floatBadge2Ref} className="absolute -bottom-6 -right-4 z-20 bg-surface border border-border-theme p-4 rounded-2xl shadow-xl flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-[#b5c37c]/30 text-[#63703d] flex items-center justify-center">
                     <CheckCircle2 className="w-5 h-5 text-[#63703d]" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-[#231f20]">SDE Offer at Amazon</p>
-                    <p className="text-[10px] text-[#8c7569]">Verified YuvaHub Scholar</p>
+                    <p className="text-xs font-bold text-text-primary">SDE Offer at Amazon</p>
+                    <p className="text-[10px] text-text-muted">Verified YuvaHub Scholar</p>
                   </div>
                 </div>
 
@@ -409,9 +409,9 @@ export default function SplashAuth() {
           {/* Explore Section */}
           <section id="explore" className="py-24 px-6 lg:px-12 max-w-7xl mx-auto">
             <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-              <span className="text-xs font-bold text-[#b56b37] uppercase tracking-widest">Standardized Discovery</span>
-              <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#231f20]">Curated Opportunity Hubs</h2>
-              <p className="text-sm text-[#603620]">Eliminate manual daily searching. Browse normalized, structured opportunities in one clean feed.</p>
+              <span className="text-xs font-bold text-primary-blue uppercase tracking-widest">Standardized Discovery</span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-normal text-text-primary">Curated Opportunity Hubs</h2>
+              <p className="text-sm text-text-secondary">Eliminate manual daily searching. Browse normalized, structured opportunities in one clean feed.</p>
             </div>
 
             {/* Editorial Category Selector */}
@@ -424,12 +424,12 @@ export default function SplashAuth() {
                     onClick={() => setActiveCategory(cat.id)}
                     className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-2 border ${activeCategory === cat.id
                       ? 'bg-[#603620] text-[#fcf9f2] border-[#603620] shadow-md scale-105'
-                      : 'bg-[#f3e4bd]/50 text-[#603620] border-[#e8ded1] hover:border-[#b56b37]'
+                      : 'bg-[#f3e4bd]/50 text-text-secondary border-border-theme hover:border-primary-blue'
                       }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     <span>{cat.label}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeCategory === cat.id ? 'bg-[#f3e4bd] text-[#603620]' : 'bg-white text-[#8c7569]'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] ${activeCategory === cat.id ? 'bg-[#f3e4bd] text-text-secondary' : 'bg-surface text-text-muted'}`}>
                       {cat.count}
                     </span>
                   </button>
@@ -443,36 +443,36 @@ export default function SplashAuth() {
                 <div
                   key={opp.id}
                   onClick={handleLogin}
-                  className="group bg-white border border-[#e8ded1] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                  className="group bg-surface border border-border-theme rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col justify-between"
                 >
                   <div className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <span className={`px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest rounded-full ${opp.badgeClass}`}>
                         {opp.badge}
                       </span>
-                      <span className="text-xs font-bold text-[#8c7569]">{opp.orgBadge}</span>
+                      <span className="text-xs font-bold text-text-muted">{opp.orgBadge}</span>
                     </div>
 
-                    <h3 className="text-lg font-serif font-bold text-[#231f20] leading-snug group-hover:text-[#b56b37] transition-colors">
+                    <h3 className="text-lg font-serif font-bold text-text-primary leading-snug group-hover:text-primary-blue transition-colors">
                       {opp.title}
                     </h3>
-                    <p className="text-xs text-[#603620] font-medium">{opp.org}</p>
+                    <p className="text-xs text-text-secondary font-medium">{opp.org}</p>
 
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {opp.tags.map(t => (
-                        <span key={t} className="px-2.5 py-1 bg-[#fcf9f2] border border-[#e8ded1] text-[#603620] text-[11px] font-semibold rounded-md">
+                        <span key={t} className="px-2.5 py-1 bg-background border border-border-theme text-text-secondary text-[11px] font-semibold rounded-md">
                           {t}
                         </span>
                       ))}
                     </div>
                   </div>
 
-                  <div className="px-6 py-4 bg-[#fcf9f2] border-t border-[#e8ded1] flex items-center justify-between text-xs font-bold text-[#603620]">
+                  <div className="px-6 py-4 bg-background border-t border-border-theme flex items-center justify-between text-xs font-bold text-text-secondary">
                     <span className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-[#b56b37]" />
+                      <Calendar className="w-3.5 h-3.5 text-primary-blue" />
                       {opp.dates}
                     </span>
-                    <span className="text-[#b56b37] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    <span className="text-primary-blue flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                       Apply <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
@@ -482,44 +482,44 @@ export default function SplashAuth() {
           </section>
 
           {/* AI Features Showcase Section */}
-          <section id="features" className="py-24 px-6 lg:px-12 bg-[#f6efe2] border-y border-[#e8ded1]">
+          <section id="features" className="py-24 px-6 lg:px-12 bg-surface-secondary border-y border-border-theme">
             <div className="max-w-7xl mx-auto">
               <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-                <span className="text-xs font-bold text-[#b56b37] uppercase tracking-widest">Powered by Google Gemini</span>
-                <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#231f20]">AI Career Engineering Suite</h2>
-                <p className="text-sm text-[#603620]">Bespoke career tools engineered to optimize your application workflow from resume to offer.</p>
+                <span className="text-xs font-bold text-primary-blue uppercase tracking-widest">Powered by Google Gemini</span>
+                <h2 className="text-3xl sm:text-4xl font-serif font-normal text-text-primary">AI Career Engineering Suite</h2>
+                <p className="text-sm text-text-secondary">Bespoke career tools engineered to optimize your application workflow from resume to offer.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Card 1 */}
-                <div className="bg-white p-8 rounded-3xl border border-[#e8ded1] shadow-sm hover:shadow-md transition-all space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-[#f3e4bd] text-[#603620] flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-[#b56b37]" />
+                <div className="bg-surface p-8 rounded-3xl border border-border-theme shadow-sm hover:shadow-md transition-all space-y-4">
+                  <div className="w-12 h-12 rounded-2xl bg-[#f3e4bd] text-text-secondary flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary-blue" />
                   </div>
-                  <h3 className="text-xl font-serif font-bold text-[#231f20]">ATS Resume Reviewer</h3>
-                  <p className="text-xs sm:text-sm text-[#603620] leading-relaxed">
+                  <h3 className="text-xl font-serif font-bold text-text-primary">ATS Resume Reviewer</h3>
+                  <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
                     Evaluates resume text against active SDE & tech job descriptions to calculate keyword density and formatting scores.
                   </p>
                 </div>
 
                 {/* Card 2 */}
-                <div className="bg-white p-8 rounded-3xl border border-[#e8ded1] shadow-sm hover:shadow-md transition-all space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-[#f3e4bd] text-[#603620] flex items-center justify-center">
+                <div className="bg-surface p-8 rounded-3xl border border-border-theme shadow-sm hover:shadow-md transition-all space-y-4">
+                  <div className="w-12 h-12 rounded-2xl bg-[#f3e4bd] text-text-secondary flex items-center justify-center">
                     <Target className="w-6 h-6 text-[#63703d]" />
                   </div>
-                  <h3 className="text-xl font-serif font-bold text-[#231f20]">1-Click Cover Letters</h3>
-                  <p className="text-xs sm:text-sm text-[#603620] leading-relaxed">
+                  <h3 className="text-xl font-serif font-bold text-text-primary">1-Click Cover Letters</h3>
+                  <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
                     Generates persuasive, tailored cover letters matching your skills with the employer's specific project goals.
                   </p>
                 </div>
 
                 {/* Card 3 */}
-                <div className="bg-white p-8 rounded-3xl border border-[#e8ded1] shadow-sm hover:shadow-md transition-all space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-[#f3e4bd] text-[#603620] flex items-center justify-center">
-                    <Compass className="w-6 h-6 text-[#b56b37]" />
+                <div className="bg-surface p-8 rounded-3xl border border-border-theme shadow-sm hover:shadow-md transition-all space-y-4">
+                  <div className="w-12 h-12 rounded-2xl bg-[#f3e4bd] text-text-secondary flex items-center justify-center">
+                    <Compass className="w-6 h-6 text-primary-blue" />
                   </div>
-                  <h3 className="text-xl font-serif font-bold text-[#231f20]">24/7 AI Mentorship</h3>
-                  <p className="text-xs sm:text-sm text-[#603620] leading-relaxed">
+                  <h3 className="text-xl font-serif font-bold text-text-primary">24/7 AI Mentorship</h3>
+                  <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">
                     Interactive technical mentoring, eligibility evaluations, DSA guidance, and interview practice available anytime.
                   </p>
                 </div>
@@ -533,7 +533,7 @@ export default function SplashAuth() {
                 </div>
                 <button
                   onClick={handleLogin}
-                  className="px-8 py-3.5 bg-[#b56b37] hover:bg-[#231f20] text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-md cursor-pointer shrink-0"
+                  className="px-8 py-3.5 bg-primary-blue hover:bg-[#231f20] text-white font-extrabold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-md cursor-pointer shrink-0"
                 >
                   Get Started Free
                 </button>
@@ -545,9 +545,9 @@ export default function SplashAuth() {
           {/* Frequently Asked Questions */}
           <section id="faq" className="py-24 px-6 lg:px-12 max-w-4xl mx-auto">
             <div className="text-center mb-14 space-y-2">
-              <span className="text-xs font-bold text-[#b56b37] uppercase tracking-widest">FAQ</span>
-              <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#231f20]">Frequently Asked Questions</h2>
-              <p className="text-sm text-[#603620]">Hover over any question to expand automatically.</p>
+              <span className="text-xs font-bold text-primary-blue uppercase tracking-widest">FAQ</span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-normal text-text-primary">Frequently Asked Questions</h2>
+              <p className="text-sm text-text-secondary">Hover over any question to expand automatically.</p>
             </div>
 
             <div className="space-y-4">
@@ -575,7 +575,7 @@ export default function SplashAuth() {
                     key={idx}
                     onMouseEnter={() => setOpenFaqIndex(idx)}
                     onMouseLeave={() => setOpenFaqIndex(null)}
-                    className={`border rounded-2xl overflow-hidden bg-white transition-all duration-300 cursor-pointer ${isOpen ? 'border-[#b56b37] shadow-lg scale-[1.01]' : 'border-[#e8ded1] hover:border-[#b56b37]/60'
+                    className={`border rounded-2xl overflow-hidden bg-surface transition-all duration-300 cursor-pointer ${isOpen ? 'border-primary-blue shadow-lg scale-[1.01]' : 'border-border-theme hover:border-primary-blue/60'
                       }`}
                   >
                     <button
@@ -583,15 +583,15 @@ export default function SplashAuth() {
                       onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
                       className="w-full text-left p-5 flex justify-between items-center gap-4 bg-transparent border-none cursor-pointer"
                     >
-                      <span className={`font-bold text-sm md:text-base transition-colors ${isOpen ? 'text-[#b56b37]' : 'text-[#231f20]'}`}>
+                      <span className={`font-bold text-sm md:text-base transition-colors ${isOpen ? 'text-primary-blue' : 'text-text-primary'}`}>
                         {item.q}
                       </span>
-                      <span className={`p-2 rounded-xl bg-[#fcf9f2] text-[#603620] transition-transform duration-300 ${isOpen ? 'rotate-180 bg-[#f3e4bd] text-[#b56b37]' : ''}`}>
+                      <span className={`p-2 rounded-xl bg-background text-text-secondary transition-transform duration-300 ${isOpen ? 'rotate-180 bg-[#f3e4bd] text-primary-blue' : ''}`}>
                         <ChevronDown className="w-4 h-4" />
                       </span>
                     </button>
                     {isOpen && (
-                      <div className="px-5 pb-5 border-t border-[#e8ded1] pt-4 text-xs md:text-sm text-[#603620] leading-relaxed animate-fade-in">
+                      <div className="px-5 pb-5 border-t border-border-theme pt-4 text-xs md:text-sm text-text-secondary leading-relaxed animate-fade-in">
                         {item.a}
                       </div>
                     )}
@@ -609,7 +609,7 @@ export default function SplashAuth() {
                 setActiveTab('dashboard');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="flex items-center gap-2 text-sm text-[#b56b37] hover:underline font-bold bg-transparent border-none cursor-pointer"
+              className="flex items-center gap-2 text-sm text-primary-blue hover:underline font-bold bg-transparent border-none cursor-pointer"
             >
               ← Back to Home / Login
             </button>
@@ -626,13 +626,13 @@ export default function SplashAuth() {
       )}
 
       {/* Editorial Full-Width Footer */}
-      <footer id="footer" className="w-full bg-[#231f20] text-[#fcf9f2] border-t-2 border-[#b56b37] pt-20 pb-10 px-6 lg:px-16 transition-colors duration-300">
+      <footer id="footer" className="w-full bg-[#231f20] text-[#fcf9f2] border-t-2 border-primary-blue pt-20 pb-10 px-6 lg:px-16 transition-colors duration-300">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
 
           {/* Brand & Bio Column (4 cols) */}
           <div className="md:col-span-4 space-y-5 text-left">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="w-10 h-10 rounded-full bg-[#b56b37] flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-full bg-primary-blue flex items-center justify-center shadow-lg">
                 <Zap className="w-5 h-5 text-[#fcf9f2]" />
               </div>
               <span className="font-serif font-bold text-2xl text-[#f3e4bd] tracking-tight">
@@ -646,7 +646,7 @@ export default function SplashAuth() {
 
             {/* Social Links */}
             <div className="flex items-center gap-3 pt-2">
-              <a href="https://github.com/uditt490-pixel/YuvaHub" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-[#603620]/60 border border-[#8c7569]/40 flex items-center justify-center text-[#f3e4bd] hover:bg-[#b56b37] hover:text-white transition-all">
+              <a href="https://github.com/uditt490-pixel/YuvaHub" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-[#603620]/60 border border-[#8c7569]/40 flex items-center justify-center text-[#f3e4bd] hover:bg-primary-blue hover:text-white transition-all">
                 <Github className="w-4 h-4" />
               </a>
             </div>
@@ -683,7 +683,7 @@ export default function SplashAuth() {
           {/* Newsletter Column (4 cols) */}
           <div className="md:col-span-4 space-y-4 text-left bg-[#603620]/40 p-6 rounded-3xl border border-[#8c7569]/30">
             <h4 className="font-serif font-bold text-sm text-[#f3e4bd] flex items-center gap-2">
-              <Mail className="w-4 h-4 text-[#b56b37]" /> Stay Ahead of Deadlines
+              <Mail className="w-4 h-4 text-primary-blue" /> Stay Ahead of Deadlines
             </h4>
             <p className="text-xs text-[#fcf9f2]/80 leading-relaxed">
               Get hand-picked, verified opportunities and AI matching digests delivered directly to your inbox every Monday.
@@ -694,9 +694,9 @@ export default function SplashAuth() {
                 type="email"
                 placeholder="Enter your student email"
                 required
-                className="flex-1 text-xs px-3.5 py-2.5 rounded-xl bg-[#231f20] border border-[#8c7569]/50 text-[#fcf9f2] outline-none placeholder:text-[#8c7569] focus:border-[#b56b37]"
+                className="flex-1 text-xs px-3.5 py-2.5 rounded-xl bg-[#231f20] border border-[#8c7569]/50 text-[#fcf9f2] outline-none placeholder:text-text-muted focus:border-primary-blue"
               />
-              <button type="submit" className="bg-[#b56b37] hover:bg-[#63703d] text-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer shrink-0">
+              <button type="submit" className="bg-primary-blue hover:bg-[#63703d] text-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer shrink-0">
                 Join
               </button>
             </form>
@@ -708,7 +708,7 @@ export default function SplashAuth() {
         <div className="max-w-7xl mx-auto pt-8 border-t border-[#8c7569]/30 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#fcf9f2]/60">
           <div className="flex items-center gap-3">
             <span>&copy; 2026 YuvaHub Inc. All rights reserved.</span>
-            <span className="hidden sm:inline text-[#8c7569]">•</span>
+            <span className="hidden sm:inline text-text-muted">•</span>
             <span className="hidden sm:flex items-center gap-1.5 text-[#b5c37c] font-semibold">
               <span className="w-2 h-2 rounded-full bg-[#b5c37c] animate-pulse" /> All Systems Operational
             </span>
@@ -736,13 +736,13 @@ export default function SplashAuth() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="signin-modal-title"
-            className="bg-[#fcf9f2] rounded-3xl w-full max-w-md shadow-2xl p-8 border border-[#e8ded1] relative space-y-6"
+            className="bg-background rounded-3xl w-full max-w-md shadow-2xl p-8 border border-border-theme relative space-y-6"
           >
 
             <button
               onClick={handleCloseModal}
               aria-label="Close sign-in dialog"
-              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white border border-[#e8ded1] flex items-center justify-center text-[#603620] hover:text-[#231f20] transition-all cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-surface border border-border-theme flex items-center justify-center text-text-secondary hover:text-text-primary transition-all cursor-pointer"
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -751,8 +751,8 @@ export default function SplashAuth() {
               <div className="w-12 h-12 rounded-2xl bg-[#603620] text-[#f3e4bd] flex items-center justify-center mx-auto shadow-md" aria-hidden="true">
                 <Zap className="w-6 h-6" aria-hidden="true" />
               </div>
-              <h3 id="signin-modal-title" className="text-2xl font-serif font-bold text-[#231f20]">Welcome to YuvaHub</h3>
-              <p className="text-xs text-[#603620]">Sign in to unlock AI matching, ATS resume scores, & mentorship.</p>
+              <h3 id="signin-modal-title" className="text-2xl font-serif font-bold text-text-primary">Welcome to YuvaHub</h3>
+              <p className="text-xs text-text-secondary">Sign in to unlock AI matching, ATS resume scores, & mentorship.</p>
             </div>
 
             {errorMsg && (
@@ -766,7 +766,7 @@ export default function SplashAuth() {
               <button
                 onClick={handleGoogleLogin}
                 disabled={loading !== null}
-                className="w-full flex items-center justify-center gap-3 px-5 py-3.5 border border-[#e8ded1] hover:bg-white rounded-2xl bg-white text-[#231f20] font-bold text-sm transition-all disabled:opacity-50 cursor-pointer shadow-sm"
+                className="w-full flex items-center justify-center gap-3 px-5 py-3.5 border border-border-theme hover:bg-surface rounded-2xl bg-surface text-text-primary font-bold text-sm transition-all disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1c-4.3 0-7.92 2.47-9.82 6.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" /></svg>
                 <span>{loading === 'google' ? 'Connecting...' : 'Continue with Google'}</span>
@@ -782,11 +782,11 @@ export default function SplashAuth() {
               </button>
             </div>
 
-            <p className="text-[11px] text-[#603620] text-center leading-relaxed">
+            <p className="text-[11px] text-text-secondary text-center leading-relaxed">
               By continuing, you agree to YuvaHub's{' '}
-              <button onClick={() => { setIsModalOpen(false); setActiveTab('terms'); }} className="text-[#b56b37] hover:underline bg-transparent border-none p-0 font-bold">Terms</button>
+              <button onClick={() => { setIsModalOpen(false); setActiveTab('terms'); }} className="text-primary-blue hover:underline bg-transparent border-none p-0 font-bold">Terms</button>
               {' '}and{' '}
-              <button onClick={() => { setIsModalOpen(false); setActiveTab('privacy'); }} className="text-[#b56b37] hover:underline bg-transparent border-none p-0 font-bold">Privacy Policy</button>.
+              <button onClick={() => { setIsModalOpen(false); setActiveTab('privacy'); }} className="text-primary-blue hover:underline bg-transparent border-none p-0 font-bold">Privacy Policy</button>.
             </p>
 
           </div>

@@ -7,6 +7,7 @@ import { DevpostAdapter } from "../services/dnl/adapters/DevpostAdapter.js";
 import { InternshalaAdapter } from "../services/dnl/adapters/InternshalaAdapter.js";
 import { initializeSearchSync } from "../services/searchSync.js";
 import { config } from "../config/env.js";
+import { MigrationRunner } from "../migrations/runner.js";
 
 dotenv.config();
 
@@ -30,7 +31,7 @@ type ReinitCallback = () => Promise<void>;
 const reinitCallbacks: ReinitCallback[] = [];
 
 let reconnectTimer: ReturnType<typeof setInterval> | null = null;
-let activeDispatcher: DNLDispatcher | null = null;
+export let activeDispatcher: DNLDispatcher | null = null;
 let activeClients: MongoClient[] = [];
 
 /**
@@ -392,40 +393,9 @@ export async function initializeDatabase(): Promise<void> {
       setupDNL(dbCommand);
       initializeSearchSync(dbQuery).catch(err => console.error('[SearchSync] Non-fatal init error:', err));
 
-      dbCommand.collection("opportunities").createIndex({ created_at: -1, source_quality_score: -1 })
-        .then(() => console.log(`[Database] Created compound index on opportunities`))
-        .catch((err: any) => console.error(`[Database] Failed to create index:`, err));
-
-      dbCommand.collection("opportunities").createIndex(
-        { dedupe_hash: 1 },
-        { unique: true, partialFilterExpression: { dedupe_hash: { $exists: true } } }
-      )
-        .then(() => console.log(`[Database] Created unique index on opportunities.dedupe_hash`))
-        .catch((err: any) => console.error(`[Database] Failed to create unique index on opportunities.dedupe_hash:`, err));
-
-      dbQuery.collection("users").createIndex({ uid: 1 }, { unique: true, sparse: true })
-        .then(() => console.log(`[Database] Created unique index on users.uid`))
-        .catch((err: any) => console.error(`[Database] Failed to create index on users.uid:`, err));
-      dbCommand.collection("users").createIndex({ firebaseUid: 1 }, { unique: true, sparse: true })
-        .then(() => console.log(`[Database] Created unique sparse index on users.firebaseUid`))
-        .catch((err: any) => console.error(`[Database] Failed to create unique index:`, err));
-
-      // Paginated list endpoints — sort-field indexes (created_at / uploaded_at)
-      const paginatedIndexes: [string, string][] = [
-        ["teams", "created_at"],
-        ["posts", "created_at"],
-        ["bounties", "created_at"],
-        ["notifications", "created_at"],
-        ["mentorship_sessions", "created_at"],
-        ["bookmark_folders", "created_at"],
-        ["resumes", "uploaded_at"],
-        ["scraper_logs", "created_at"],
-      ];
-      paginatedIndexes.forEach(([collection, field]) => {
-        dbQuery.collection(collection).createIndex({ [field]: -1 })
-          .then(() => console.log(`[Database] Created index on ${collection}.${field}`))
-          .catch((err: any) => console.error(`[Database] Failed to create index on ${collection}.${field}:`, err));
-      });
+      console.log(`[Database] Running pending migrations...`);
+      const runner = new MigrationRunner(dbCommand);
+      runner.runMigrations().catch(err => console.error(`[Migrations] Non-fatal background migration error:`, err));
     } catch (err) {
       console.error("[Database] Connection failed, falling back to Mock Data:", err);
       dbCommand = new MockDB();

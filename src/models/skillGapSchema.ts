@@ -1,32 +1,46 @@
-export interface SkillGapItem {
-  skill: string;
-  category: "technical" | "soft";
-  priority: "high" | "medium" | "low";
-  reason: string;
-  completed: boolean;
-}
+import { z } from "zod";
 
-export interface LearningRoadmapItem {
-  skill: string;
-  priority: "high" | "medium" | "low";
-  estimatedWeeks: number;
-  resources: string[];
-  project: string;
-  completed: boolean;
-}
+export const SkillGapItemSchema = z.object({
+  skill: z.string().min(1),
+  category: z.enum(["technical", "soft"]),
+  priority: z.enum(["high", "medium", "low"]),
+  reason: z.string(),
+  completed: z.boolean().default(false),
+});
 
-export interface SkillGapAnalysis {
-  userId: string;
-  opportunityId?: string;
-  opportunityTitle?: string;
+export type SkillGapItem = z.infer<typeof SkillGapItemSchema>;
 
-  matchPercentage: number;
+export const LearningRoadmapItemSchema = z.object({
+  skill: z.string().min(1),
+  priority: z.enum(["high", "medium", "low"]),
+  estimatedWeeks: z.number().min(0),
+  resources: z.array(z.string()),
+  project: z.string(),
+  completed: z.boolean().default(false),
+});
 
-  existingSkills: string[];
-  missingSkills: SkillGapItem[];
+export type LearningRoadmapItem = z.infer<typeof LearningRoadmapItemSchema>;
 
-  roadmap: LearningRoadmapItem[];
+export const SkillGapAnalysisSchema = z.object({
+  _id: z.string().optional(),
+  userId: z.string().min(1),
+  opportunityId: z.string().optional(),
+  opportunityTitle: z.string().optional(),
 
-  createdAt: Date;
-  updatedAt: Date;
-}
+  matchPercentage: z.number().min(0).max(100),
+
+  existingSkills: z.array(z.string()),
+  missingSkills: z.array(SkillGapItemSchema),
+
+  roadmap: z.array(LearningRoadmapItemSchema),
+
+  createdAt: z.coerce.date().default(() => new Date()),
+  updatedAt: z.coerce.date().default(() => new Date()),
+});
+
+export type SkillGapAnalysis = z.infer<typeof SkillGapAnalysisSchema>;
+
+export const AnalyzeSkillGapInputSchema = z.object({
+  opportunityId: z.string().optional(),
+  opportunityDescription: z.string().optional(),
+});

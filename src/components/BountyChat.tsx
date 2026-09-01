@@ -94,7 +94,7 @@ export default function BountyChat({ bountyId, posterId, mentorId, onClose, onRe
   if (showRating) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
+        <div className="bg-surface dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Rate Your Mentor</h3>
           <p className="text-gray-600 dark:text-gray-300 mb-6">How helpful was the mentorship for this bounty?</p>
           <div className="flex justify-center gap-2 mb-6">
@@ -121,8 +121,8 @@ export default function BountyChat({ bountyId, posterId, mentorId, onClose, onRe
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-900 sm:p-4 md:p-12 lg:p-24">
-      <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+    <div className="fixed inset-0 z-50 flex flex-col bg-surface dark:bg-gray-900 sm:p-4 md:p-12 lg:p-24">
+      <div className="flex-1 flex flex-col bg-surface dark:bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
           <div>
             <h3 className="font-bold text-gray-900 dark:text-white">Mentorship Chat</h3>
@@ -160,7 +160,7 @@ export default function BountyChat({ bountyId, posterId, mentorId, onClose, onRe
           <div ref={messagesEndRef} />
         </div>
         
-        <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 bg-surface dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
           <div className="flex gap-2">
             <input 
               type="text" 

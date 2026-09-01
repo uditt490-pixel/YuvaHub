@@ -43,6 +43,7 @@ export const TeamSchema = z
     leaderUid: z.string().trim().min(1).max(160),
     leaderName: z.string().trim().min(1).max(120),
     members: z.array(TeamMemberSchema).max(20).default([]),
+    openRoles: z.array(SkillSchema).max(10).default([]),
     status: z.enum(["open", "closed"]).default("open"),
     createdAt: z.coerce.date().default(() => new Date()),
     updatedAt: z.coerce.date().default(() => new Date()),
@@ -70,6 +71,7 @@ export const CreateTeamInputSchema = z.object({
   requiredRoles: z.array(SkillSchema).min(1).max(20),
   skills: z.array(SkillSchema).max(30).default([]),
   maxMembers: z.number().int().min(2).max(20).default(4),
+  openRoles: z.array(SkillSchema).max(10).default([]),
 });
 
 export type CreateTeamInput = z.infer<

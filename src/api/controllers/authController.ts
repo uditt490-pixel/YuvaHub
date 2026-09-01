@@ -74,6 +74,10 @@ export const authSync = async (req: Request, res: Response) => {
     }
 
     // 3. Sync profile with MongoDB
+    const adminEmailsEnv = process.env.ADMIN_EMAILS || "uditt490@gmail.com";
+    const adminEmails = adminEmailsEnv.split(",").map(e => e.trim().toLowerCase());
+    const isAdmin = email && adminEmails.includes(email.toLowerCase());
+
     if (!dbCommand || !dbQuery) {
       return sendSuccess(res, {
         profile: {
@@ -81,7 +85,7 @@ export const authSync = async (req: Request, res: Response) => {
           name,
           email,
           avatarUrl,
-          role: email === "uditt490@gmail.com" ? "admin" : "student"
+          role: isAdmin ? "admin" : "student"
         }
       });
     }
@@ -89,7 +93,7 @@ export const authSync = async (req: Request, res: Response) => {
     const usersCollection = dbCommand.collection("users");
     const existingUser = await usersCollection.findOne({ uid });
 
-    const role = email === "uditt490@gmail.com" ? "admin" : "student";
+    const role = isAdmin ? "admin" : "student";
 
     let updatedProfile;
     if (existingUser) {
@@ -108,6 +112,12 @@ export const authSync = async (req: Request, res: Response) => {
         resumePublicId: req.body.resumePublicId || existingUser.resumePublicId,
         coverLetterUrl: req.body.coverLetterUrl || existingUser.coverLetterUrl,
         coverLetterPublicId: req.body.coverLetterPublicId || existingUser.coverLetterPublicId,
+        graduation_year: req.body.graduation_year !== undefined ? Number(req.body.graduation_year) : existingUser.graduation_year,
+        current_company: req.body.current_company !== undefined ? req.body.current_company : existingUser.current_company,
+        alumni_status: req.body.alumni_status !== undefined ? Boolean(req.body.alumni_status) : existingUser.alumni_status,
+        is_open_to_mentoring: req.body.is_open_to_mentoring !== undefined ? Boolean(req.body.is_open_to_mentoring) : existingUser.is_open_to_mentoring,
+        mentoring_interests: req.body.mentoring_interests !== undefined ? req.body.mentoring_interests : existingUser.mentoring_interests,
+        alumni_profile_bio: req.body.alumni_profile_bio !== undefined ? req.body.alumni_profile_bio : existingUser.alumni_profile_bio,
         fcmToken: req.body.fcmToken !== undefined ? req.body.fcmToken : existingUser.fcmToken,
         notificationPreferences: req.body.notificationPreferences !== undefined ? req.body.notificationPreferences : existingUser.notificationPreferences,
         updatedAt: new Date()
@@ -129,6 +139,12 @@ export const authSync = async (req: Request, res: Response) => {
         year: req.body.year || "",
         field: req.body.field || "",
         skills: req.body.skills || [],
+        graduation_year: req.body.graduation_year !== undefined ? Number(req.body.graduation_year) : null,
+        current_company: req.body.current_company || "",
+        alumni_status: Boolean(req.body.alumni_status),
+        is_open_to_mentoring: Boolean(req.body.is_open_to_mentoring),
+        mentoring_interests: req.body.mentoring_interests || [],
+        alumni_profile_bio: req.body.alumni_profile_bio || "",
         bookmarks: [],
         fcmToken: req.body.fcmToken || "",
         notificationPreferences: req.body.notificationPreferences || {

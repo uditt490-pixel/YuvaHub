@@ -6,7 +6,102 @@ import {
   generateDeadlineReminderHtml,
   generateWeeklyDigestHtml,
 } from "../workers/emailTemplates";
+import {
+  buildDeadlineReminderDedupeKey,
+  createDeadlineReminderAtomically,
+  DEADLINE_REMINDER_WINDOWS,
+  ensureDeadlineReminderIndex,
+  type DeadlineReminderWindow,
+  type DeadlineReminderDocument,
+} from "./deadlineReminderAtomic";
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function getReminderWindow(diffDays: number): DeadlineReminderWindow | null {
+  switch (diffDays) {
+    case 7:
+      return DEADLINE_REMINDER_WINDOWS.SEVEN_DAYS;
+    case 3:
+      return DEADLINE_REMINDER_WINDOWS.THREE_DAYS;
+    case 2:
+      return DEADLINE_REMINDER_WINDOWS.FORTY_EIGHT_HOURS;
+    case 1:
+      return DEADLINE_REMINDER_WINDOWS.ONE_DAY;
+    case 0:
+      return DEADLINE_REMINDER_WINDOWS.SAME_DAY;
+    default:
+      return null;
+  }
+}
+
+function getReminderCopy(
+  opportunityTitle: string,
+  deadline: Date,
+  diffDays: number,
+): { title: string; message: string } {
+  if (diffDays === 2) {
+    return {
+      title: "Deadline in 48 Hours (~2 Days)!",
+      message: `48-Hour Reminder: The deadline for bookmarked opportunity "${opportunityTitle}" is in 2 days (${deadline.toLocaleDateString()}).`,
+    };
+  }
+
+  if (diffDays === 1) {
+    return {
+      title: "Deadline Tomorrow!",
+      message: `Urgent Reminder: The deadline for bookmarked opportunity "${opportunityTitle}" is tomorrow (${deadline.toLocaleDateString()}).`,
+    };
+  }
+
+  if (diffDays === 0) {
+    return {
+      title: "Deadline is TODAY!",
+      message: `Urgent Reminder: Today is the last day to apply for bookmarked opportunity "${opportunityTitle}".`,
+    };
+  }
+
+  return {
+    title: `Deadline approaching in ${diffDays} days!`,
+    message: `Reminder: The deadline for bookmarked opportunity "${opportunityTitle}" is in ${diffDays} days (${deadline.toLocaleDateString()}).`,
+  };
+}
+
+function getOpportunityIds(bookmarks: unknown[]): {
+  stringIds: string[];
+  objectIds: ObjectId[];
+} {
+  const stringIds: string[] = [];
+  const objectIds: ObjectId[] = [];
+
+  for (const bookmark of bookmarks) {
+    if (!bookmark) continue;
+
+    const id = String(bookmark);
+    stringIds.push(id);
+
+    if (ObjectId.isValid(id)) {
+      try {
+        objectIds.push(new ObjectId(id));
+      } catch {
+        // The string id remains usable through the `id` query.
+      }
+    }
+  }
+
+  return { stringIds, objectIds };
+}
+
+/**
+ * Runs the deadline reminder scan.
+ *
+ * Reminder creation is deliberately split into two phases:
+ * 1. Determine whether an opportunity is currently in a supported reminder window.
+ * 2. Atomically claim that reminder window in MongoDB using the unique dedupeKey.
+ *
+ * Only the process that successfully performs the upsert is allowed to emit
+ * socket/email/push side effects. This makes concurrent scheduler executions
+ * safe across multiple application instances.
+ */
 export async function runDeadlineChecks(db: any): Promise<void> {
   if (!db) {
     console.error("[DeadlineScheduler] Database connection not available.");
@@ -20,7 +115,10 @@ export async function runDeadlineChecks(db: any): Promise<void> {
     const oppsCollection = db.collection("opportunities");
     const notifCollection = db.collection("notifications");
 
-    // Fetch all users who have bookmarks
+    // The unique index is the actual cross-process synchronization primitive.
+    // createIndex is idempotent, so this is safe across scheduler invocations.
+    await ensureDeadlineReminderIndex(db);
+
     const users = await usersCollection
       .find({
         bookmarks: { $exists: true, $not: { $size: 0 } },
@@ -28,10 +126,8 @@ export async function runDeadlineChecks(db: any): Promise<void> {
       .toArray();
 
     const now = new Date();
-    const { ObjectId } = await import("mongodb");
 
-    // Filter users who have deadline reminders enabled
-    const activeUsers = users.filter((user) => {
+    const activeUsers = users.filter((user: any) => {
       const prefs = user.notificationPreferences || {
         deadlineRemindersEnabled: true,
       };
@@ -42,35 +138,21 @@ export async function runDeadlineChecks(db: any): Promise<void> {
       return;
     }
 
-    // Batch step 1: Collect unique opportunity IDs and active user UIDs
+    // Fetch every bookmarked opportunity once for the complete scan.
     const uniqueOppIds = new Set<string>();
-    const activeUserUids: string[] = [];
 
     for (const user of activeUsers) {
-      const uid = user.uid || user._id?.toString() || user.id;
-      if (uid) activeUserUids.push(uid);
-      const bookmarks = user.bookmarks || [];
-      for (const oppId of bookmarks) {
+      for (const oppId of user.bookmarks || []) {
         if (oppId) uniqueOppIds.add(String(oppId));
       }
     }
 
-    // Batch step 2: Bulk fetch all required opportunities in 1 MongoDB query
     const oppMap = new Map<string, any>();
-    if (uniqueOppIds.size > 0) {
-      const stringIds: string[] = [];
-      const objectIds: ObjectId[] = [];
 
-      for (const idStr of uniqueOppIds) {
-        stringIds.push(idStr);
-        if (ObjectId.isValid(idStr)) {
-          try {
-            objectIds.push(new ObjectId(idStr));
-          } catch {
-            // fallback if ObjectId instantiation fails
-          }
-        }
-      }
+    if (uniqueOppIds.size > 0) {
+      const { stringIds, objectIds } = getOpportunityIds(
+        Array.from(uniqueOppIds),
+      );
 
       const queryConditions: any[] = [{ id: { $in: stringIds } }];
       if (objectIds.length > 0) {
@@ -78,40 +160,23 @@ export async function runDeadlineChecks(db: any): Promise<void> {
       }
 
       const opportunities = await oppsCollection
-        .find({
-          $or: queryConditions,
-        })
+        .find({ $or: queryConditions })
         .toArray();
 
-      for (const opp of opportunities) {
-        if (opp._id) {
-          oppMap.set(opp._id.toString(), opp);
+      for (const opportunity of opportunities) {
+        if (opportunity._id) {
+          oppMap.set(opportunity._id.toString(), opportunity);
         }
-        if (opp.id) {
-          oppMap.set(String(opp.id), opp);
+        if (opportunity.id) {
+          oppMap.set(String(opportunity.id), opportunity);
         }
       }
     }
 
-    // Batch step 3: Bulk fetch existing deadline_reminder notifications for active users in 1 MongoDB query
-    const notifiedSet = new Set<string>();
-    if (activeUserUids.length > 0) {
-      const existingNotifs = await notifCollection
-        .find({
-          userId: { $in: activeUserUids },
-          type: "deadline_reminder",
-        })
-        .toArray();
-
-      for (const notif of existingNotifs) {
-        const key = `${notif.userId}:${notif.targetId}:${notif.title}`;
-        notifiedSet.add(key);
-      }
-    }
-
-    // Process each user and bookmark using O(1) in-memory Map & Set lookups
     for (const user of activeUsers) {
       const userId = user.uid || user._id?.toString() || user.id;
+      if (!userId) continue;
+
       const prefs = user.notificationPreferences || {
         emailEnabled: true,
         pushEnabled: true,
@@ -125,110 +190,92 @@ export async function runDeadlineChecks(db: any): Promise<void> {
       const bookmarks = user.bookmarks || [];
       if (bookmarks.length === 0) continue;
 
-      const objectIds = [];
-      const stringIds = [];
-
-      for (const oppId of bookmarks) {
-        try {
-          objectIds.push(new ObjectId(oppId));
-        } catch {
-          stringIds.push(oppId);
-        }
-      }
-
-      const opportunities = await oppsCollection.find({
-        $or: [
-          { _id: { $in: objectIds } },
-          { id: { $in: stringIds } }
-        ]
-      }).toArray();
-      
-      const oppMap = new Map<string, any>();
-      for (const o of opportunities) {
-        if (o._id) oppMap.set(o._id.toString(), o);
-        if (o.id) oppMap.set(String(o.id), o);
-      }
-
       for (const oppId of bookmarks) {
         const oppIdStr = String(oppId);
         const opportunity = oppMap.get(oppIdStr);
 
-        if (!opportunity) {
-          continue;
-        }
+        if (!opportunity) continue;
 
         const deadlineStr = opportunity.deadline;
         if (
           !deadlineStr ||
-          deadlineStr.toLowerCase() === "tbd" ||
-          deadlineStr.toLowerCase() === "rolling"
+          String(deadlineStr).toLowerCase() === "tbd" ||
+          String(deadlineStr).toLowerCase() === "rolling"
         ) {
           continue;
         }
 
         const deadline = new Date(deadlineStr);
-        if (isNaN(deadline.getTime())) {
-          continue;
-        }
+        if (Number.isNaN(deadline.getTime())) continue;
 
-        // Calculate difference in days
         const timeDiff = deadline.getTime() - now.getTime();
-        const diffDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const diffDays = Math.floor(timeDiff / DAY_MS);
+        const reminderWindow = getReminderWindow(diffDays);
 
-        // Trigger alerts on 7, 3, 2 (~48 hours), 1, or 0 days remaining
-        if (![7, 3, 2, 1, 0].includes(diffDays)) {
-          continue;
-        }
+        if (!reminderWindow) continue;
 
-        let title = `Deadline approaching in ${diffDays} days!`;
-        let message = `Reminder: The deadline for bookmarked opportunity "${opportunity.title}" is in ${diffDays} days (${deadline.toLocaleDateString()}).`;
+        const { title, message } = getReminderCopy(
+          opportunity.title,
+          deadline,
+          diffDays,
+        );
 
-        if (diffDays === 2) {
-          title = `Deadline in 48 Hours (~2 Days)!`;
-          message = `48-Hour Reminder: The deadline for bookmarked opportunity "${opportunity.title}" is in 2 days (${deadline.toLocaleDateString()}).`;
-        } else if (diffDays === 1) {
-          title = `Deadline Tomorrow!`;
-          message = `Urgent Reminder: The deadline for bookmarked opportunity "${opportunity.title}" is tomorrow (${deadline.toLocaleDateString()}).`;
-        } else if (diffDays === 0) {
-          title = `Deadline is TODAY!`;
-          message = `Urgent Reminder: Today is the last day to apply for bookmarked opportunity "${opportunity.title}".`;
-        }
+        // This key is stable across processes and independent of notification
+        // copy. The same user/opportunity/window can therefore only be claimed once.
+        const dedupeKey = buildDeadlineReminderDedupeKey(
+          String(userId),
+          oppIdStr,
+          reminderWindow,
+        );
 
-        // Check if user was already notified for this exact deadline condition
-        const notifKey = `${userId}:${oppId}:${title}`;
-        if (notifiedSet.has(notifKey)) {
-          continue;
-        }
-
-        // Create the notification document
-        const notificationDoc = {
-          userId,
+        const notificationDoc: DeadlineReminderDocument = {
+          userId: String(userId),
           type: "deadline_reminder",
           title,
           message,
           targetId: oppIdStr,
+          dedupeKey,
           read: false,
           createdAt: new Date(),
-          expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+          expiresAt: new Date(Date.now() + 90 * DAY_MS),
         };
 
-        await notifCollection.insertOne(notificationDoc);
-        notifiedSet.add(notifKey);
+        let inserted = false;
+
+        try {
+          inserted = await createDeadlineReminderAtomically(
+            notifCollection,
+            notificationDoc,
+          );
+        } catch (error) {
+          console.error(
+            `[DeadlineScheduler] Failed to claim reminder ${dedupeKey}:`,
+            error,
+          );
+          continue;
+        }
+
+        // A false result means another scheduler instance already won this
+        // reminder window. Never emit any external side effect in that case.
+        if (!inserted) {
+          continue;
+        }
+
         console.log(
-          `[DeadlineScheduler] Reminded user ${user.uid} of deadline for opportunity ${oppId} (${diffDays} days left)`,
+          `[DeadlineScheduler] Reminded user ${userId} of deadline for opportunity ${oppIdStr} (${reminderWindow})`,
         );
 
-        // Real-Time Socket.io push (foreground handling)
+        // Real-time Socket.io notification — only the atomic winner emits.
         const io = getSocketIO();
         if (io) {
           io.emit(`NOTIFICATION_RECEIVED_${userId}`, {
-            id: oppId + "_" + diffDays,
+            id: dedupeKey,
             ...notificationDoc,
             time: "Just now",
           });
         }
 
-        // Enqueue background email job with mobile-responsive HTML template
+        // Email — only queued after the notification was actually inserted.
         if (prefs.emailEnabled && user.email) {
           const html = generateDeadlineReminderHtml(
             opportunity.title,
@@ -247,10 +294,10 @@ export async function runDeadlineChecks(db: any): Promise<void> {
           });
         }
 
-        // Enqueue background push job
+        // Push — only queued after the notification was actually inserted.
         if (prefs.pushEnabled && user.fcmToken) {
           await enqueuePushNotification({
-            userId: user.uid,
+            userId: String(userId),
             message: `[YuvaHub] ${title}: ${opportunity.title}`,
           });
         }
@@ -267,6 +314,8 @@ export async function runDeadlineChecks(db: any): Promise<void> {
 /**
  * Weekly Summary Digest
  * Sends a weekly digest email to users summarizing all active bookmarks expiring in the next 7 days.
+ *
+ * This path is intentionally independent of deadline-reminder deduplication.
  */
 export async function runWeeklyDigest(db: any): Promise<void> {
   if (!db) return;
@@ -283,8 +332,7 @@ export async function runWeeklyDigest(db: any): Promise<void> {
       .toArray();
 
     const now = new Date();
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const { ObjectId } = await import("mongodb");
+    const nextWeek = new Date(now.getTime() + 7 * DAY_MS);
 
     const activeUsers = users.filter((user: any) => {
       if (!user.email) return false;
@@ -294,31 +342,20 @@ export async function runWeeklyDigest(db: any): Promise<void> {
 
     if (activeUsers.length === 0) return;
 
-    // Collect all unique oppIds
     const uniqueOppIds = new Set<string>();
+
     for (const user of activeUsers) {
-      const bookmarks = user.bookmarks || [];
-      for (const oppId of bookmarks) {
+      for (const oppId of user.bookmarks || []) {
         if (oppId) uniqueOppIds.add(String(oppId));
       }
     }
 
-    // Batch fetch opportunities
     const oppMap = new Map<string, any>();
-    if (uniqueOppIds.size > 0) {
-      const stringIds: string[] = [];
-      const objectIds: ObjectId[] = [];
 
-      for (const idStr of uniqueOppIds) {
-        stringIds.push(idStr);
-        if (ObjectId.isValid(idStr)) {
-          try {
-            objectIds.push(new ObjectId(idStr));
-          } catch {
-            // fallback
-          }
-        }
-      }
+    if (uniqueOppIds.size > 0) {
+      const { stringIds, objectIds } = getOpportunityIds(
+        Array.from(uniqueOppIds),
+      );
 
       const queryConditions: any[] = [{ id: { $in: stringIds } }];
       if (objectIds.length > 0) {
@@ -326,18 +363,12 @@ export async function runWeeklyDigest(db: any): Promise<void> {
       }
 
       const opportunities = await oppsCollection
-        .find({
-          $or: queryConditions,
-        })
+        .find({ $or: queryConditions })
         .toArray();
 
       for (const opp of opportunities) {
-        if (opp._id) {
-          oppMap.set(opp._id.toString(), opp);
-        }
-        if (opp.id) {
-          oppMap.set(String(opp.id), opp);
-        }
+        if (opp._id) oppMap.set(opp._id.toString(), opp);
+        if (opp.id) oppMap.set(String(opp.id), opp);
       }
     }
 
@@ -353,8 +384,9 @@ export async function runWeeklyDigest(db: any): Promise<void> {
         const opp = oppMap.get(String(oppId));
 
         if (!opp || !opp.deadline) continue;
+
         const deadline = new Date(opp.deadline);
-        if (isNaN(deadline.getTime())) continue;
+        if (Number.isNaN(deadline.getTime())) continue;
 
         if (deadline >= now && deadline <= nextWeek) {
           expiringOpps.push({
@@ -370,12 +402,14 @@ export async function runWeeklyDigest(db: any): Promise<void> {
           user.name || "Student",
           expiringOpps,
         );
+
         await enqueueEmail({
           to: user.email,
           subject: `[YuvaHub] Your Weekly Bookmarks Summary Digest (${expiringOpps.length} Deadlines Closing Soon)`,
           body: `Hello ${user.name || "Student"}, you have ${expiringOpps.length} bookmarked opportunities with deadlines this week.`,
           html,
         });
+
         console.log(
           `[DeadlineScheduler] Sent weekly digest to ${user.email} with ${expiringOpps.length} opportunities.`,
         );

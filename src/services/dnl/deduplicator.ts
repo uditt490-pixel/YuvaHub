@@ -4,10 +4,57 @@ import { eventBus } from '../../events/eventBus';
 import { EventType, OpportunityScrapedEvent } from '../../events/schemas';
 import { createOpportunityScrapedConsumer } from '../../consumers/opportunityScrapedConsumer';
 
-export function generateDedupeHash(url: string, title: string, company: string): string {
-  const normalizedTitle = (title || '').toLowerCase();
-  const normalizedCompany = (company || '').toLowerCase();
-  const baseString = (url || '') + normalizedTitle + normalizedCompany;
+/** Fields used to build a stable, deterministic deduplication key. */
+export interface DedupeKeyParts {
+  source: string;
+  url: string;
+  title: string;
+  company: string;
+  /** Optional stable identifier from the source (e.g. a listing/job id). */
+  externalId?: string;
+}
+
+/** Normalize a single key component: coerce to string, trim, collapse
+ * internal whitespace and lowercase so trivial formatting differences do not
+ * produce different hashes. */
+function normalizeComponent(value: unknown): string {
+  return String(value ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
+/**
+ * Generate a deterministic SHA-256 deduplication hash from stable identifiers.
+ *
+ * The hash intentionally contains NO timestamps or other volatile data, so
+ * identical opportunities always produce an identical hash and can be
+ * deduplicated. Components are joined with a delimiter (`|`) so field
+ * boundaries cannot collide (e.g. `"ab" + "c"` vs `"a" + "bc"`).
+ *
+ * Two call styles are supported for backwards compatibility:
+ *   generateDedupeHash({ source, url, title, company, externalId? })
+ *   generateDedupeHash(url, title, company)
+ */
+export function generateDedupeHash(parts: DedupeKeyParts): string;
+export function generateDedupeHash(url: string, title: string, company: string): string;
+export function generateDedupeHash(
+  partsOrUrl: DedupeKeyParts | string,
+  title?: string,
+  company?: string,
+): string {
+  const parts: DedupeKeyParts =
+    typeof partsOrUrl === 'string'
+      ? { source: '', url: partsOrUrl, title: title ?? '', company: company ?? '' }
+      : partsOrUrl;
+
+  const baseString = [
+    normalizeComponent(parts.source),
+    normalizeComponent(parts.externalId),
+    normalizeComponent(parts.url),
+    normalizeComponent(parts.title),
+    normalizeComponent(parts.company),
+  ].join('|');
   return crypto.createHash('sha256').update(baseString).digest('hex');
 }
 
@@ -32,7 +79,12 @@ export async function ingestOpportunities(
   };
 
   for (const item of opportunities) {
-    const dedupe_hash = generateDedupeHash(item.url, item.title, item.company);
+    const dedupe_hash = generateDedupeHash({
+      source: item.sourceName,
+      url: item.url,
+      title: item.title,
+      company: item.company,
+    });
 
     const event: OpportunityScrapedEvent = {
       eventId: crypto.randomUUID(),

@@ -234,8 +234,8 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
                 }
               }}
               disabled={isMarkingThis || markingAll}
-              className={`group flex w-full gap-3 border-b border-[#e8ded1] p-4 text-left transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${
-                !notification.read ? 'bg-[#f6efe2]/60 hover:bg-[#f6efe2]' : 'bg-white hover:bg-[#fcf9f2]'
+              className={`group flex w-full gap-3 border-b border-border-theme p-4 text-left transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-70 ${
+                !notification.read ? 'bg-surface-secondary/60 hover:bg-surface-secondary' : 'bg-surface hover:bg-background'
               }`}
               aria-label={
                 notification.read
@@ -248,11 +248,11 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
                   className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors ${
                     !notification.read
                       ? 'bg-[#603620] text-[#f3e4bd]'
-                      : 'bg-[#f6efe2] text-[#8c7569]'
+                      : 'bg-surface-secondary text-text-muted'
                   }`}
                 >
                   {isMarkingThis ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-[#b56b37]" aria-hidden="true" />
+                    <Loader2 className="h-4 w-4 animate-spin text-primary-blue" aria-hidden="true" />
                   ) : (
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   )}
@@ -263,17 +263,17 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
                 <h4
                   className={`mb-0.5 line-clamp-1 text-xs ${
                     !notification.read
-                      ? 'font-extrabold text-[#231f20]'
-                      : 'font-semibold text-[#603620]'
+                      ? 'font-extrabold text-text-primary'
+                      : 'font-semibold text-text-secondary'
                   }`}
                 >
                   {notification.title ?? 'Notification'}
                 </h4>
-                <p className="mb-1 line-clamp-2 text-xs text-[#8c7569]">
+                <p className="mb-1 line-clamp-2 text-xs text-text-muted">
                   {notification.message ?? 'You have a new update.'}
                 </p>
                 {notification.time ? (
-                  <span className="text-[10px] font-bold text-[#8c7569]">
+                  <span className="text-[10px] font-bold text-text-muted">
                     {notification.time}
                   </span>
                 ) : null}
@@ -281,7 +281,7 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
 
               {!notification.read ? (
                 <span
-                  className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#b56b37]"
+                  className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary-blue"
                   aria-label="Unread"
                 />
               ) : null}
@@ -297,7 +297,7 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className="relative rounded-xl p-2 text-[#603620] transition-all hover:bg-[#f6efe2] hover:text-[#231f20] border border-transparent hover:border-[#e8ded1] cursor-pointer"
+        className="relative rounded-xl p-2 text-text-secondary transition-all hover:bg-surface-secondary hover:text-text-primary border border-transparent hover:border-border-theme cursor-pointer"
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
@@ -305,7 +305,7 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
         <Bell className="h-4 h-4 sm:h-5 sm:w-5" aria-hidden="true" />
         {unreadCount > 0 ? (
           <span
-            className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-[#fcf9f2] bg-[#b56b37] animate-pulse"
+            className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-[#fcf9f2] bg-primary-blue animate-pulse"
             aria-hidden="true"
           />
         ) : null}
@@ -315,19 +315,19 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
         <div
           role="dialog"
           aria-label="Notifications"
-          className="animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[#e8ded1] bg-white shadow-xl duration-200"
+          className="animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-border-theme bg-surface shadow-xl duration-200"
         >
-          <div className="flex items-center justify-between border-b border-[#e8ded1] bg-[#fcf9f2] p-4">
-            <h3 className="font-serif font-bold text-sm text-[#231f20]">Notifications</h3>
+          <div className="flex items-center justify-between border-b border-border-theme bg-background p-4">
+            <h3 className="font-serif font-bold text-sm text-text-primary">Notifications</h3>
             <div className="flex items-center gap-2">
               {refreshing ? (
                 <Loader2
-                  className="h-3.5 w-3.5 animate-spin text-[#b56b37]"
+                  className="h-3.5 w-3.5 animate-spin text-primary-blue"
                   aria-label="Refreshing notifications"
                 />
               ) : null}
               {unreadCount > 0 ? (
-                <span className="rounded-full bg-[#f6efe2] border border-[#e8ded1] px-2.5 py-0.5 text-[10px] font-extrabold text-[#b56b37] uppercase tracking-wider">
+                <span className="rounded-full bg-surface-secondary border border-border-theme px-2.5 py-0.5 text-[10px] font-extrabold text-primary-blue uppercase tracking-wider">
                   {unreadCount} New
                 </span>
               ) : null}
@@ -345,10 +345,10 @@ export default function NotificationDropdown({ profile }: { profile: any }) {
               initialLoading ||
               Boolean(markingNotificationId)
             }
-            className="flex w-full items-center justify-center gap-2 border-t border-[#e8ded1] bg-white p-3 text-xs font-extrabold text-[#b56b37] uppercase tracking-wider transition-colors hover:bg-[#f6efe2] cursor-pointer disabled:cursor-not-allowed disabled:bg-white disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 border-t border-border-theme bg-surface p-3 text-xs font-extrabold text-primary-blue uppercase tracking-wider transition-colors hover:bg-surface-secondary cursor-pointer disabled:cursor-not-allowed disabled:bg-surface disabled:opacity-50"
           >
             {markingAll ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-[#b56b37]" aria-hidden="true" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary-blue" aria-hidden="true" />
             ) : null}
             {markingAll ? 'Marking all as read...' : 'Mark all as read'}
           </button>

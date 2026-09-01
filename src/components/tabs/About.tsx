@@ -97,17 +97,17 @@ export default function AboutTab() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fcf9f2] text-[#231f20] font-sans pb-20 selection:bg-[#f3e4bd] selection:text-[#603620]">
+    <div className="min-h-screen bg-background text-text-primary font-sans pb-20 selection:bg-[#f3e4bd] selection:text-text-secondary">
 
       {/* Hero Banner */}
       <div className="max-w-5xl mx-auto text-center space-y-4 pt-10 pb-12 px-6">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-[#e8ded1] text-[#603620] text-xs font-bold uppercase tracking-widest rounded-full shadow-sm">
-          <Sparkles className="w-4 h-4 text-[#b56b37]" /> India's #1 Student Opportunity Ecosystem
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-border-theme text-text-secondary text-xs font-bold uppercase tracking-widest rounded-full shadow-sm">
+          <Sparkles className="w-4 h-4 text-primary-blue" /> India's #1 Student Opportunity Ecosystem
         </div>
-        <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#231f20]">
-          Empowering ambitious developers through <span className="italic text-[#b56b37] underline decoration-[#b5c37c] decoration-wavy decoration-2">intelligent discovery.</span>
+        <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-text-primary">
+          Empowering ambitious developers through <span className="italic text-primary-blue underline decoration-[#b5c37c] decoration-wavy decoration-2">intelligent discovery.</span>
         </h1>
-        <p className="text-base text-[#603620]/90 leading-relaxed max-w-2xl mx-auto">
+        <p className="text-base text-text-secondary/90 leading-relaxed max-w-2xl mx-auto">
           YuvaHub connects Indian students to verified hackathons, scholarships, fellowships, and software engineering roles — equipped with Google Gemini AI career tools.
         </p>
       </div>
@@ -159,11 +159,11 @@ export default function AboutTab() {
                 onClick={() => setActiveTabSection(sec.id)}
                 className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${isActive
                     ? 'bg-[#603620] text-[#fcf9f2] border-[#603620] shadow-md'
-                    : 'bg-white text-[#603620] border-[#e8ded1] hover:border-[#b56b37]'
+                    : 'bg-surface text-text-secondary border-border-theme hover:border-primary-blue'
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-[#f3e4bd]' : 'text-[#b56b37]'}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-[#f3e4bd]' : 'text-primary-blue'}`} />
                   <span className="text-xs font-bold">{sec.title}</span>
                 </div>
               </button>
@@ -172,31 +172,31 @@ export default function AboutTab() {
         </div>
 
         {/* Details Content Box */}
-        <div className="md:col-span-8 bg-white p-8 sm:p-10 rounded-3xl border border-[#e8ded1] shadow-sm space-y-8">
+        <div className="md:col-span-8 bg-surface p-8 sm:p-10 rounded-3xl border border-border-theme shadow-sm space-y-8">
           {aboutSections.filter(s => s.id === activeTabSection).map(s => {
             const Icon = s.icon;
             return (
               <div key={s.id} className="space-y-6 text-left">
-                <div className="flex items-center justify-between pb-4 border-b border-[#e8ded1]">
+                <div className="flex items-center justify-between pb-4 border-b border-border-theme">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-[#f3e4bd] flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-[#b56b37]" />
+                      <Icon className="w-5 h-5 text-primary-blue" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-serif font-bold text-[#231f20]">{s.title}</h3>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#b56b37]">{s.badge}</span>
+                      <h3 className="text-xl font-serif font-bold text-text-primary">{s.title}</h3>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-primary-blue">{s.badge}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-5">
                   {s.details.map((detail, idx) => (
-                    <div key={idx} className="p-5 rounded-2xl bg-[#fcf9f2] border border-[#e8ded1] space-y-2">
-                      <h4 className="text-sm font-bold text-[#231f20] flex items-center gap-2">
+                    <div key={idx} className="p-5 rounded-2xl bg-background border border-border-theme space-y-2">
+                      <h4 className="text-sm font-bold text-text-primary flex items-center gap-2">
                         <CheckCircle2 className="w-4 h-4 text-[#63703d] shrink-0" />
                         {detail.heading}
                       </h4>
-                      <p className="text-xs text-[#603620] leading-relaxed pl-6">
+                      <p className="text-xs text-text-secondary leading-relaxed pl-6">
                         {detail.text}
                       </p>
                     </div>
@@ -207,11 +207,11 @@ export default function AboutTab() {
           })}
 
           {/* Footer CTA Banner inside About box */}
-          <div className="pt-6 border-t border-[#e8ded1] flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="text-xs font-bold text-[#603620]">Ready to build your career with YuvaHub?</span>
+          <div className="pt-6 border-t border-border-theme flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-xs font-bold text-text-secondary">Ready to build your career with YuvaHub?</span>
             <button
               onClick={() => { setActiveTab('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="px-6 py-2.5 bg-[#b56b37] hover:bg-[#603620] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-2"
+              className="px-6 py-2.5 bg-primary-blue hover:bg-[#603620] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer flex items-center gap-2"
             >
               Explore Opportunities <ArrowRight className="w-4 h-4" />
             </button>

@@ -16,17 +16,17 @@ export default function LoadingState({
     <div
       role="status"
       aria-live="polite"
-      className={`flex items-center justify-center rounded-2xl border border-[#e8ded1] dark:border-slate-800 bg-[#fcf9f2] dark:bg-slate-900 ${
+      className={`flex items-center justify-center rounded-2xl border border-border-theme dark:border-slate-800 bg-background dark:bg-slate-900 ${
         compact ? "min-h-28 p-4" : "min-h-56 p-8"
       }`}
     >
       <div className="text-center">
         <LoaderCircle
-          className="mx-auto mb-3 h-7 w-7 animate-spin text-[#b56b37]"
+          className="mx-auto mb-3 h-7 w-7 animate-spin text-primary-blue"
           aria-hidden="true"
         />
-        <p className="font-bold text-[#231f20] dark:text-slate-100 font-serif">{title}</p>
-        <p className="mt-1 text-xs text-[#603620] dark:text-slate-400 font-medium">{description}</p>
+        <p className="font-bold text-text-primary dark:text-slate-100 font-serif">{title}</p>
+        <p className="mt-1 text-xs text-text-secondary dark:text-slate-400 font-medium">{description}</p>
       </div>
     </div>
   );

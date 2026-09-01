@@ -37,29 +37,29 @@ export default function HelpCenter() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fcf9f2] text-[#231f20] font-sans pb-20 selection:bg-[#f3e4bd] selection:text-[#603620]">
+    <div className="min-h-screen bg-background text-text-primary font-sans pb-20 selection:bg-[#f3e4bd] selection:text-text-secondary">
       
       {/* Header */}
       <div className="max-w-4xl mx-auto text-center space-y-4 pt-10 pb-10">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-[#e8ded1] text-[#603620] text-xs font-bold uppercase tracking-widest rounded-full">
-          <HelpCircle className="w-3.5 h-3.5 text-[#b56b37]" /> Student Support Hub
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#f3e4bd] border border-border-theme text-text-secondary text-xs font-bold uppercase tracking-widest rounded-full">
+          <HelpCircle className="w-3.5 h-3.5 text-primary-blue" /> Student Support Hub
         </div>
-        <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-[#231f20]">
-          Help Center & <span className="italic text-[#b56b37]">Documentation</span>
+        <h1 className="text-4xl sm:text-5xl font-serif font-normal tracking-tight text-text-primary">
+          Help Center & <span className="italic text-primary-blue">Documentation</span>
         </h1>
-        <p className="text-sm text-[#603620] max-w-xl mx-auto">
+        <p className="text-sm text-text-secondary max-w-xl mx-auto">
           Find answers to common questions about opportunity discovery, AI matching, and submissions.
         </p>
 
         {/* Search Bar */}
-        <div className="relative max-w-xl mx-auto p-2 bg-white border border-[#e8ded1] rounded-2xl shadow-md flex items-center gap-2">
-          <Search className="w-5 h-5 text-[#8c7569] ml-3 shrink-0" />
+        <div className="relative max-w-xl mx-auto p-2 bg-surface border border-border-theme rounded-2xl shadow-md flex items-center gap-2">
+          <Search className="w-5 h-5 text-text-muted ml-3 shrink-0" />
           <input 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search help topics..."
-            className="w-full bg-transparent border-none outline-none text-sm text-[#231f20] placeholder:text-[#8c7569] py-2"
+            className="w-full bg-transparent border-none outline-none text-sm text-text-primary placeholder:text-text-muted py-2"
           />
         </div>
       </div>
@@ -73,21 +73,21 @@ export default function HelpCenter() {
               key={idx}
               onMouseEnter={() => setOpenIndex(idx)}
               onMouseLeave={() => setOpenIndex(null)}
-              className={`border rounded-2xl overflow-hidden bg-white transition-all duration-300 cursor-pointer ${
-                isOpen ? 'border-[#b56b37] shadow-lg scale-[1.01]' : 'border-[#e8ded1] hover:border-[#b56b37]/60'
+              className={`border rounded-2xl overflow-hidden bg-surface transition-all duration-300 cursor-pointer ${
+                isOpen ? 'border-primary-blue shadow-lg scale-[1.01]' : 'border-border-theme hover:border-primary-blue/60'
               }`}
             >
               <div className="p-5 flex justify-between items-center gap-4">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-bold text-[#b56b37] uppercase tracking-wider">{item.category}</span>
-                  <h4 className="font-bold text-sm sm:text-base text-[#231f20]">{item.q}</h4>
+                  <span className="text-[10px] font-bold text-primary-blue uppercase tracking-wider">{item.category}</span>
+                  <h4 className="font-bold text-sm sm:text-base text-text-primary">{item.q}</h4>
                 </div>
-                <span className={`p-2 rounded-xl bg-[#fcf9f2] text-[#603620] transition-transform duration-300 ${isOpen ? 'rotate-180 bg-[#f3e4bd] text-[#b56b37]' : ''}`}>
+                <span className={`p-2 rounded-xl bg-background text-text-secondary transition-transform duration-300 ${isOpen ? 'rotate-180 bg-[#f3e4bd] text-primary-blue' : ''}`}>
                   <ChevronDown className="w-4 h-4" />
                 </span>
               </div>
               {isOpen && (
-                <div className="px-5 pb-5 border-t border-[#e8ded1] pt-4 text-xs md:text-sm text-[#603620] leading-relaxed">
+                <div className="px-5 pb-5 border-t border-border-theme pt-4 text-xs md:text-sm text-text-secondary leading-relaxed">
                   {item.a}
                 </div>
               )}
@@ -102,7 +102,7 @@ export default function HelpCenter() {
         <p className="text-xs text-[#fcf9f2]/80">Our student support team responds within 24 hours.</p>
         <button
           onClick={() => { setActiveTab('support'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          className="px-6 py-3 bg-[#b56b37] hover:bg-white hover:text-[#603620] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer inline-flex items-center gap-2"
+          className="px-6 py-3 bg-primary-blue hover:bg-surface hover:text-text-secondary text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer inline-flex items-center gap-2"
         >
           Contact Support <Mail className="w-4 h-4" />
         </button>

@@ -50,6 +50,37 @@ export interface UserProfile {
   points?: number;
   badges?: string[];
   isPublicProfile?: boolean;
+  role?: 'student' | 'alumni' | 'employer' | string;
+  current_role?: string;
+  graduation_year?: number | string | null;
+  current_company?: string;
+  alumni_status?: boolean;
+  is_open_to_mentoring?: boolean;
+  mentoring_interests?: string[];
+  alumni_profile_bio?: string;
+  verified_skills?: string[];
+  verifiedSkills?: string[];
+}
+
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+}
+
+export interface QuizSubmission {
+  skill: string;
+  answers: { questionId: string; selectedOptionIndex: number }[];
+}
+
+export interface QuizResult {
+  passed: boolean;
+  scorePercent: number;
+  correctCount: number;
+  totalQuestions: number;
+  badgeAwarded: boolean;
+  message: string;
 }
 
 export interface RecommendationPreferences {
@@ -170,4 +201,16 @@ export interface LeaderboardEntry {
   reputation: number;
   karmaEarned: number;
   bountiesResolved: number;
+}
+
+export interface InAppNotification {
+  id?: string;
+  _id?: string;
+  userId: string;
+  type: 'team_invite' | 'forum_reply' | 'mentorship_request' | 'system' | string;
+  content: string;
+  link?: string;
+  isRead: boolean;
+  read?: boolean;
+  createdAt: Date | string | number;
 }

@@ -76,7 +76,7 @@ export default function Legal() {
               placeholder="Search legal terms..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 dark:text-white"
+              className="w-full pl-9 pr-4 py-2 text-xs bg-surface dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 dark:text-white"
             />
           </div>
 
@@ -120,7 +120,7 @@ export default function Legal() {
         </div>
 
         {/* Content Panel */}
-        <div className="lg:col-span-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-6 md:p-8 shadow-sm">
+        <div className="lg:col-span-3 bg-surface dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-6 md:p-8 shadow-sm">
           {activeSection === 'privacy' && (
             <div className="space-y-6 text-gray-700 dark:text-gray-300 text-xs md:text-sm leading-relaxed">
               <div>

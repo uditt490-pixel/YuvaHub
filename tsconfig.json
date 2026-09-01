@@ -23,7 +23,8 @@
       ]
     },
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": false
   },
   "include": [
     "src/**/*",

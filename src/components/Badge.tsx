@@ -18,10 +18,10 @@ const VARIANT_STYLES: Record<BadgeVariant, string> = {
 // Deterministic per-type color so the same type always looks the same
 // across the whole app (hackathon = purple, internship = blue, etc).
 const TYPE_COLOR_MAP: Record<string, string> = {
-    hackathon: "bg-white text-purple-700 border border-purple-200",
-    internship: "bg-white text-blue-700 border border-blue-200",
-    scholarship: "bg-white text-amber-700 border border-amber-200",
-    job: "bg-white text-teal-700 border border-teal-200",
+    hackathon: "bg-surface text-purple-700 border border-purple-200",
+    internship: "bg-surface text-blue-700 border border-blue-200",
+    scholarship: "bg-surface text-amber-700 border border-amber-200",
+    job: "bg-surface text-teal-700 border border-teal-200",
 };
 
 export function Badge({ children, variant = "neutral", className = "" }: BadgeProps) {

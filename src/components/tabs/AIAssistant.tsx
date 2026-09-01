@@ -232,35 +232,36 @@ export default function AIAssistant() {
     return (
       <div className="w-full max-w-[1400px] mx-auto space-y-8 font-sans pb-16 px-2 sm:px-4">
         
-        {/* Top Banner Header - YuvaHub Brand Theme */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#f6efe2] via-[#fcf9f2] to-[#f6efe2] dark:from-slate-900 dark:to-slate-950 border border-[#e8ded1] dark:border-slate-800 p-6 md:p-8 shadow-sm">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+        {/* Top Banner Header - Brand Theme */}
+        <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex flex-col gap-6 relative z-10">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#f3e4bd] bg-[#603620] rounded-full flex items-center gap-1.5 shadow-xs">
-                  <Sparkles className="w-3.5 h-3.5 text-[#f3e4bd]" /> AI & Career Studio
+                <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1.5 shadow-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> AI & Career Studio
                 </span>
-                <span className="px-3 py-1 text-xs font-bold text-[#63703d] bg-[#63703d]/15 border border-[#63703d]/30 rounded-full">
+                <span className="px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30">
                   Powered by Gemini AI
                 </span>
               </div>
 
-              <h1 className="text-2xl md:text-3xl font-serif font-bold text-[#231f20] dark:text-white tracking-tight">
-                AI <span className="text-[#b56b37] italic">Assistant & Career Studio</span>
+              <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+                AI <span className="text-primary-blue italic">Assistant & Career Studio</span>
               </h1>
-              <p className="text-[#603620] dark:text-slate-400 text-xs md:text-sm max-w-2xl font-medium">
+              <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
                 Accelerate your career with AI-driven ATS resume analysis, custom roadmaps, cover letter generators, and mock interview prep.
               </p>
             </div>
 
-            <div className="flex items-center gap-4 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 p-4 rounded-2xl w-full lg:w-auto shadow-xs">
-              <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-[#b56b37] bg-[#fcf9f2] font-serif font-bold text-base text-[#b56b37]">
+            <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl w-full shadow-xs">
+              <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-primary-blue bg-background font-serif font-bold text-base text-primary-blue">
                 7
               </div>
               <div>
-                <div className="text-[10px] uppercase font-bold text-[#8c7569] tracking-wider">AI Career Tools</div>
-                <div className="text-xs font-extrabold text-[#231f20] dark:text-white">100% Student Optimized</div>
-                <div className="text-[11px] text-[#63703d] font-semibold">Instant PDF Exporter</div>
+                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">AI Career Tools</div>
+                <div className="text-xs font-extrabold text-white">100% Student Optimized</div>
+                <div className="text-[11px] text-emerald-400 font-semibold">Instant PDF Exporter</div>
               </div>
             </div>
           </div>
@@ -274,22 +275,22 @@ export default function AIAssistant() {
               <div
                 key={m.id}
                 onClick={() => setActiveModule(m.id)}
-                className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 hover:border-[#b56b37] transition-all cursor-pointer group shadow-2xs space-y-4 flex flex-col justify-between"
+                className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 hover:border-primary-blue transition-all cursor-pointer group shadow-2xs space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#f6efe2] dark:bg-slate-800 text-[#b56b37] border border-[#e8ded1] dark:border-slate-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Icon className="w-6 h-6 text-[#b56b37]" />
+                  <div className="w-12 h-12 rounded-2xl bg-surface-secondary dark:bg-slate-800 text-primary-blue border border-border-theme dark:border-slate-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Icon className="w-6 h-6 text-primary-blue" />
                   </div>
                   <div>
-                    <h3 className="font-serif font-bold text-lg text-[#231f20] dark:text-white group-hover:text-[#b56b37] transition-colors flex items-center gap-2">
+                    <h3 className="font-serif font-bold text-lg text-text-primary dark:text-white group-hover:text-primary-blue transition-colors flex items-center gap-2">
                       {m.title}
-                      <ChevronRight className="w-4 h-4 text-[#b56b37] opacity-0 group-hover:opacity-100 transition-all -ml-1 group-hover:ml-0" />
+                      <ChevronRight className="w-4 h-4 text-primary-blue opacity-0 group-hover:opacity-100 transition-all -ml-1 group-hover:ml-0" />
                     </h3>
-                    <p className="text-xs text-[#603620] dark:text-slate-400 font-medium leading-relaxed mt-1">{m.desc}</p>
+                    <p className="text-xs text-text-secondary dark:text-slate-400 font-medium leading-relaxed mt-1">{m.desc}</p>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#e8ded1] dark:border-slate-800 flex items-center justify-between text-xs font-bold text-[#b56b37]">
+                <div className="pt-3 border-t border-border-theme dark:border-slate-800 flex items-center justify-between text-xs font-bold text-primary-blue">
                   <span>Launch Tool</span>
                   <ArrowRight className="w-4 h-4" />
                 </div>
@@ -306,9 +307,9 @@ export default function AIAssistant() {
     <div className="w-full max-w-[1400px] mx-auto space-y-6 pb-24 px-2 sm:px-4 font-sans">
       <button
         onClick={() => setActiveModule(null)}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-xl text-xs font-bold text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2] transition-colors cursor-pointer shadow-2xs"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-xl text-xs font-bold text-text-secondary dark:text-slate-300 hover:bg-surface-secondary transition-colors cursor-pointer shadow-2xs"
       >
-        <ChevronRight className="w-4 h-4 rotate-180 text-[#b56b37]" /> Back to AI Studio Modules
+        <ChevronRight className="w-4 h-4 rotate-180 text-primary-blue" /> Back to AI Studio Modules
       </button>
 
       {activeModule === 'resume_review' && <ResumeReview />}
@@ -424,37 +425,37 @@ function ResumeReview() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xs space-y-6">
+      <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xs space-y-6">
         <div>
-          <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[#b56b37]" /> AI Resume Review & ATS Analyzer
+          <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary-blue" /> AI Resume Review & ATS Analyzer
           </h2>
-          <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">Upload your PDF resume and target job description for instant keyword match scoring.</p>
+          <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">Upload your PDF resume and target job description for instant keyword match scoring.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-4">
-            <div className="flex border-b border-[#e8ded1] gap-4">
+            <div className="flex border-b border-border-theme gap-4">
               <button
                 onClick={() => setTab('upload')}
-                className={`pb-2.5 text-xs font-bold border-b-2 transition-all ${tab === 'upload' ? 'border-[#b56b37] text-[#b56b37]' : 'border-transparent text-[#8c7569]'}`}
+                className={`pb-2.5 text-xs font-bold border-b-2 transition-all ${tab === 'upload' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-text-muted'}`}
               >
                 Upload PDF Resume
               </button>
               <button
                 onClick={() => setTab('paste')}
-                className={`pb-2.5 text-xs font-bold border-b-2 transition-all ${tab === 'paste' ? 'border-[#b56b37] text-[#b56b37]' : 'border-transparent text-[#8c7569]'}`}
+                className={`pb-2.5 text-xs font-bold border-b-2 transition-all ${tab === 'paste' ? 'border-primary-blue text-primary-blue' : 'border-transparent text-text-muted'}`}
               >
                 Paste Plain Text
               </button>
             </div>
 
             {tab === 'upload' ? (
-              <div className="border-2 border-dashed border-[#e8ded1] rounded-2xl p-6 text-center space-y-3 bg-[#fcf9f2]">
-                <FileText className="w-10 h-10 text-[#b56b37] mx-auto" />
-                <span className="text-xs font-bold text-[#231f20] block">{fileName || "Select PDF Resume (Max 5MB)"}</span>
+              <div className="border-2 border-dashed border-border-theme rounded-2xl p-6 text-center space-y-3 bg-background">
+                <FileText className="w-10 h-10 text-primary-blue mx-auto" />
+                <span className="text-xs font-bold text-text-primary block">{fileName || "Select PDF Resume (Max 5MB)"}</span>
                 <input type="file" accept=".pdf" onChange={handleFileChange} className="hidden" id="pdf_upload" />
-                <label htmlFor="pdf_upload" className="inline-block px-4 py-2 bg-[#b56b37] text-white text-xs font-bold rounded-xl cursor-pointer">
+                <label htmlFor="pdf_upload" className="inline-block px-4 py-2 bg-primary-blue text-white text-xs font-bold rounded-xl cursor-pointer">
                   Browse File
                 </label>
               </div>
@@ -463,24 +464,24 @@ function ResumeReview() {
                 placeholder="Paste your plain-text resume here..."
                 value={resumeText}
                 onChange={e => setResumeText(e.target.value)}
-                className="w-full h-36 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none"
+                className="w-full h-36 bg-background border border-border-theme rounded-xl p-3 text-xs text-text-primary outline-none"
               />
             )}
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#603620] uppercase">Target Job Description</label>
+              <label className="text-xs font-bold text-text-secondary uppercase">Target Job Description</label>
               <textarea
                 placeholder="Paste target job description..."
                 value={jobDescription}
                 onChange={e => setJobDescription(e.target.value)}
-                className="w-full h-36 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs text-[#231f20] outline-none resize-none"
+                className="w-full h-36 bg-background border border-border-theme rounded-xl p-3 text-xs text-text-primary outline-none resize-none"
               />
             </div>
 
             <button
               onClick={handleReview}
               disabled={loading}
-              className="w-full py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-2"
             >
               {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
               Analyze Resume Compatibility
@@ -503,24 +504,24 @@ function ResumeReview() {
             )}
 
             {feedback ? (
-              <div className="bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-2xl p-6 space-y-4">
-                <div className="flex justify-between items-center border-b border-[#e8ded1] pb-4">
+              <div className="bg-background dark:bg-slate-800 border border-border-theme dark:border-slate-700 rounded-2xl p-6 space-y-4">
+                <div className="flex justify-between items-center border-b border-border-theme pb-4">
                   <div>
-                    <h3 className="font-serif font-bold text-base text-[#231f20] dark:text-white">ATS Compatibility Audit</h3>
+                    <h3 className="font-serif font-bold text-base text-text-primary dark:text-white">ATS Compatibility Audit</h3>
                     <button
                       onClick={() => generateResumeReviewPdf(feedback, fileName)}
-                      className="mt-2 px-3 py-1.5 bg-[#b56b37] text-white font-bold text-xs rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                      className="mt-2 px-3 py-1.5 bg-primary-blue text-white font-bold text-xs rounded-xl inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
                     >
                       <Download className="w-3.5 h-3.5" /> Download Report PDF
                     </button>
                   </div>
-                  <div className="w-16 h-16 rounded-full border-4 border-[#b56b37] bg-white font-serif font-bold text-lg text-[#b56b37] flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full border-4 border-primary-blue bg-surface font-serif font-bold text-lg text-primary-blue flex items-center justify-center">
                     {feedback.score}%
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="font-bold text-xs text-[#603620] uppercase">Missing Keywords</h4>
+                  <h4 className="font-bold text-xs text-text-secondary uppercase">Missing Keywords</h4>
                   <div className="flex flex-wrap gap-1.5">
                     {feedback.missingKeywords.map((k: string) => (
                       <span key={k} className="px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-extrabold rounded-md">
@@ -533,15 +534,15 @@ function ResumeReview() {
                 <div className="space-y-2">
                   <h4 className="font-bold text-xs text-[#63703d] uppercase">Strengths</h4>
                   {feedback.strengths.map((s: string, idx: number) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-[#231f20]">
+                    <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-text-primary">
                       <CheckCircle className="w-3.5 h-3.5 text-[#63703d]" /> {s}
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="h-full border-2 border-dashed border-[#e8ded1] rounded-2xl p-8 flex flex-col items-center justify-center text-center text-[#8c7569]">
-                <Bot className="w-12 h-12 text-[#b56b37] mb-2" />
+              <div className="h-full border-2 border-dashed border-border-theme rounded-2xl p-8 flex flex-col items-center justify-center text-center text-text-muted">
+                <Bot className="w-12 h-12 text-primary-blue mb-2" />
                 <p className="text-xs font-bold">Your ATS Compatibility Assessment will appear here after clicking analyze.</p>
               </div>
             )}
@@ -593,12 +594,12 @@ function CareerRoadmap({ profile }: { profile: UserProfile }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
+    <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
       <div>
-        <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-          <Compass className="w-5 h-5 text-[#b56b37]" /> AI Career Roadmap Generator
+        <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+          <Compass className="w-5 h-5 text-primary-blue" /> AI Career Roadmap Generator
         </h2>
-        <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">Generate a structured learning path with milestones and recommended projects.</p>
+        <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">Generate a structured learning path with milestones and recommended projects.</p>
       </div>
 
       <div className="flex gap-3 max-w-md">
@@ -607,30 +608,30 @@ function CareerRoadmap({ profile }: { profile: UserProfile }) {
           value={role}
           onChange={e => setRole(e.target.value)}
           placeholder="e.g. Full Stack Engineer"
-          className="flex-1 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs outline-none"
+          className="flex-1 bg-background border border-border-theme rounded-xl p-3 text-xs outline-none"
         />
-        <button onClick={handleGenerate} disabled={loading} className="px-5 py-3 bg-[#b56b37] hover:bg-[#96552a] text-white font-bold text-xs rounded-xl cursor-pointer">
+        <button onClick={handleGenerate} disabled={loading} className="px-5 py-3 bg-primary-blue hover:bg-[#96552a] text-white font-bold text-xs rounded-xl cursor-pointer">
           {loading ? "Generating..." : "Generate Path"}
         </button>
       </div>
 
       {roadmap && (
-        <div className="space-y-4 pt-4 border-t border-[#e8ded1]">
+        <div className="space-y-4 pt-4 border-t border-border-theme">
           <div className="flex justify-between items-center">
-            <h3 className="font-serif font-bold text-base text-[#231f20]">{roadmap.title} ({roadmap.estimatedTimeframe})</h3>
-            <button onClick={() => generateCareerRoadmapPdf(roadmap)} className="px-3.5 py-1.5 bg-[#b56b37] text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer">
+            <h3 className="font-serif font-bold text-base text-text-primary">{roadmap.title} ({roadmap.estimatedTimeframe})</h3>
+            <button onClick={() => generateCareerRoadmapPdf(roadmap)} className="px-3.5 py-1.5 bg-primary-blue text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer">
               <Download className="w-3.5 h-3.5" /> Download Roadmap PDF
             </button>
           </div>
 
           <div className="space-y-3">
             {roadmap.milestones.map((m: any) => (
-              <div key={m.step} className="p-4 rounded-2xl bg-[#fcf9f2] border border-[#e8ded1] space-y-2">
+              <div key={m.step} className="p-4 rounded-2xl bg-background border border-border-theme space-y-2">
                 <span className="text-[10px] font-extrabold text-[#63703d] uppercase tracking-wider">{m.duration}</span>
-                <h4 className="font-serif font-bold text-sm text-[#231f20]">Phase {m.step}: {m.title}</h4>
+                <h4 className="font-serif font-bold text-sm text-text-primary">Phase {m.step}: {m.title}</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {m.topics.map((t: string) => (
-                    <span key={t} className="px-2 py-0.5 bg-white text-[#603620] border border-[#e8ded1] text-[10px] font-bold rounded-md">
+                    <span key={t} className="px-2 py-0.5 bg-surface text-text-secondary border border-border-theme text-[10px] font-bold rounded-md">
                       #{t}
                     </span>
                   ))}
@@ -672,26 +673,26 @@ function CoverLetter({ profile }: { profile: UserProfile }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
+    <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
       <div>
-        <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-          <ScrollText className="w-5 h-5 text-[#b56b37]" /> Cover Letter Generator
+        <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+          <ScrollText className="w-5 h-5 text-primary-blue" /> Cover Letter Generator
         </h2>
-        <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">Generate a customized cover letter for target applications.</p>
+        <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">Generate a customized cover letter for target applications.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <input type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder="Company Name" className="bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs outline-none" />
-        <input type="text" value={role} onChange={e => setRole(e.target.value)} placeholder="Target Role" className="bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs outline-none" />
+        <input type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder="Company Name" className="bg-background border border-border-theme rounded-xl p-3 text-xs outline-none" />
+        <input type="text" value={role} onChange={e => setRole(e.target.value)} placeholder="Target Role" className="bg-background border border-border-theme rounded-xl p-3 text-xs outline-none" />
       </div>
 
-      <button onClick={handleGenerate} disabled={loading} className="px-6 py-3 bg-[#b56b37] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer">
+      <button onClick={handleGenerate} disabled={loading} className="px-6 py-3 bg-primary-blue text-white font-bold text-xs rounded-xl shadow-md cursor-pointer">
         {loading ? "Generating Cover Letter..." : "Generate Cover Letter"}
       </button>
 
       {letterText && (
-        <div className="space-y-3 pt-4 border-t border-[#e8ded1]">
-          <textarea value={letterText} onChange={e => setLetterText(e.target.value)} rows={8} className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-4 text-xs font-mono text-[#231f20] outline-none" />
+        <div className="space-y-3 pt-4 border-t border-border-theme">
+          <textarea value={letterText} onChange={e => setLetterText(e.target.value)} rows={8} className="w-full bg-background border border-border-theme rounded-xl p-4 text-xs font-mono text-text-primary outline-none" />
           <button onClick={() => generateCoverLetterPdf(company, letterText, profile?.name || "Candidate")} className="px-4 py-2 bg-[#603620] text-[#f3e4bd] font-bold text-xs rounded-xl inline-flex items-center gap-2 cursor-pointer">
             <Download className="w-4 h-4 text-[#f3e4bd]" /> Download PDF
           </button>
@@ -712,23 +713,23 @@ function InterviewPrep({ profile }: { profile: UserProfile }) {
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
+    <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
       <div>
-        <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-          <Briefcase className="w-5 h-5 text-[#b56b37]" /> Mock Interview Practice
+        <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+          <Briefcase className="w-5 h-5 text-primary-blue" /> Mock Interview Practice
         </h2>
-        <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">Practice system design and technical questions with AI answer models.</p>
+        <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">Practice system design and technical questions with AI answer models.</p>
       </div>
 
       <div className="space-y-4">
         {questions.map((item, idx) => (
-          <div key={idx} className="p-5 bg-[#fcf9f2] border border-[#e8ded1] rounded-2xl space-y-3">
-            <h3 className="font-serif font-bold text-sm text-[#231f20]">Q: {item.q}</h3>
-            <button onClick={() => setRevealAnswer(!revealAnswer)} className="px-3.5 py-1.5 bg-[#b56b37] text-white font-bold text-xs rounded-xl cursor-pointer">
+          <div key={idx} className="p-5 bg-background border border-border-theme rounded-2xl space-y-3">
+            <h3 className="font-serif font-bold text-sm text-text-primary">Q: {item.q}</h3>
+            <button onClick={() => setRevealAnswer(!revealAnswer)} className="px-3.5 py-1.5 bg-primary-blue text-white font-bold text-xs rounded-xl cursor-pointer">
               {revealAnswer ? "Hide Model Answer" : "Reveal Model Answer"}
             </button>
             {revealAnswer && (
-              <p className="text-xs text-[#603620] bg-white p-3.5 rounded-xl border border-[#e8ded1] font-medium">{item.a}</p>
+              <p className="text-xs text-text-secondary bg-surface p-3.5 rounded-xl border border-border-theme font-medium">{item.a}</p>
             )}
           </div>
         ))}
@@ -761,18 +762,18 @@ function CareerMentor({ user }: { user: any }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
+    <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
       <div>
-        <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-          <Bot className="w-5 h-5 text-[#b56b37]" /> AI Career Mentor
+        <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+          <Bot className="w-5 h-5 text-primary-blue" /> AI Career Mentor
         </h2>
-        <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">Get real-time career guidance and mentorship.</p>
+        <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">Get real-time career guidance and mentorship.</p>
       </div>
 
       <div className="space-y-3 max-h-[300px] overflow-y-auto p-2">
         {messages.map((m, idx) => (
           <div key={idx} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`p-3.5 rounded-2xl text-xs max-w-lg ${m.sender === 'user' ? 'bg-[#b56b37] text-white' : 'bg-[#fcf9f2] text-[#231f20] border border-[#e8ded1]'}`}>
+            <div className={`p-3.5 rounded-2xl text-xs max-w-lg ${m.sender === 'user' ? 'bg-primary-blue text-white' : 'bg-background text-text-primary border border-border-theme'}`}>
               {m.text}
             </div>
           </div>
@@ -780,8 +781,8 @@ function CareerMentor({ user }: { user: any }) {
       </div>
 
       <form onSubmit={handleSend} className="flex gap-2">
-        <input type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Ask your question..." className="flex-1 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs outline-none" />
-        <button type="submit" className="px-5 py-3 bg-[#b56b37] text-white font-bold text-xs rounded-xl cursor-pointer">Send</button>
+        <input type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Ask your question..." className="flex-1 bg-background border border-border-theme rounded-xl p-3 text-xs outline-none" />
+        <button type="submit" className="px-5 py-3 bg-primary-blue text-white font-bold text-xs rounded-xl cursor-pointer">Send</button>
       </form>
     </div>
   );
@@ -801,27 +802,27 @@ function AIOpportunityMatcher({ profile }: { profile: UserProfile }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
+    <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
       <div>
-        <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-          <Search className="w-5 h-5 text-[#b56b37]" /> AI Opportunity Matcher
+        <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+          <Search className="w-5 h-5 text-primary-blue" /> AI Opportunity Matcher
         </h2>
-        <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">Describe your ideal internship or fellowship to find matching opportunities.</p>
+        <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">Describe your ideal internship or fellowship to find matching opportunities.</p>
       </div>
 
       <div className="flex gap-2">
-        <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="e.g. Remote AI/ML Internships" className="flex-1 bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs outline-none" />
-        <button onClick={handleMatch} className="px-5 py-3 bg-[#b56b37] text-white font-bold text-xs rounded-xl cursor-pointer">Find Matches</button>
+        <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder="e.g. Remote AI/ML Internships" className="flex-1 bg-background border border-border-theme rounded-xl p-3 text-xs outline-none" />
+        <button onClick={handleMatch} className="px-5 py-3 bg-primary-blue text-white font-bold text-xs rounded-xl cursor-pointer">Find Matches</button>
       </div>
 
       {matches.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-[#e8ded1]">
+        <div className="space-y-3 pt-4 border-t border-border-theme">
           {matches.map((m, idx) => (
-            <div key={idx} className="p-4 rounded-2xl bg-[#fcf9f2] border border-[#e8ded1] flex justify-between items-center">
+            <div key={idx} className="p-4 rounded-2xl bg-background border border-border-theme flex justify-between items-center">
               <div>
-                <h3 className="font-serif font-bold text-sm text-[#231f20]">{m.title}</h3>
+                <h3 className="font-serif font-bold text-sm text-text-primary">{m.title}</h3>
                 <div className="flex gap-1.5 mt-1">
-                  {m.tags.map((t: string) => <span key={t} className="px-2 py-0.5 bg-white text-[#603620] text-[10px] font-bold rounded border border-[#e8ded1]">#{t}</span>)}
+                  {m.tags.map((t: string) => <span key={t} className="px-2 py-0.5 bg-surface text-text-secondary text-[10px] font-bold rounded border border-border-theme">#{t}</span>)}
                 </div>
               </div>
               <span className="px-3 py-1 bg-[#63703d]/15 text-[#63703d] font-bold text-xs rounded-full">{m.matchScore}</span>
@@ -856,26 +857,26 @@ function OutreachGenerator({ profile }: { profile: UserProfile }) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
+    <div className="bg-surface dark:bg-slate-900 border border-border-theme dark:border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xs">
       <div>
-        <h2 className="text-xl font-serif font-bold text-[#231f20] dark:text-white flex items-center gap-2">
-          <Send className="w-5 h-5 text-[#b56b37]" /> Cold Outreach Message Generator
+        <h2 className="text-xl font-serif font-bold text-text-primary dark:text-white flex items-center gap-2">
+          <Send className="w-5 h-5 text-primary-blue" /> Cold Outreach Message Generator
         </h2>
-        <p className="text-xs text-[#603620] dark:text-slate-400 font-medium mt-1">Generate high-converting networking messages for recruiters and mentors.</p>
+        <p className="text-xs text-text-secondary dark:text-slate-400 font-medium mt-1">Generate high-converting networking messages for recruiters and mentors.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <input type="text" value={recipient} onChange={e => setRecipient(e.target.value)} placeholder="Recipient Title" className="bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs outline-none" />
-        <input type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder="Target Company" className="bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-3 text-xs outline-none" />
+        <input type="text" value={recipient} onChange={e => setRecipient(e.target.value)} placeholder="Recipient Title" className="bg-background border border-border-theme rounded-xl p-3 text-xs outline-none" />
+        <input type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder="Target Company" className="bg-background border border-border-theme rounded-xl p-3 text-xs outline-none" />
       </div>
 
-      <button onClick={handleGenerate} className="px-6 py-3 bg-[#b56b37] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer">
+      <button onClick={handleGenerate} className="px-6 py-3 bg-primary-blue text-white font-bold text-xs rounded-xl shadow-md cursor-pointer">
         Generate Outreach Message
       </button>
 
       {message && (
-        <div className="space-y-3 pt-4 border-t border-[#e8ded1]">
-          <textarea value={message} onChange={e => setMessage(e.target.value)} rows={6} className="w-full bg-[#fcf9f2] border border-[#e8ded1] rounded-xl p-4 text-xs font-mono text-[#231f20] outline-none" />
+        <div className="space-y-3 pt-4 border-t border-border-theme">
+          <textarea value={message} onChange={e => setMessage(e.target.value)} rows={6} className="w-full bg-background border border-border-theme rounded-xl p-4 text-xs font-mono text-text-primary outline-none" />
           <button onClick={() => navigator.clipboard.writeText(message)} className="px-4 py-2 bg-[#603620] text-[#f3e4bd] font-bold text-xs rounded-xl inline-flex items-center gap-2 cursor-pointer">
             <Copy className="w-4 h-4 text-[#f3e4bd]" /> Copy Message
           </button>

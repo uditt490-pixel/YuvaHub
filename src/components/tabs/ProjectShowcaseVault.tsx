@@ -270,10 +270,10 @@ export default function ProjectShowcaseVault() {
   };
 
   const renderFilterSidebar = () => (
-    <div className="space-y-6 text-xs text-[#231f20] dark:text-slate-200">
+    <div className="space-y-6 text-xs text-text-primary dark:text-text-primary">
       {/* Categories */}
       <div>
-        <h3 className="font-bold text-[#603620] dark:text-slate-400 uppercase tracking-wider mb-2.5">Category</h3>
+        <h3 className="font-bold text-text-secondary dark:text-text-muted uppercase tracking-wider mb-2.5">Category</h3>
         <div className="space-y-1.5">
           {categories.map(cat => (
             <button
@@ -281,8 +281,8 @@ export default function ProjectShowcaseVault() {
               onClick={() => setSelectedCategory(cat.val)}
               className={`w-full text-left px-3 py-1.5 rounded-lg font-medium transition-all ${
                 selectedCategory === cat.val
-                  ? 'bg-[#231f20] text-white shadow-xs font-semibold'
-                  : 'text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2] dark:hover:bg-slate-800'
+                  ? 'bg-[#231f20] text-text-primary shadow-xs font-semibold'
+                  : 'text-text-secondary dark:text-text-primary hover:bg-surface-secondary dark:hover:bg-surface-secondary'
               }`}
             >
               {cat.label}
@@ -293,7 +293,7 @@ export default function ProjectShowcaseVault() {
 
       {/* Tech Stack */}
       <div>
-        <h3 className="font-bold text-[#603620] dark:text-slate-400 uppercase tracking-wider mb-2.5">Technology</h3>
+        <h3 className="font-bold text-text-secondary dark:text-text-muted uppercase tracking-wider mb-2.5">Technology</h3>
         <div className="flex flex-wrap gap-1.5">
           {popularTech.map(t => (
             <button
@@ -301,8 +301,8 @@ export default function ProjectShowcaseVault() {
               onClick={() => setSelectedTech(t)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
                 selectedTech === t
-                  ? 'bg-[#b56b37] text-white border-[#b56b37]'
-                  : 'bg-white dark:bg-slate-800 border-[#e8ded1] dark:border-slate-700 text-[#603620] dark:text-slate-300 hover:border-[#b56b37]'
+                  ? 'bg-primary-blue text-text-primary border-primary-blue'
+                  : 'bg-surface dark:bg-surface-secondary border-border-theme dark:border-border-theme text-text-secondary dark:text-text-primary hover:border-primary-blue'
               }`}
             >
               {t === 'all' ? 'All Tech' : t}
@@ -313,7 +313,7 @@ export default function ProjectShowcaseVault() {
 
       {/* Difficulty */}
       <div>
-        <h3 className="font-bold text-[#603620] dark:text-slate-400 uppercase tracking-wider mb-2.5">Difficulty</h3>
+        <h3 className="font-bold text-text-secondary dark:text-text-muted uppercase tracking-wider mb-2.5">Difficulty</h3>
         <div className="grid grid-cols-2 gap-1.5">
           {['all', 'Beginner', 'Intermediate', 'Advanced'].map(d => (
             <button
@@ -321,8 +321,8 @@ export default function ProjectShowcaseVault() {
               onClick={() => setSelectedDifficulty(d)}
               className={`py-1.5 px-2 text-center rounded-lg border text-xs font-semibold transition-all ${
                 selectedDifficulty === d
-                  ? 'bg-[#231f20] text-white border-[#231f20]'
-                  : 'bg-white dark:bg-slate-800 border-[#e8ded1] dark:border-slate-700 text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2] dark:hover:bg-slate-700'
+                  ? 'bg-[#231f20] text-text-primary border-[#231f20]'
+                  : 'bg-surface dark:bg-surface-secondary border-border-theme dark:border-border-theme text-text-secondary dark:text-text-primary hover:bg-surface-secondary dark:hover:bg-slate-700'
               }`}
             >
               {d === 'all' ? 'All Levels' : d}
@@ -333,16 +333,16 @@ export default function ProjectShowcaseVault() {
 
       {/* Status & Highlights */}
       <div>
-        <h3 className="font-bold text-[#603620] dark:text-slate-400 uppercase tracking-wider mb-2.5">Badges & Attributes</h3>
+        <h3 className="font-bold text-text-secondary dark:text-text-muted uppercase tracking-wider mb-2.5">Badges & Attributes</h3>
         <div className="space-y-2.5">
           <label className="flex items-center gap-2.5 cursor-pointer group">
             <input
               type="checkbox"
               checked={isBeginnerFriendly}
               onChange={e => setIsBeginnerFriendly(e.target.checked)}
-              className="w-4 h-4 rounded border-[#e8ded1] text-[#63703d] focus:ring-[#63703d]"
+              className="w-4 h-4 rounded border-border-theme text-[#63703d] focus:ring-[#63703d]"
             />
-            <span className="font-medium text-[#231f20] dark:text-slate-300 group-hover:text-[#63703d] transition-colors">
+            <span className="font-medium text-text-primary dark:text-text-primary group-hover:text-[#63703d] transition-colors">
               Beginner Friendly
             </span>
           </label>
@@ -352,9 +352,9 @@ export default function ProjectShowcaseVault() {
               type="checkbox"
               checked={isOpenSource}
               onChange={e => setIsOpenSource(e.target.checked)}
-              className="w-4 h-4 rounded border-[#e8ded1] text-[#b56b37] focus:ring-[#b56b37]"
+              className="w-4 h-4 rounded border-border-theme text-primary-blue focus:ring-[#b56b37]"
             />
-            <span className="font-medium text-[#231f20] dark:text-slate-300 group-hover:text-[#b56b37] transition-colors">
+            <span className="font-medium text-text-primary dark:text-text-primary group-hover:text-primary-blue transition-colors">
               Open Source Only
             </span>
           </label>
@@ -364,9 +364,9 @@ export default function ProjectShowcaseVault() {
               type="checkbox"
               checked={isRemoteCollaboration}
               onChange={e => setIsRemoteCollaboration(e.target.checked)}
-              className="w-4 h-4 rounded border-[#e8ded1] text-[#b56b37] focus:ring-[#b56b37]"
+              className="w-4 h-4 rounded border-border-theme text-primary-blue focus:ring-[#b56b37]"
             />
-            <span className="font-medium text-[#231f20] dark:text-slate-300 group-hover:text-[#b56b37] transition-colors">
+            <span className="font-medium text-text-primary dark:text-text-primary group-hover:text-primary-blue transition-colors">
               Remote Collaboration
             </span>
           </label>
@@ -376,9 +376,9 @@ export default function ProjectShowcaseVault() {
               type="checkbox"
               checked={isFeatured}
               onChange={e => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 rounded border-[#e8ded1] text-[#b56b37] focus:ring-[#b56b37]"
+              className="w-4 h-4 rounded border-border-theme text-primary-blue focus:ring-[#b56b37]"
             />
-            <span className="font-medium text-[#231f20] dark:text-slate-300 group-hover:text-[#b56b37] transition-colors">
+            <span className="font-medium text-text-primary dark:text-text-primary group-hover:text-primary-blue transition-colors">
               Featured Projects Only
             </span>
           </label>
@@ -387,7 +387,7 @@ export default function ProjectShowcaseVault() {
 
       <button
         onClick={handleResetFilters}
-        className="w-full py-2 px-3 border border-[#e8ded1] dark:border-slate-700 hover:bg-[#f6efe2] dark:hover:bg-slate-800 rounded-lg text-[#603620] dark:text-slate-300 font-semibold transition-colors"
+        className="w-full py-2 px-3 border border-border-theme dark:border-border-theme hover:bg-surface-secondary dark:hover:bg-surface-secondary rounded-lg text-text-secondary dark:text-text-primary font-semibold transition-colors"
       >
         Reset All Filters
       </button>
@@ -395,7 +395,7 @@ export default function ProjectShowcaseVault() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fcf9f2] dark:bg-slate-950 font-sans pb-16">
+    <div className="font-sans h-full">
       {/* Toast Notification */}
       {notification.message && (
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg border flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top-3 duration-200 ${
@@ -409,31 +409,43 @@ export default function ProjectShowcaseVault() {
       )}
 
       {/* Hero Banner */}
-      <div className="border-b border-[#e8ded1] dark:border-slate-800 bg-white dark:bg-slate-900 px-4 sm:px-8 py-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-[#231f20] text-[#fcf9f2] flex items-center justify-center shadow-sm">
-                <FolderGit2 className="w-5 h-5 text-[#fcf9f2]" />
-              </div>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#f6efe2] dark:bg-slate-800 text-[#b56b37] border border-[#e8ded1] dark:border-slate-700">
-                Open Source Showcase
+      <div className="m-4 sm:m-8 bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden text-white">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col gap-6 relative z-10">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/20 border border-cyan-500/30 flex items-center gap-1.5 shadow-xs">
+                <FolderGit2 className="w-3.5 h-3.5 text-indigo-400" /> Open Source Showcase
+              </span>
+              <span className="px-3 py-1 text-xs font-bold text-emerald-400 bg-emerald-500/20 border border-emerald-500/30">
+                Community Projects
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#231f20] dark:text-white tracking-tight">
-              Project Vault
+
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-white tracking-tight">
+              Project <span className="text-primary-blue italic">Vault</span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#8c7569] dark:text-slate-400 max-w-2xl">
+            <p className="text-slate-300 text-xs md:text-sm max-w-2xl font-medium">
               Explore real open-source student repositories, find good first issues, collaborate with peers, and showcase your capstone projects to global recruiters.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+            <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl w-full shadow-xs">
+              <div className="relative flex items-center justify-center w-14 h-14 rounded-full border-4 border-primary-blue bg-background font-serif font-bold text-base text-primary-blue">
+                {(vaultData as any)?.total || 0}
+              </div>
+              <div>
+                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Vault Projects</div>
+                <div className="text-xs font-extrabold text-white">Showcase your capstone</div>
+                <div className="text-[11px] text-emerald-400 font-semibold">Collaborate on open-source</div>
+              </div>
+            </div>
             <button
               onClick={() => setIsSubmitModalOpen(true)}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-[#231f20] hover:bg-[#b56b37] text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-sm hover:shadow-md"
+              className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-6 py-4 bg-primary-blue hover:bg-blue-600 text-white text-sm font-bold rounded-2xl transition-all shadow-lg hover:shadow-primary-blue/20"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" />
               Submit Project
             </button>
           </div>
@@ -441,14 +453,14 @@ export default function ProjectShowcaseVault() {
       </div>
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
+      <div className="w-full px-4 sm:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Desktop Filter Sidebar */}
           <aside className="hidden lg:block w-64 shrink-0">
-            <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-2xl p-5 shadow-xs sticky top-24">
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#e8ded1] dark:border-slate-800">
-                <span className="font-bold text-xs text-[#231f20] dark:text-white flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-[#b56b37]" />
+            <div className="bg-surface dark:bg-surface border border-border-theme dark:border-border-theme rounded-2xl p-5 shadow-xs sticky top-24">
+              <div className="flex items-center justify-between pb-3 mb-4 border-b border-border-theme dark:border-border-theme">
+                <span className="font-bold text-xs text-text-primary dark:text-text-primary flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-primary-blue" />
                   Filters & Categories
                 </span>
               </div>
@@ -459,20 +471,20 @@ export default function ProjectShowcaseVault() {
           {/* Right Column: Search, Sort & Listings */}
           <main className="flex-1 space-y-6">
             {/* Search & Top Controls */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-[#e8ded1] dark:border-slate-800 shadow-xs">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-surface dark:bg-surface p-3 rounded-2xl border border-border-theme dark:border-border-theme shadow-xs">
               <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8c7569]" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="Search projects by name, technology, tags, maintainer..."
-                  className="w-full pl-10 pr-9 py-2 bg-[#fcf9f2] dark:bg-slate-800/80 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-xs sm:text-sm text-[#231f20] dark:text-white placeholder-[#8c7569] focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                  className="w-full pl-10 pr-9 py-2 bg-background dark:bg-surface-secondary/80 border border-border-theme dark:border-border-theme rounded-xl text-xs sm:text-sm text-text-primary dark:text-text-primary placeholder-[#8c7569] focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                 />
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8c7569] hover:text-[#231f20]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -482,16 +494,16 @@ export default function ProjectShowcaseVault() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsMobileFilterOpen(true)}
-                  className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#e8ded1] dark:border-slate-700 bg-[#fcf9f2] dark:bg-slate-800 text-xs font-bold text-[#603620] dark:text-slate-200"
+                  className="lg:hidden flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border-theme dark:border-border-theme bg-background dark:bg-surface-secondary text-xs font-bold text-text-secondary dark:text-text-primary"
                 >
-                  <Filter className="w-3.5 h-3.5 text-[#b56b37]" />
+                  <Filter className="w-3.5 h-3.5 text-primary-blue" />
                   Filters
                 </button>
 
                 <select
                   value={sortBy}
                   onChange={e => setSortBy(e.target.value)}
-                  className="px-3.5 py-2 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-xs font-semibold text-[#231f20] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                  className="px-3.5 py-2 bg-background dark:bg-surface-secondary border border-border-theme dark:border-border-theme rounded-xl text-xs font-semibold text-text-primary dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                 >
                   <option value="Recently Added">Recently Added</option>
                   <option value="Most Popular">Most Popular</option>
@@ -509,7 +521,7 @@ export default function ProjectShowcaseVault() {
                 <p className="text-xs sm:text-sm font-semibold text-rose-800 dark:text-rose-200">{error}</p>
                 <button
                   onClick={() => loadProjects(currentPage)}
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-text-primary rounded-xl text-xs font-bold inline-flex items-center gap-2"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   Retry
@@ -521,16 +533,16 @@ export default function ProjectShowcaseVault() {
             {loading && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 animate-pulse space-y-4">
+                  <div key={i} className="p-5 rounded-2xl bg-surface dark:bg-surface border border-border-theme dark:border-border-theme animate-pulse space-y-4">
                     <div className="flex justify-between items-start">
-                      <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded w-2/3" />
-                      <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-16" />
+                      <div className="h-5 bg-slate-200 dark:bg-surface-secondary rounded w-2/3" />
+                      <div className="h-4 bg-slate-200 dark:bg-surface-secondary rounded w-16" />
                     </div>
-                    <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded w-full" />
+                    <div className="h-12 bg-slate-200 dark:bg-surface-secondary rounded w-full" />
                     <div className="flex gap-2">
-                      <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded w-14" />
-                      <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded w-16" />
-                      <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded w-12" />
+                      <div className="h-5 bg-slate-200 dark:bg-surface-secondary rounded w-14" />
+                      <div className="h-5 bg-slate-200 dark:bg-surface-secondary rounded w-16" />
+                      <div className="h-5 bg-slate-200 dark:bg-surface-secondary rounded w-12" />
                     </div>
                   </div>
                 ))}
@@ -539,26 +551,26 @@ export default function ProjectShowcaseVault() {
 
             {/* Empty State */}
             {!loading && !error && projects.length === 0 && (
-              <div className="p-12 text-center bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl space-y-4 shadow-xs">
-                <div className="w-16 h-16 rounded-2xl bg-[#f6efe2] dark:bg-slate-800 flex items-center justify-center mx-auto text-[#b56b37]">
+              <div className="p-12 text-center bg-surface dark:bg-surface border border-border-theme dark:border-border-theme rounded-3xl space-y-4 shadow-xs">
+                <div className="w-16 h-16 rounded-2xl bg-surface-secondary dark:bg-surface-secondary flex items-center justify-center mx-auto text-primary-blue">
                   <FolderGit2 className="w-8 h-8" />
                 </div>
-                <h3 className="text-lg font-bold text-[#231f20] dark:text-white">
+                <h3 className="text-lg font-bold text-text-primary dark:text-text-primary">
                   No projects available yet
                 </h3>
-                <p className="text-xs sm:text-sm text-[#8c7569] dark:text-slate-400 max-w-md mx-auto">
+                <p className="text-xs sm:text-sm text-text-muted dark:text-text-muted max-w-md mx-auto">
                   No matching projects found with the current search and filter criteria. Check back later or contribute your own project to the vault!
                 </p>
                 <div className="flex items-center justify-center gap-3 pt-2">
                   <button
                     onClick={handleResetFilters}
-                    className="px-4 py-2 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-xs font-bold text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]"
+                    className="px-4 py-2 border border-border-theme dark:border-border-theme rounded-xl text-xs font-bold text-text-secondary dark:text-text-primary hover:bg-surface-secondary"
                   >
                     Clear Filters
                   </button>
                   <button
                     onClick={() => setIsSubmitModalOpen(true)}
-                    className="px-5 py-2 bg-[#231f20] hover:bg-[#b56b37] text-white rounded-xl text-xs font-bold transition-all"
+                    className="px-5 py-2 bg-[#231f20] hover:bg-primary-blue text-text-primary rounded-xl text-xs font-bold transition-all"
                   >
                     Submit Project
                   </button>
@@ -576,24 +588,24 @@ export default function ProjectShowcaseVault() {
                   return (
                     <div
                       key={projId}
-                      className="group bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-2xl p-5 shadow-xs hover:shadow-md hover:border-[#b56b37]/50 transition-all flex flex-col justify-between"
+                      className="group bg-surface dark:bg-surface border border-border-theme dark:border-border-theme rounded-2xl p-5 shadow-xs hover:shadow-md hover:border-primary-blue/50 transition-all flex flex-col justify-between"
                     >
                       <div className="space-y-3.5">
                         {/* Header: Title & Badges */}
                         <div className="flex items-start justify-between gap-3">
                           <div className="space-y-1">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[11px] font-semibold text-[#8c7569] dark:text-slate-400 uppercase tracking-wider">
+                              <span className="text-[11px] font-semibold text-text-muted dark:text-text-muted uppercase tracking-wider">
                                 {proj.category}
                               </span>
                               {getDifficultyBadge(proj.difficulty)}
                               {proj.isFeatured && (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#f6efe2] text-[#b56b37] border border-[#e8ded1]">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-surface-secondary text-primary-blue border border-border-theme">
                                   Featured
                                 </span>
                               )}
                             </div>
-                            <h3 className="text-base font-bold text-[#231f20] dark:text-white group-hover:text-[#b56b37] transition-colors leading-snug">
+                            <h3 className="text-base font-bold text-text-primary dark:text-text-primary group-hover:text-primary-blue transition-colors leading-snug">
                               {proj.title}
                             </h3>
                           </div>
@@ -602,8 +614,8 @@ export default function ProjectShowcaseVault() {
                             onClick={() => handleUpvote(projId)}
                             className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all border shrink-0 ${
                               isUpvoted
-                                ? 'bg-amber-500 text-white border-amber-500 shadow-xs'
-                                : 'bg-[#fcf9f2] dark:bg-slate-800 text-[#603620] dark:text-slate-300 border-[#e8ded1] dark:border-slate-700 hover:border-amber-400'
+                                ? 'bg-amber-500 text-text-primary border-amber-500 shadow-xs'
+                                : 'bg-background dark:bg-surface-secondary text-text-secondary dark:text-text-primary border-border-theme dark:border-border-theme hover:border-amber-400'
                             }`}
                             title="Upvote Project"
                           >
@@ -613,7 +625,7 @@ export default function ProjectShowcaseVault() {
                         </div>
 
                         {/* Description */}
-                        <p className="text-xs text-[#603620] dark:text-slate-300 line-clamp-3 leading-relaxed">
+                        <p className="text-xs text-text-secondary dark:text-text-primary line-clamp-3 leading-relaxed">
                           {proj.description}
                         </p>
 
@@ -622,7 +634,7 @@ export default function ProjectShowcaseVault() {
                           {proj.techStack?.map((t, idx) => (
                             <span
                               key={idx}
-                              className="px-2 py-0.5 bg-[#f6efe2] dark:bg-slate-800 text-[#603620] dark:text-slate-300 rounded-md text-[11px] font-medium border border-[#e8ded1] dark:border-slate-700"
+                              className="px-2 py-0.5 bg-surface-secondary dark:bg-surface-secondary text-text-secondary dark:text-text-primary rounded-md text-[11px] font-medium border border-border-theme dark:border-border-theme"
                             >
                               {t}
                             </span>
@@ -638,23 +650,29 @@ export default function ProjectShowcaseVault() {
                         )}
                       </div>
 
-                      {/* Footer: Maintainer & Action Links */}
-                      <div className="pt-4 mt-4 border-t border-[#e8ded1] dark:border-slate-800 flex items-center justify-between gap-3 text-xs">
+                      {/* Footer: Maintainer, Stars & Action Links */}
+                      <div className="pt-4 mt-4 border-t border-border-theme dark:border-border-theme flex items-center justify-between gap-3 text-xs">
                         <div className="flex items-center gap-2">
                           <img
                             src={proj.maintainer?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(proj.maintainer?.name || 'Maintainer')}&background=231f20&color=fff`}
                             alt={proj.maintainer?.name}
-                            className="w-6 h-6 rounded-full object-cover border border-[#e8ded1]"
+                            className="w-6 h-6 rounded-full object-cover border border-border-theme"
                           />
-                          <span className="font-semibold text-[#231f20] dark:text-slate-200 truncate max-w-[110px]">
+                          <span className="font-semibold text-text-primary dark:text-text-primary truncate max-w-[110px]">
                             {proj.maintainer?.name}
                           </span>
+                          {typeof proj.stars === 'number' && (
+                            <span className="flex items-center gap-1 text-amber-500 font-bold" title="GitHub Stars">
+                              <Star className="w-3 h-3" />
+                              {proj.stars.toLocaleString()}
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleCopyRepo(proj.repoUrl, projId)}
-                            className="p-1.5 rounded-lg border border-[#e8ded1] dark:border-slate-700 hover:bg-[#f6efe2] dark:hover:bg-slate-800 text-[#8c7569] transition-colors"
+                            className="p-1.5 rounded-lg border border-border-theme dark:border-border-theme hover:bg-surface-secondary dark:hover:bg-surface-secondary text-text-muted transition-colors"
                             title="Copy Repository URL"
                           >
                             {copiedId === projId ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -662,7 +680,7 @@ export default function ProjectShowcaseVault() {
 
                           <button
                             onClick={() => handleShareProject(proj)}
-                            className="p-1.5 rounded-lg border border-[#e8ded1] dark:border-slate-700 hover:bg-[#f6efe2] dark:hover:bg-slate-800 text-[#8c7569] transition-colors"
+                            className="p-1.5 rounded-lg border border-border-theme dark:border-border-theme hover:bg-surface-secondary dark:hover:bg-surface-secondary text-text-muted transition-colors"
                             title="Share Project"
                           >
                             <Share2 className="w-3.5 h-3.5" />
@@ -673,7 +691,7 @@ export default function ProjectShowcaseVault() {
                               href={proj.demoUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-1.5 rounded-lg border border-[#e8ded1] dark:border-slate-700 hover:bg-[#f6efe2] dark:hover:bg-slate-800 text-[#603620] dark:text-slate-300 transition-colors"
+                              className="p-1.5 rounded-lg border border-border-theme dark:border-border-theme hover:bg-surface-secondary dark:hover:bg-surface-secondary text-text-secondary dark:text-text-primary transition-colors"
                               title="Live Demo"
                             >
                               <Globe className="w-3.5 h-3.5" />
@@ -684,7 +702,7 @@ export default function ProjectShowcaseVault() {
                             href={proj.repoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#231f20] hover:bg-[#b56b37] text-white rounded-lg font-bold text-xs transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#231f20] hover:bg-primary-blue text-text-primary rounded-lg font-bold text-xs transition-colors"
                           >
                             <FolderGit2 className="w-3.5 h-3.5" />
                             <span>Code</span>
@@ -700,8 +718,8 @@ export default function ProjectShowcaseVault() {
 
             {/* Pagination Controls */}
             {!loading && !error && projects.length > 0 && totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[#e8ded1] dark:border-slate-800 text-xs">
-                <span className="text-[#8c7569]">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-border-theme dark:border-border-theme text-xs">
+                <span className="text-text-muted">
                   Showing <strong>{(currentPage - 1) * ITEMS_PER_PAGE + 1}</strong> - <strong>{Math.min(currentPage * ITEMS_PER_PAGE, totalItems)}</strong> of <strong>{totalItems}</strong> projects (Page {currentPage} of {totalPages})
                 </span>
 
@@ -709,9 +727,9 @@ export default function ProjectShowcaseVault() {
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="p-1.5 rounded-lg border border-[#e8ded1] dark:border-slate-800 bg-white dark:bg-slate-900 disabled:opacity-40 hover:bg-[#f6efe2] transition-colors"
+                    className="p-1.5 rounded-lg border border-border-theme dark:border-border-theme bg-surface dark:bg-surface disabled:opacity-40 hover:bg-surface-secondary transition-colors"
                   >
-                    <ChevronLeft className="w-4 h-4 text-[#231f20] dark:text-slate-300" />
+                    <ChevronLeft className="w-4 h-4 text-text-primary dark:text-text-primary" />
                   </button>
 
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
@@ -720,8 +738,8 @@ export default function ProjectShowcaseVault() {
                       onClick={() => handlePageChange(p)}
                       className={`min-w-[28px] h-7 px-2 rounded-lg text-xs font-bold transition-colors ${
                         currentPage === p
-                          ? 'bg-[#231f20] text-white'
-                          : 'bg-white border border-[#e8ded1] text-[#603620] hover:bg-[#f6efe2]'
+                          ? 'bg-[#231f20] text-text-primary'
+                          : 'bg-surface border border-border-theme text-text-secondary hover:bg-surface-secondary'
                       }`}
                     >
                       {p}
@@ -731,9 +749,9 @@ export default function ProjectShowcaseVault() {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="p-1.5 rounded-lg border border-[#e8ded1] dark:border-slate-800 bg-white dark:bg-slate-900 disabled:opacity-40 hover:bg-[#f6efe2] transition-colors"
+                    className="p-1.5 rounded-lg border border-border-theme dark:border-border-theme bg-surface dark:bg-surface disabled:opacity-40 hover:bg-surface-secondary transition-colors"
                   >
-                    <ChevronRight className="w-4 h-4 text-[#231f20] dark:text-slate-300" />
+                    <ChevronRight className="w-4 h-4 text-text-primary dark:text-text-primary" />
                   </button>
                 </div>
               </div>
@@ -745,27 +763,27 @@ export default function ProjectShowcaseVault() {
       {/* Mobile Filter Drawer */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-50 flex justify-end lg:hidden bg-[#231f20]/40 backdrop-blur-xs">
-          <div className="w-full max-w-xs h-full bg-white dark:bg-slate-900 border-l border-[#e8ded1] dark:border-slate-800 p-6 flex flex-col justify-between overflow-y-auto">
+          <div className="w-full max-w-xs h-full bg-surface dark:bg-surface border-l border-border-theme dark:border-border-theme p-6 flex flex-col justify-between overflow-y-auto">
             <div className="space-y-4">
-              <div className="flex justify-between items-center border-b border-[#e8ded1] pb-3">
-                <h3 className="font-bold text-sm text-[#231f20] dark:text-slate-100">Filter Projects</h3>
+              <div className="flex justify-between items-center border-b border-border-theme pb-3">
+                <h3 className="font-bold text-sm text-text-primary dark:text-slate-100">Filter Projects</h3>
                 <button onClick={() => setIsMobileFilterOpen(false)}>
-                  <X className="w-4 h-4 text-[#8c7569]" />
+                  <X className="w-4 h-4 text-text-muted" />
                 </button>
               </div>
               {renderFilterSidebar()}
             </div>
 
-            <div className="flex gap-2 pt-4 border-t border-[#e8ded1]">
+            <div className="flex gap-2 pt-4 border-t border-border-theme">
               <button
                 onClick={() => { handleResetFilters(); setIsMobileFilterOpen(false); }}
-                className="flex-1 py-2 rounded-lg border border-[#e8ded1] text-xs font-bold text-[#603620]"
+                className="flex-1 py-2 rounded-lg border border-border-theme text-xs font-bold text-text-secondary"
               >
                 Reset
               </button>
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="flex-1 py-2 rounded-lg bg-[#b56b37] text-xs font-bold text-white"
+                className="flex-1 py-2 rounded-lg bg-primary-blue text-xs font-bold text-text-primary"
               >
                 Apply
               </button>
@@ -777,15 +795,15 @@ export default function ProjectShowcaseVault() {
       {/* Submit Project Modal */}
       {isSubmitModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#231f20]/50 backdrop-blur-xs">
-          <div className="bg-white dark:bg-slate-900 border border-[#e8ded1] dark:border-slate-800 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between border-b border-[#e8ded1] dark:border-slate-800 pb-4">
+          <div className="bg-surface dark:bg-surface border border-border-theme dark:border-border-theme rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-border-theme dark:border-border-theme pb-4">
               <div className="space-y-1">
-                <h3 className="text-lg font-bold text-[#231f20] dark:text-white">Submit Open Source Project</h3>
-                <p className="text-xs text-[#8c7569]">Showcase your project on YuvaHub Global Vault</p>
+                <h3 className="text-lg font-bold text-text-primary dark:text-text-primary">Submit Open Source Project</h3>
+                <p className="text-xs text-text-muted">Showcase your project on YuvaHub Global Vault</p>
               </div>
               <button
                 onClick={() => setIsSubmitModalOpen(false)}
-                className="p-1 rounded-lg text-[#8c7569] hover:text-[#231f20] hover:bg-[#f6efe2]"
+                className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-secondary"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -793,36 +811,36 @@ export default function ProjectShowcaseVault() {
 
             <form onSubmit={handleSubmitNewProject} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-[#603620] dark:text-slate-300">Project Title *</label>
+                <label className="font-bold text-text-secondary dark:text-text-primary">Project Title *</label>
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={e => setFormData(f => ({ ...f, title: e.target.value }))}
                   placeholder="e.g. Distributed DAG Task Scheduler"
-                  className="w-full px-3.5 py-2.5 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-[#231f20] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                  className="w-full px-3.5 py-2.5 bg-background dark:bg-surface-secondary border border-border-theme dark:border-border-theme rounded-xl text-text-primary dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-[#603620] dark:text-slate-300">Description *</label>
+                <label className="font-bold text-text-secondary dark:text-text-primary">Description *</label>
                 <textarea
                   required
                   rows={3}
                   value={formData.description}
                   onChange={e => setFormData(f => ({ ...f, description: e.target.value }))}
                   placeholder="Describe your project, architecture, features, and key contributions..."
-                  className="w-full px-3.5 py-2.5 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-[#231f20] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                  className="w-full px-3.5 py-2.5 bg-background dark:bg-surface-secondary border border-border-theme dark:border-border-theme rounded-xl text-text-primary dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-[#603620] dark:text-slate-300">Category</label>
+                  <label className="font-bold text-text-secondary dark:text-text-primary">Category</label>
                   <select
                     value={formData.category}
                     onChange={e => setFormData(f => ({ ...f, category: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-[#231f20] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                    className="w-full px-3.5 py-2.5 bg-background dark:bg-surface-secondary border border-border-theme dark:border-border-theme rounded-xl text-text-primary dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                   >
                     {categories.filter(c => c.val !== 'all').map(c => (
                       <option key={c.val} value={c.val}>{c.label}</option>
@@ -831,11 +849,11 @@ export default function ProjectShowcaseVault() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-[#603620] dark:text-slate-300">Difficulty</label>
+                  <label className="font-bold text-text-secondary dark:text-text-primary">Difficulty</label>
                   <select
                     value={formData.difficulty}
                     onChange={e => setFormData(f => ({ ...f, difficulty: e.target.value }))}
-                    className="w-full px-3.5 py-2.5 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-[#231f20] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                    className="w-full px-3.5 py-2.5 bg-background dark:bg-surface-secondary border border-border-theme dark:border-border-theme rounded-xl text-text-primary dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                   >
                     <option value="Beginner">Beginner Friendly</option>
                     <option value="Intermediate">Intermediate</option>
@@ -845,51 +863,51 @@ export default function ProjectShowcaseVault() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-[#603620] dark:text-slate-300">Tech Stack (comma-separated) *</label>
+                <label className="font-bold text-text-secondary dark:text-text-primary">Tech Stack (comma-separated) *</label>
                 <input
                   type="text"
                   required
                   value={formData.techStack}
                   onChange={e => setFormData(f => ({ ...f, techStack: e.target.value }))}
                   placeholder="e.g. React, TypeScript, Python, Docker"
-                  className="w-full px-3.5 py-2.5 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-[#231f20] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                  className="w-full px-3.5 py-2.5 bg-background dark:bg-surface-secondary border border-border-theme dark:border-border-theme rounded-xl text-text-primary dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="font-bold text-[#603620] dark:text-slate-300">GitHub Repository URL *</label>
+                  <label className="font-bold text-text-secondary dark:text-text-primary">GitHub Repository URL *</label>
                   <input
                     type="url"
                     required
                     value={formData.repoUrl}
                     onChange={e => setFormData(f => ({ ...f, repoUrl: e.target.value }))}
                     placeholder="https://github.com/..."
-                    className="w-full px-3.5 py-2.5 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-[#231f20] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                    className="w-full px-3.5 py-2.5 bg-background dark:bg-surface-secondary border border-border-theme dark:border-border-theme rounded-xl text-text-primary dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-[#603620] dark:text-slate-300">Live Demo URL (optional)</label>
+                  <label className="font-bold text-text-secondary dark:text-text-primary">Live Demo URL (optional)</label>
                   <input
                     type="url"
                     value={formData.demoUrl}
                     onChange={e => setFormData(f => ({ ...f, demoUrl: e.target.value }))}
                     placeholder="https://..."
-                    className="w-full px-3.5 py-2.5 bg-[#fcf9f2] dark:bg-slate-800 border border-[#e8ded1] dark:border-slate-700 rounded-xl text-[#231f20] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
+                    className="w-full px-3.5 py-2.5 bg-background dark:bg-surface-secondary border border-border-theme dark:border-border-theme rounded-xl text-text-primary dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-[#b56b37]"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2 pt-2 border-t border-[#e8ded1] dark:border-slate-800">
+              <div className="space-y-2 pt-2 border-t border-border-theme dark:border-border-theme">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.goodFirstIssues}
                     onChange={e => setFormData(f => ({ ...f, goodFirstIssues: e.target.checked }))}
-                    className="w-4 h-4 rounded text-[#b56b37]"
+                    className="w-4 h-4 rounded text-primary-blue"
                   />
-                  <span className="font-medium text-[#231f20] dark:text-slate-300">Has "Good First Issues" for new contributors</span>
+                  <span className="font-medium text-text-primary dark:text-text-primary">Has "Good First Issues" for new contributors</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -897,24 +915,24 @@ export default function ProjectShowcaseVault() {
                     type="checkbox"
                     checked={formData.isBeginnerFriendly}
                     onChange={e => setFormData(f => ({ ...f, isBeginnerFriendly: e.target.checked }))}
-                    className="w-4 h-4 rounded text-[#b56b37]"
+                    className="w-4 h-4 rounded text-primary-blue"
                   />
-                  <span className="font-medium text-[#231f20] dark:text-slate-300">Beginner Friendly project</span>
+                  <span className="font-medium text-text-primary dark:text-text-primary">Beginner Friendly project</span>
                 </label>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-[#e8ded1] dark:border-slate-800">
+              <div className="flex gap-3 pt-4 border-t border-border-theme dark:border-border-theme">
                 <button
                   type="button"
                   onClick={() => setIsSubmitModalOpen(false)}
-                  className="flex-1 py-2.5 border border-[#e8ded1] dark:border-slate-700 rounded-xl font-bold text-[#603620] dark:text-slate-300 hover:bg-[#f6efe2]"
+                  className="flex-1 py-2.5 border border-border-theme dark:border-border-theme rounded-xl font-bold text-text-secondary dark:text-text-primary hover:bg-surface-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-2.5 bg-[#231f20] hover:bg-[#b56b37] text-white rounded-xl font-bold transition-all disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-[#231f20] hover:bg-primary-blue text-text-primary rounded-xl font-bold transition-all disabled:opacity-50"
                 >
                   {submitting ? 'Submitting...' : 'Submit to Vault'}
                 </button>

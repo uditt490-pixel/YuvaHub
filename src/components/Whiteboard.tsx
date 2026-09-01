@@ -231,9 +231,9 @@ export const Whiteboard: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-white dark:bg-slate-900 rounded-3xl relative">
+    <div className="flex flex-col h-full w-full bg-surface dark:bg-slate-900 rounded-3xl relative">
       {/* Toolbar */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-2 rounded-2xl shadow-sm border border-[#e8ded1] dark:border-slate-700 z-10">
+      <div className="absolute top-4 left-4 right-4 flex items-center justify-between bg-surface/90 dark:bg-slate-800/90 backdrop-blur-sm p-2 rounded-2xl shadow-sm border border-border-theme dark:border-slate-700 z-10">
         <div className="flex items-center gap-2">
           {/* Colors */}
           {['#231f20', '#b56b37', '#63703d', '#3b82f6', '#ef4444'].map((c) => (
@@ -250,7 +250,7 @@ export const Whiteboard: React.FC = () => {
           
           <button
             onClick={() => setIsEraser(false)}
-            className={`p-1.5 rounded-lg ${!isEraser ? 'bg-[#fcf9f2] text-[#b56b37]' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
+            className={`p-1.5 rounded-lg ${!isEraser ? 'bg-background text-primary-blue' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
             title="Pen"
           >
             <PenTool className="w-4 h-4" />
@@ -258,7 +258,7 @@ export const Whiteboard: React.FC = () => {
           
           <button
             onClick={() => setIsEraser(true)}
-            className={`p-1.5 rounded-lg ${isEraser ? 'bg-[#fcf9f2] text-[#b56b37]' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
+            className={`p-1.5 rounded-lg ${isEraser ? 'bg-background text-primary-blue' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700'}`}
             title="Eraser"
           >
             <Eraser className="w-4 h-4" />

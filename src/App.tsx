@@ -46,6 +46,7 @@ const DeveloperApiPortal = lazy(() => import('./components/tabs/DeveloperApiPort
 const GrantFellowshipStudio = lazy(() => import('./components/tabs/GrantFellowshipStudio'));
 const CampusAlumniHub = lazy(() => import('./components/tabs/CampusAlumniHub'));
 const ResumeAtsStudio = lazy(() => import('./components/tabs/ResumeAtsStudio'));
+const ResumeBuilder = lazy(() => import('./pages/ResumeBuilder'));
 const InterviewPrepStudio = lazy(() => import('./components/tabs/InterviewPrepStudio'));
 const OpenSourceBountyStudio = lazy(() => import('./components/tabs/OpenSourceBountyStudio'));
 const OpportunityMatchStudio = lazy(() => import('./components/tabs/OpportunityMatchStudio'));
@@ -67,12 +68,12 @@ const ExperiencesHub = lazy(() => import('./components/tabs/ExperiencesHub'));
 const LoadingFallback = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-6">
     <div className="flex items-center gap-3 animate-pulse">
-       <div className="w-12 h-12 rounded-xl bg-[#2563EB] flex items-center justify-center shadow-lg shadow-blue-500/20">
-         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-       </div>
-       <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
-         Yuva<span className="text-[#2563EB]">Hub</span>
-       </h1>
+      <div className="w-12 h-12 rounded-xl bg-[#2563EB] flex items-center justify-center shadow-lg shadow-blue-500/20">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      </div>
+      <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">
+        Yuva<span className="text-[#2563EB]">Hub</span>
+      </h1>
     </div>
     <div className="flex gap-2">
       <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB] animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -242,9 +243,9 @@ function App() {
     .map((e: string) => e.trim().toLowerCase())
     .filter(Boolean);
   const isAdminUser = Boolean(
-    user?.role === 'admin' || 
-    user?.isAdmin || 
-    (user?.email && adminEmails.includes(user.email.toLowerCase())) || 
+    user?.role === 'admin' ||
+    user?.isAdmin ||
+    (user?.email && adminEmails.includes(user.email.toLowerCase())) ||
     (import.meta.env.DEV && user?.email)
   );
 
@@ -266,6 +267,7 @@ function App() {
         { id: 'ai_assistant', label: 'AI Assistant', icon: Brain },
         { id: 'career_match', label: 'Career Match Studio', icon: TrendingUp },
         { id: 'resume_ats', label: 'Resume ATS Optimizer', icon: FileText },
+        { id: 'resume_builder', label: 'Resume Builder', icon: FileText },
         { id: 'interview_prep', label: 'AI Interview Studio', icon: Video },
         { id: 'project_showcase', label: 'Project Vault', icon: FolderGit2 },
         { id: 'mock_interview', label: 'Mock Interview Room', icon: Mic },
@@ -332,6 +334,8 @@ function App() {
       case 'grant_studio': return <GrantFellowshipStudio />;
       case 'campus_alumni': return <CampusAlumniHub />;
       case 'resume_ats': return <ResumeAtsStudio />;
+      case 'resume_builder':
+        return <ResumeBuilder onBack={() => setActiveTab('dashboard')} />;
       case 'interview_prep': return <InterviewPrepStudio />;
       case 'opensource_bounties': return <OpenSourceBountyStudio />;
       case 'opportunity_match': return <OpportunityMatchStudio />;
@@ -381,17 +385,17 @@ function App() {
             </div>
             <span className="font-bold text-[17px] tracking-tight text-gray-900 dark:text-white">YuvaHub</span>
           </div>
-          
+
           <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-gray-600 dark:text-gray-300">
             <button onClick={() => { clearSelectedOpportunity(); setActiveTab('opportunities'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Opportunities</button>
             <button onClick={() => { clearSelectedOpportunity(); setActiveTab('about'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">About Us</button>
             <button onClick={() => { clearSelectedOpportunity(); setActiveTab('legal'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Legal Index</button>
             <button onClick={() => { clearSelectedOpportunity(); setActiveTab('support'); }} className="hover:text-blue-600 dark:hover:text-blue-400 bg-transparent border-none cursor-pointer">Support</button>
           </nav>
-          
+
           <div className="flex items-center gap-4">
-            <button 
-              onClick={toggleTheme} 
+            <button
+              onClick={toggleTheme}
               className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               aria-label="Toggle Dark Mode"
             >
@@ -405,7 +409,7 @@ function App() {
 
         {/* Centralized SEO component for public pages */}
         {selectedOppId ? null : (
-          <SEO 
+          <SEO
             title={getSeoPropsForTab(activeTab).title}
             description={getSeoPropsForTab(activeTab).description}
             noindex={false}
@@ -415,8 +419,8 @@ function App() {
         {/* Content Area */}
         <main className="flex-1 max-w-6xl w-full mx-auto py-8 px-4 sm:px-6 lg:px-8 pb-20">
           <div className="mb-6">
-            <button 
-              onClick={() => { clearSelectedOpportunity(); setActiveTab('dashboard'); }} 
+            <button
+              onClick={() => { clearSelectedOpportunity(); setActiveTab('dashboard'); }}
               className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline font-bold bg-transparent border-none cursor-pointer"
             >
               ← Back to Home
@@ -440,8 +444,8 @@ function App() {
 
   // Ensure they are onboarded or we show the onboarding flow (for first-time signups only)
   const hasOnboarded = Boolean(
-    profile?.onboarded || 
-    profile?.college || 
+    profile?.onboarded ||
+    profile?.college ||
     profile?.year ||
     profile?.field ||
     (user && typeof localStorage !== 'undefined' && (
@@ -482,19 +486,19 @@ function App() {
 
       {/* Centralized SEO component for logged-in views */}
       {selectedOppId ? null : (
-        <SEO 
+        <SEO
           title={getSeoPropsForTab(activeTab).title}
           description={getSeoPropsForTab(activeTab).description}
           noindex={!PUBLIC_TABS.includes(activeTab)}
         />
       )}
-      
+
       {/* Sidebar Desktop - Fixed 240px */}
       <aside className="hidden lg:flex w-60 border-r border-[#e8ded1] dark:border-gray-800 flex-col bg-[#fcf9f2] dark:bg-gray-900 z-10 shrink-0 relative">
         <div className="h-16 px-5 border-b border-[#e8ded1] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-[#603620] flex items-center justify-center shadow-md">
-               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#f3e4bd]"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#f3e4bd]"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             </div>
             <h1 className="text-xl font-serif font-bold tracking-tight text-[#231f20] dark:text-white">
               Yuva<span className="text-[#b56b37] dark:text-blue-400 italic">Hub</span>
@@ -523,11 +527,10 @@ function App() {
                       clearSelectedOpportunity();
                       scrollContentToTop();
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${
-                      isActive
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer ${isActive
                         ? 'bg-[#f6efe2] dark:bg-blue-950/60 text-[#b56b37] dark:text-blue-400 font-extrabold border-r-2 border-[#b56b37] dark:border-blue-500 shadow-xs'
                         : 'text-[#603620] dark:text-gray-400 hover:bg-[#f6efe2]/70 dark:hover:bg-gray-800/80 hover:text-[#231f20] dark:hover:text-white'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2.5 truncate">
                       <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#b56b37] dark:text-blue-400' : 'text-[#8c7569] dark:text-gray-500'}`} aria-hidden="true" />
@@ -555,7 +558,7 @@ function App() {
             </div>
           ) : (
             <button onClick={signInWithGoogle} className="clean-btn w-full py-2 text-xs font-bold flex items-center justify-center gap-2 cursor-pointer bg-[#b56b37] hover:bg-[#603620]">
-               Sign in with Google
+              Sign in with Google
             </button>
           )}
         </div>
@@ -565,7 +568,7 @@ function App() {
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 border-b border-[#e8ded1] bg-[#fcf9f2] z-50 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-[#603620] flex items-center justify-center shadow-md">
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#f3e4bd]"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#f3e4bd]"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
           </div>
           <h1 className="text-lg font-serif font-bold tracking-tight text-[#231f20]">
             Yuva<span className="text-[#b56b37] italic">Hub</span>
@@ -603,11 +606,10 @@ function App() {
                         setIsMobileMenuOpen(false);
                         scrollContentToTop();
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-3 text-xs font-semibold rounded-xl transition-all ${
-                        isActive
+                      className={`w-full flex items-center justify-between px-3 py-3 text-xs font-semibold rounded-xl transition-all ${isActive
                           ? 'bg-[#f6efe2] text-[#b56b37] font-extrabold border-r-2 border-[#b56b37]'
                           : 'text-[#603620] hover:bg-[#f6efe2]/70 hover:text-[#231f20]'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#b56b37]' : 'text-[#8c7569]'}`} aria-hidden="true" />
@@ -623,7 +625,7 @@ function App() {
                 })}
               </div>
             ))}
-            
+
             <div className="pt-2 border-t border-[#e8ded1]">
               {user ? (
                 <button
@@ -647,64 +649,64 @@ function App() {
 
       {/* Main Content Area */}
       <main id="main-content" tabIndex={-1} className="flex-1 flex flex-col pt-16 lg:pt-0 h-screen overflow-hidden relative">
-        
+
         {/* Topbar */}
         <div className="hidden lg:flex h-16 border-b border-[#e8ded1] bg-[#fcf9f2] items-center justify-between px-6 shrink-0">
-           <div className="flex-1 max-w-[500px] ml-8 mr-8">
-              {activeTab === 'opportunities' ? (
-                 <div className="relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8c7569]">
-                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    </div>
-                    <input type="text" placeholder="Search standard competitions..." aria-label="Search opportunities" className="w-full bg-white border border-[#e8ded1] outline-none rounded-xl pl-10 pr-4 py-2 text-xs text-[#231f20] focus:ring-2 focus:ring-[#b56b37]/20 focus:border-[#b56b37] transition-all" value={appSearchQuery} onChange={(e) => setAppSearchQuery(e.target.value)} />
-                 </div>
-              ) : (
-                 <p className="text-xs text-[#603620] font-semibold">
-                   {selectedOppId 
-                     ? "Detail Overview" 
-                     : (user ? `Welcome back, ${profile?.name || user?.displayName || user?.email?.split('@')[0] || 'Student'}` : 'Welcome to YuvaHub')
-                   }
-                 </p>
-              )}
-           </div>
-           <div className="flex items-center gap-4">
-              {user && (
-                <div className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs bg-[#f6efe2] text-[#603620] border border-[#e8ded1] ${karmaBumpFlag ? 'animate-karma-bounce' : ''}`}>
-                  <Sparkles className="w-3.5 h-3.5 text-[#b56b37]" />
-                  <span>{karmaBalance} Karma</span>
+          <div className="flex-1 max-w-[500px] ml-8 mr-8">
+            {activeTab === 'opportunities' ? (
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8c7569]">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                 </div>
-              )}
-              <div className="hidden md:flex items-center gap-2 text-xs font-semibold bg-white text-[#603620] px-3 py-1 rounded-full border border-[#e8ded1]">
-                <span className={`w-2 h-2 rounded-full ${isConnected ? (transportMode === 'websocket' ? 'bg-emerald-500' : 'bg-amber-500') : 'bg-red-500'}`}></span>
-                <span>
-                  {!isConnected ? 'Disconnected' : (transportMode === 'websocket' ? 'Connected' : 'Polling active')}
-                </span>
+                <input type="text" placeholder="Search standard competitions..." aria-label="Search opportunities" className="w-full bg-white border border-[#e8ded1] outline-none rounded-xl pl-10 pr-4 py-2 text-xs text-[#231f20] focus:ring-2 focus:ring-[#b56b37]/20 focus:border-[#b56b37] transition-all" value={appSearchQuery} onChange={(e) => setAppSearchQuery(e.target.value)} />
               </div>
-              <NotificationDropdown profile={profile} />
-              {(() => {
-                const avatarSrc = profile?.avatarUrl || user?.photoURL;
-                if (avatarSrc && !avatarError) {
-                  return (
-                    <img 
-                      src={avatarSrc.includes("cloudinary.com") ? avatarSrc.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_64,h_64/") : avatarSrc} 
-                      alt="Avatar" 
-                      className="w-8 h-8 rounded-full object-cover border border-[#e8ded1] shadow-xs cursor-pointer hover:opacity-90 transition-opacity" 
-                      referrerPolicy="no-referrer"
-                      onError={() => setAvatarError(true)}
-                      onClick={() => setActiveTab('profile')}
-                    />
-                  );
+            ) : (
+              <p className="text-xs text-[#603620] font-semibold">
+                {selectedOppId
+                  ? "Detail Overview"
+                  : (user ? `Welcome back, ${profile?.name || user?.displayName || user?.email?.split('@')[0] || 'Student'}` : 'Welcome to YuvaHub')
                 }
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            {user && (
+              <div className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs bg-[#f6efe2] text-[#603620] border border-[#e8ded1] ${karmaBumpFlag ? 'animate-karma-bounce' : ''}`}>
+                <Sparkles className="w-3.5 h-3.5 text-[#b56b37]" />
+                <span>{karmaBalance} Karma</span>
+              </div>
+            )}
+            <div className="hidden md:flex items-center gap-2 text-xs font-semibold bg-white text-[#603620] px-3 py-1 rounded-full border border-[#e8ded1]">
+              <span className={`w-2 h-2 rounded-full ${isConnected ? (transportMode === 'websocket' ? 'bg-emerald-500' : 'bg-amber-500') : 'bg-red-500'}`}></span>
+              <span>
+                {!isConnected ? 'Disconnected' : (transportMode === 'websocket' ? 'Connected' : 'Polling active')}
+              </span>
+            </div>
+            <NotificationDropdown profile={profile} />
+            {(() => {
+              const avatarSrc = profile?.avatarUrl || user?.photoURL;
+              if (avatarSrc && !avatarError) {
                 return (
-                  <div 
+                  <img
+                    src={avatarSrc.includes("cloudinary.com") ? avatarSrc.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_64,h_64/") : avatarSrc}
+                    alt="Avatar"
+                    className="w-8 h-8 rounded-full object-cover border border-[#e8ded1] shadow-xs cursor-pointer hover:opacity-90 transition-opacity"
+                    referrerPolicy="no-referrer"
+                    onError={() => setAvatarError(true)}
                     onClick={() => setActiveTab('profile')}
-                    className="w-8 h-8 rounded-full bg-[#603620] text-[#f3e4bd] flex items-center justify-center font-extrabold text-xs shadow-xs border border-[#e8ded1] cursor-pointer hover:opacity-90 transition-opacity"
-                  >
-                    {profile?.name ? profile.name.charAt(0).toUpperCase() : (user?.displayName ? user.displayName.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || 'U'))}
-                  </div>
+                  />
                 );
-              })()}
-           </div>
+              }
+              return (
+                <div
+                  onClick={() => setActiveTab('profile')}
+                  className="w-8 h-8 rounded-full bg-[#603620] text-[#f3e4bd] flex items-center justify-center font-extrabold text-xs shadow-xs border border-[#e8ded1] cursor-pointer hover:opacity-90 transition-opacity"
+                >
+                  {profile?.name ? profile.name.charAt(0).toUpperCase() : (user?.displayName ? user.displayName.charAt(0).toUpperCase() : (user?.email?.charAt(0).toUpperCase() || 'U'))}
+                </div>
+              );
+            })()}
+          </div>
         </div>
 
         <div className="flex-1 p-4 lg:p-6 overflow-y-auto no-scrollbar pb-24">

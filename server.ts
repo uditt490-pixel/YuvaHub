@@ -20,13 +20,15 @@ import { redisClient } from "./src/api/redis.js";
 import { isToxic, createToxicityMiddleware } from "./src/services/toxicity.js";
 import { stripForwardedHeader } from "./src/api/middlewares/proxyHeaders.js";
 import { v2 as cloudinary } from "cloudinary";
-import { authMiddleware } from "./src/api/middlewares/auth.js";
+import { authMiddleware, adminOnly, verifyToken } from "./src/api/middlewares/auth.js";
 import { requestExport, getExportHistory } from "./src/api/controllers/exportController.js";
 import { logStartupHealthReport } from "./src/api/services/healthService.js";
 import { AICacheMetrics } from "./src/api/services/aiCacheMetrics.js";
 import { applicationNoteInputSchema } from "./src/models/applicationNoteSchema.js";
 import { securityPipeline } from "./src/api/middlewares/security/index.js";
 import { shutdownGuard } from "./src/api/middlewares/security/shutdownGuard.js";
+import { escapeRegex } from "./src/schemas/searchSchema.js";
+import rootRouter from "./src/api/routes/index.js";
 
 dotenv.config();
 
@@ -221,6 +223,7 @@ async function getRankedOpportunities(database: any, profile: any, page: number,
 
     if (profileSkills.length > 0) {
       profileSkills.forEach((skill: string) => {
+        const safeSkill = escapeRegex(skill);
         relevanceAdditions.push({
           $cond: {
             if: {
@@ -232,7 +235,7 @@ async function getRankedOpportunities(database: any, profile: any, page: number,
                     $map: {
                       input: "$tags",
                       as: "tag",
-                      in: { $regexMatch: { input: { $toLower: "$$tag" }, regex: skill } }
+                      in: { $regexMatch: { input: { $toLower: "$$tag" }, regex: safeSkill } }
                     }
                   }
                 }
@@ -246,12 +249,13 @@ async function getRankedOpportunities(database: any, profile: any, page: number,
     }
 
     if (profileField) {
+      const safeField = escapeRegex(profileField);
       relevanceAdditions.push({
         $cond: {
           if: {
             $or: [
-              { $regexMatch: { input: { $toLower: { $ifNull: ["$description", ""] } }, regex: profileField } },
-              { $regexMatch: { input: { $toLower: { $ifNull: ["$title", ""] } }, regex: profileField } }
+              { $regexMatch: { input: { $toLower: { $ifNull: ["$description", ""] } }, regex: safeField } },
+              { $regexMatch: { input: { $toLower: { $ifNull: ["$title", ""] } }, regex: safeField } }
             ]
           },
           then: 40,
@@ -261,7 +265,7 @@ async function getRankedOpportunities(database: any, profile: any, page: number,
     }
 
     if (profileCountry) {
-      const cRegex = `${profileCountry}|online|remote`;
+      const cRegex = `${escapeRegex(profileCountry)}|online|remote`;
       relevanceAdditions.push({
         $cond: {
           if: { $regexMatch: { input: { $toLower: { $ifNull: ["$location", ""] } }, regex: cRegex } },
@@ -389,7 +393,7 @@ import { validateRequest } from "./src/api/middlewares/validateRequest.js";
 import { authSyncSchema } from "./src/schemas/authSchema.js";
 import { interactionTrackSchema } from "./src/schemas/interactionSchema.js";
 import { aiGenerateSchema, aiResumeReviewSchema, aiCoverLetterSchema } from "./src/schemas/aiSchema.js";
-import { searchQuerySchema, opportunityQuerySchema, escapeRegex } from "./src/schemas/searchSchema.js";
+import { searchQuerySchema, opportunityQuerySchema } from "./src/schemas/searchSchema.js";
 import { storageSignatureSchema, storageSaveSchema } from "./src/schemas/storageSchema.js";
 import { analyticsTrackSchema } from "./src/schemas/analyticsSchema.js";
 import { reportOpportunitySchema } from "./src/schemas/reportSchema.js";
@@ -608,8 +612,8 @@ export async function createApp() {
   io = new Server(server, { cors: corsOptions });
   const PORT = 5173;
 
-  // Trust reverse proxy (Cloud Run, nginx / Cloudflare reverse proxies)
-  app.set('trust proxy', true);
+  // Trust first reverse proxy hop (Cloud Run, Render, nginx / Cloudflare) to prevent X-Forwarded-For spoofing
+  app.set('trust proxy', 1);
 
   // Suppress express-rate-limit warnings / errors for forwarded headers when behind proxy
   app.use(stripForwardedHeader);
@@ -1000,76 +1004,19 @@ export async function createApp() {
     }
   });
 
-  app.post("/api/v1/auth/sync", validateRequest(z.object({ body: authSyncSchema })), async (req, res) => {
+  app.post("/api/v1/auth/sync", authMiddleware, validateRequest(z.object({ body: authSyncSchema })), async (req, res) => {
     try {
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ error: "Unauthorized: Missing token" });
-      }
+      const user = req.user;
+      const uid = user.uid || user.firebaseUid;
+      const email = user.email || "";
+      const name = user.name || "";
+      const avatarUrl = user.picture || user.avatarUrl || "";
 
-      const idToken = authHeader.substring(7);
-
-      // 1. Fetch Firebase config to get API key
-      const firebaseConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
-      let firebaseApiKey = "";
-      if (fs.existsSync(firebaseConfigPath)) {
-        try {
-          const config = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
-          firebaseApiKey = config.apiKey || "";
-        } catch (e) {
-          logger.error({ err: e }, "[Auth] Error parsing firebase-applet-config.json:");
-        }
-      }
-
-      let uid = "";
-      let email = "";
-      let name = "";
-      let avatarUrl = "";
-
-      if (firebaseApiKey) {
-        // 2. Validate Firebase ID Token using Google Identity Toolkit API
-        const verifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseApiKey}`;
-        const verifyRes = await fetch(verifyUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idToken })
-        });
-
-        if (!verifyRes.ok) {
-          const errData = await verifyRes.json().catch(() => ({}));
-          logger.error({ err: errData }, "[Auth] Firebase token verification failed:");
-          return res.status(401).json({ error: "Unauthorized: Invalid token" });
-        }
-
-        const data = await verifyRes.json();
-        if (!data.users || data.users.length === 0) {
-          return res.status(401).json({ error: "Unauthorized: User not found in token payload" });
-        }
-
-        const firebaseUser = data.users[0];
-        uid = firebaseUser.localId;
-        email = firebaseUser.email || "";
-        name = firebaseUser.displayName || "";
-        avatarUrl = firebaseUser.photoUrl || "";
-      } else {
-        // Mock verification for local offline development without a Firebase API key
-        try {
-          const parts = idToken.split(".");
-          if (parts.length === 3) {
-            const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
-            uid = payload.user_id || payload.sub;
-            email = payload.email || "";
-            name = payload.name || "";
-            avatarUrl = payload.picture || "";
-          }
-        } catch (e) {
-          return res.status(401).json({ error: "Unauthorized: Invalid mock token format" });
-        }
-
-        if (!uid) {
-          return res.status(401).json({ error: "Unauthorized: Mock validation failed" });
-        }
-      }
+      const adminEmails = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || "")
+        .split(",")
+        .map((e: string) => e.trim().toLowerCase())
+        .filter(Boolean);
+      const isConfiguredAdmin = !!(email && adminEmails.includes(email.toLowerCase()));
 
       // 3. Sync profile with MongoDB
       if (!db) {
@@ -1080,15 +1027,13 @@ export async function createApp() {
             name,
             email,
             avatarUrl,
-            role: email === "uditt490@gmail.com" ? "admin" : "student"
+            role: isConfiguredAdmin ? "admin" : (user.role || "student")
           }
         });
       }
 
       const usersCollection = db.collection("users");
-      const existingUser = await usersCollection.findOne({ uid });
-
-      const role = email === "uditt490@gmail.com" ? "admin" : "student";
+      const existingUser = await usersCollection.findOne({ $or: [{ uid }, { firebaseUid: uid }] });
 
       let updatedProfile;
       if (existingUser) {
@@ -1108,18 +1053,22 @@ export async function createApp() {
           coverLetterPublicId: req.body.coverLetterPublicId || existingUser.coverLetterPublicId,
           updatedAt: new Date()
         };
+        if (isConfiguredAdmin) {
+          updateData.role = "admin";
+        }
         // Remove undefined keys
         Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
-        await usersCollection.updateOne({ uid }, { $set: updateData });
+        await usersCollection.updateOne({ $or: [{ uid }, { firebaseUid: uid }] }, { $set: updateData });
         updatedProfile = { ...existingUser, ...updateData };
       } else {
         const newUser: any = {
           uid,
+          firebaseUid: uid,
           name: req.body.name || name,
           email: req.body.email || email,
           avatarUrl: req.body.avatarUrl || avatarUrl,
-          role,
+          role: isConfiguredAdmin ? "admin" : (user.role || "student"),
           onboarded: req.body.onboarded !== undefined ? req.body.onboarded : false,
           college: req.body.college || "",
           year: req.body.year || "",
@@ -1150,64 +1099,21 @@ export async function createApp() {
   });
 
   async function getAuthenticatedUser(req: any) {
+    if (req.user?.uid) {
+      return req.user;
+    }
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       throw new Error("Unauthorized: Missing token");
     }
 
     const idToken = authHeader.substring(7);
-
-    // Fetch Firebase config to get API key
-    const firebaseConfigPath = path.join(process.cwd(), "firebase-applet-config.json");
-    let firebaseApiKey = "";
-    if (fs.existsSync(firebaseConfigPath)) {
-      try {
-        const config = JSON.parse(fs.readFileSync(firebaseConfigPath, "utf-8"));
-        firebaseApiKey = config.apiKey || "";
-      } catch (e) {
-        logger.error({ err: e }, "[Auth] Error parsing firebase-applet-config.json:");
-      }
+    const decoded = await verifyToken(idToken);
+    const uid = decoded.uid || decoded.firebaseUid || decoded.sub || decoded.user_id;
+    if (!uid) {
+      throw new Error("Unauthorized: Token missing user identifier");
     }
-
-    let uid = "";
-    let email = "";
-
-    if (firebaseApiKey) {
-      const verifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${firebaseApiKey}`;
-      const verifyRes = await fetch(verifyUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken })
-      });
-
-      if (!verifyRes.ok) {
-        throw new Error("Unauthorized: Invalid token");
-      }
-
-      const data = await verifyRes.json();
-      if (!data.users || data.users.length === 0) {
-        throw new Error("Unauthorized: User not found");
-      }
-      uid = data.users[0].localId;
-      email = data.users[0].email || "";
-    } else {
-      try {
-        const parts = idToken.split(".");
-        if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
-          uid = payload.user_id || payload.sub;
-          email = payload.email || "";
-        }
-      } catch (e) {
-        throw new Error("Unauthorized: Invalid mock token format");
-      }
-
-      if (!uid) {
-        throw new Error("Unauthorized: Mock validation failed");
-      }
-    }
-
-    return { uid, email };
+    return { ...decoded, uid, email: decoded.email || "" };
   }
 
   const handleSignatureRequest = async (req: any, res: any) => {
@@ -1346,10 +1252,10 @@ export async function createApp() {
     }
   };
 
-  app.post("/api/storage/signature", handleSignatureRequest);
-  app.post("/api/v1/storage/signature", handleSignatureRequest);
-  app.post("/api/storage/save", handleSaveUpload);
-  app.post("/api/v1/storage/save", handleSaveUpload);
+  app.post("/api/storage/signature", authMiddleware, handleSignatureRequest);
+  app.post("/api/v1/storage/signature", authMiddleware, handleSignatureRequest);
+  app.post("/api/storage/save", authMiddleware, handleSaveUpload);
+  app.post("/api/v1/storage/save", authMiddleware, handleSaveUpload);
 
   app.post("/api/v1/interactions/track", validateRequest(z.object({ body: interactionTrackSchema })), async (req, res) => {
     try {
@@ -1409,18 +1315,8 @@ export async function createApp() {
    * anonymous identifier derived from the client IP.
    */
   function resolveUserId(req: any): string {
-    const authHeader = req.headers?.authorization;
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      try {
-        const token = authHeader.substring(7);
-        const parts = token.split(".");
-        if (parts.length === 3) {
-          const payload = JSON.parse(Buffer.from(parts[1], "base64").toString("utf-8"));
-          return payload.user_id || payload.sub || `anon:${req.ip || "unknown"}`;
-        }
-      } catch {
-        // Fall through to anonymous
-      }
+    if (req.user?.uid) {
+      return req.user.uid;
     }
     return `anon:${req.ip || "unknown"}`;
   }
@@ -1527,7 +1423,7 @@ Sincerely,
     return "I am here to help you navigate academic choices, resume reviews, track development milestones, and match with elite engineering fellowships!";
   }
 
-  app.post("/api/v1/ai/generate", chatRateLimiter, validateRequest(z.object({ body: aiGenerateSchema })), async (req, res) => {
+  app.post("/api/v1/ai/generate", authMiddleware, chatRateLimiter, validateRequest(z.object({ body: aiGenerateSchema })), async (req, res) => {
     try {
       const { prompt, expectJson } = req.body;
       if (!prompt) return res.status(400).json({ error: "No prompt" });
@@ -1554,24 +1450,29 @@ Sincerely,
         });
         responseText = response.text || "";
       } catch (err: any) {
-        const is503 = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('high demand');
-        const isTimeout = err?.message?.toLowerCase().includes('timeout') || err?.message?.toLowerCase().includes('abort');
         const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Quota exceeded') || err?.message?.includes('RESOURCE_EXHAUSTED');
-        if (is503 || isTimeout || is429) {
-          logger.info(`[AI Routing] Switchover triggered due to temporary limit.`);
-          try {
-            const response = await ai.models.generateContent({
-              model: "gemini-3.1-flash-lite",
-              contents: prompt
-            });
-            responseText = response.text || "";
-          } catch (liteErr: any) {
-            logger.info(`[AI Routing] Alternate model restriction. Invoking static fallback strategy.`);
+        if (is429) {
+          logger.warn(`[AI Routing] Gemini 429 Quota Exceeded. Using static fallback immediately.`);
+          responseText = getAIFallback(prompt, !!expectJson);
+        } else {
+          const is503 = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('high demand');
+          const isTimeout = err?.message?.toLowerCase().includes('timeout') || err?.message?.toLowerCase().includes('abort');
+          if (is503 || isTimeout) {
+            logger.info(`[AI Routing] Switchover triggered due to temporary limit.`);
+            try {
+              const response = await ai.models.generateContent({
+                model: "gemini-3.1-flash-lite",
+                contents: prompt
+              });
+              responseText = response.text || "";
+            } catch (liteErr: any) {
+              logger.info(`[AI Routing] Alternate model restriction. Invoking static fallback strategy.`);
+              responseText = getAIFallback(prompt, !!expectJson);
+            }
+          } else {
+            // Non-rate-limit error (e.g. key issue, bad prompt), use fallback
             responseText = getAIFallback(prompt, !!expectJson);
           }
-        } else {
-          // Non-rate-limit error (e.g. key issue, bad prompt), use fallback
-          responseText = getAIFallback(prompt, !!expectJson);
         }
       }
 
@@ -1590,7 +1491,7 @@ Sincerely,
     }
   });
 
-  app.post("/api/v1/ai/resume_review", resumeRateLimiter, validateRequest(z.object({ body: aiResumeReviewSchema })), async (req, res) => {
+  app.post("/api/v1/ai/resume_review", authMiddleware, resumeRateLimiter, validateRequest(z.object({ body: aiResumeReviewSchema })), async (req, res) => {
     try {
       const { resume } = req.body;
       if (!resume) return res.status(400).json({ error: "No resume provided" });
@@ -1633,20 +1534,25 @@ Return JSON strictly in this format:
         });
         responseText = response.text || "";
       } catch (err: any) {
-        const is503 = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('high demand');
-        const isTimeout = err?.message?.toLowerCase().includes('timeout') || err?.message?.toLowerCase().includes('abort');
         const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Quota exceeded') || err?.message?.includes('RESOURCE_EXHAUSTED');
-        if (is503 || isTimeout || is429) {
-          logger.info(`[AI Routing] Review switchover active.`);
-          try {
-            const response = await ai.models.generateContent({
-              model: "gemini-3.1-flash-lite",
-              contents: prompt,
-              config: { responseMimeType: "application/json" }
-            });
-            responseText = response.text || "";
-          } catch (liteErr) {
-            logger.info(`[AI Routing] Review fallback activated.`);
+        if (is429) {
+          logger.warn(`[AI Routing] Gemini 429 Quota Exceeded in resume review. Using static fallback.`);
+          responseText = JSON.stringify(defaultFallback);
+        } else {
+          const is503 = err?.status === 503 || err?.message?.includes('503') || err?.message?.includes('high demand');
+          const isTimeout = err?.message?.toLowerCase().includes('timeout') || err?.message?.toLowerCase().includes('abort');
+          if (is503 || isTimeout) {
+            logger.info(`[AI Routing] Review switchover active.`);
+            try {
+              const response = await ai.models.generateContent({
+                model: "gemini-3.1-flash-lite",
+                contents: prompt,
+                config: { responseMimeType: "application/json" }
+              });
+              responseText = response.text || "";
+            } catch (liteErr) {
+              logger.info(`[AI Routing] Review fallback activated.`);
+            }
           }
         }
       }
@@ -1679,7 +1585,7 @@ Return JSON strictly in this format:
     }
   });
 
-  app.post("/api/ai/analyze-resume", resumeRateLimiter, validateRequest(z.object({ body: aiResumeReviewSchema })), async (req, res) => {
+  app.post("/api/ai/analyze-resume", authMiddleware, resumeRateLimiter, validateRequest(z.object({ body: aiResumeReviewSchema })), async (req, res) => {
     try {
       const { resumeBase64, fileName, jobDescription, resumeText } = req.body;
       if (!resumeBase64 && !resumeText) {
@@ -1753,16 +1659,20 @@ Return JSON strictly in this format:
         responseText = response.text || "";
       } catch (err: any) {
         logger.error({ err: err }, "Gemini API call failed:");
-        // Fallback to older model if rate limited or failed
-        try {
-          const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: contents,
-            config: { responseMimeType: "application/json" }
-          });
-          responseText = response.text || "";
-        } catch (liteErr) {
-          logger.error({ err: liteErr }, "Gemini Alternate model failed:");
+        const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Quota exceeded') || err?.message?.includes('RESOURCE_EXHAUSTED');
+        if (is429) {
+          logger.warn("[AI Routing] 429 Quota reached in analyze-resume. Immediate fallback.");
+        } else {
+          try {
+            const response = await ai.models.generateContent({
+              model: "gemini-2.0-flash",
+              contents: contents,
+              config: { responseMimeType: "application/json" }
+            });
+            responseText = response.text || "";
+          } catch (liteErr) {
+            logger.error({ err: liteErr }, "Gemini Alternate model failed:");
+          }
         }
       }
 
@@ -1789,7 +1699,7 @@ Return JSON strictly in this format:
     }
   });
 
-  app.post("/api/v1/ai/cover-letter", chatRateLimiter, validateRequest(z.object({ body: aiCoverLetterSchema })), async (req, res) => {
+  app.post("/api/v1/ai/cover-letter", authMiddleware, chatRateLimiter, validateRequest(z.object({ body: aiCoverLetterSchema })), async (req, res) => {
     try {
       const { opportunityTitle, organization, jobDescription, candidateProfile, customMotivation, tone } = req.body;
 
@@ -1869,15 +1779,21 @@ Guidelines:
         });
         responseText = response.text || "";
       } catch (err: any) {
-        logger.warn({ err: err?.message }, "Primary AI model generation failed for cover letter:");
-        try {
-          const response = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
-            contents: prompt
-          });
-          responseText = response.text || "";
-        } catch (liteErr) {
+        const is429 = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('Quota exceeded') || err?.message?.includes('RESOURCE_EXHAUSTED');
+        if (is429) {
+          logger.warn("[AI Routing] 429 Quota reached in cover-letter. Immediate fallback.");
           responseText = defaultFallback;
+        } else {
+          logger.warn({ err: err?.message }, "Primary AI model generation failed for cover letter:");
+          try {
+            const response = await ai.models.generateContent({
+              model: "gemini-3.1-flash-lite",
+              contents: prompt
+            });
+            responseText = response.text || "";
+          } catch (liteErr) {
+            responseText = defaultFallback;
+          }
         }
       }
 
@@ -1911,12 +1827,13 @@ Guidelines:
 
       // 1. Text Query Filter
       if (q) {
+        const safeQ = escapeRegex(q);
         andConditions.push({
           $or: [
-            { title: { $regex: q, $options: "i" } },
-            { category: { $regex: q, $options: "i" } },
-            { description: { $regex: q, $options: "i" } },
-            { tags: { $regex: q, $options: "i" } }
+            { title: { $regex: safeQ, $options: "i" } },
+            { category: { $regex: safeQ, $options: "i" } },
+            { description: { $regex: safeQ, $options: "i" } },
+            { tags: { $regex: safeQ, $options: "i" } }
           ]
         });
       }
@@ -1924,7 +1841,7 @@ Guidelines:
       // 2. Opportunity Type Filter (multiple types supported)
       if (typesStr) {
         const types = typesStr.split(",").map(t => t.trim());
-        const typeRegexes = types.map(t => new RegExp(`^${t.replace(/s$/, "")}$`, "i"));
+        const typeRegexes = types.map(t => new RegExp(`^${escapeRegex(t.replace(/s$/, ""))}$`, "i"));
         andConditions.push({ type: { $in: typeRegexes } });
       }
 
@@ -2147,7 +2064,7 @@ Guidelines:
   }
 
   // --- Admin Routes ---
-  app.get("/api/v1/admin/health", (req, res) => {
+  app.get("/api/v1/admin/health", authMiddleware, adminOnly, (req, res) => {
     res.json({
       status: "healthy",
       database: db ? "connected" : "disconnected",
@@ -2157,7 +2074,7 @@ Guidelines:
     });
   });
 
-  app.get("/api/v1/admin/metrics", async (req, res) => {
+  app.get("/api/v1/admin/metrics", authMiddleware, adminOnly, async (req, res) => {
     let opportunitiesAdded = 0;
     if (db) {
       opportunitiesAdded = await db.collection("opportunities").countDocuments();
@@ -2171,12 +2088,12 @@ Guidelines:
   });
 
   // --- AI Cache Metrics ---
-  app.get("/api/v1/admin/cache-metrics", (_req, res) => {
+  app.get("/api/v1/admin/cache-metrics", authMiddleware, adminOnly, (_req, res) => {
     const metrics = cacheMetrics.snapshot(aiCache);
     res.json(metrics);
   });
 
-  app.get("/api/v1/admin/scrapers", async (req, res) => {
+  app.get("/api/v1/admin/scrapers", authMiddleware, adminOnly, async (req, res) => {
     try {
       if (!db) {
         return res.json([]);
@@ -2261,13 +2178,13 @@ Guidelines:
     }
   });
 
-  app.get("/api/v1/admin/incidents", (req, res) => {
+  app.get("/api/v1/admin/incidents", authMiddleware, adminOnly, (req, res) => {
     res.json([
       { id: 1, type: "WARNING", component: "Python Gateway", message: "Python service dropped. Ported to Node.js native.", time: "10 mins ago" }
     ]);
   });
 
-  app.get("/api/v1/admin/stream/telemetry", (req, res) => {
+  app.get("/api/v1/admin/stream/telemetry", authMiddleware, adminOnly, (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -2296,7 +2213,7 @@ Guidelines:
     });
   });
 
-  app.post("/api/v1/trigger-scraper", async (req, res) => {
+  app.post("/api/v1/trigger-scraper", authMiddleware, adminOnly, async (req, res) => {
     try {
       const { spawn } = await import("child_process");
       const child = spawn("npx", ["tsx", "scrape-cli.ts"], {
@@ -2605,7 +2522,7 @@ Guidelines:
     }
   });
 
-  app.get("/api/v1/admin/reports/opportunities", authMiddleware, async (req, res) => {
+  app.get("/api/v1/admin/reports/opportunities", authMiddleware, adminOnly, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "Database not available" });
       const page = parseInt((req.query.page as string) || "1", 10);
@@ -2636,7 +2553,7 @@ Guidelines:
     }
   });
 
-  app.patch("/api/v1/admin/reports/opportunities/:reportId", authMiddleware, async (req, res) => {
+  app.patch("/api/v1/admin/reports/opportunities/:reportId", authMiddleware, adminOnly, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "Database not available" });
       const reportId = req.params.reportId as string;
@@ -2690,7 +2607,7 @@ Guidelines:
   });
 
   // --- Scholarship Hub API Routes ---
-  app.post("/api/scholarships", async (req, res) => {
+  app.post("/api/scholarships", authMiddleware, adminOnly, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "Database not available" });
       const parsedData = ScholarshipSchema.parse(req.body);
@@ -2755,10 +2672,10 @@ Guidelines:
     }
   });
 
-  app.put("/api/scholarships/:id", async (req, res) => {
+  app.put("/api/scholarships/:id", authMiddleware, adminOnly, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "Database not available" });
-      const id = req.params.id;
+      const id = String(req.params.id);
       const parsedData = ScholarshipSchema.parse({ ...req.body, updated_at: new Date() });
       const collection = db.collection("scholarships");
       let queryId;
@@ -2782,10 +2699,10 @@ Guidelines:
     }
   });
 
-  app.delete("/api/scholarships/:id", async (req, res) => {
+  app.delete("/api/scholarships/:id", authMiddleware, adminOnly, async (req, res) => {
     try {
       if (!db) return res.status(503).json({ error: "Database not available" });
-      const id = req.params.id;
+      const id = String(req.params.id);
       const collection = db.collection("scholarships");
       let queryId;
       try {
@@ -2980,7 +2897,7 @@ ${JSON.stringify(userProfile, null, 2)}
   });
 
   // 4. Edit a Comment (Toxicity classification)
-  app.patch("/api/v1/posts/:postId/comments/:commentId", toxicityMiddleware, async (req, res) => {
+  app.patch("/api/v1/posts/:postId/comments/:commentId", authMiddleware, toxicityMiddleware, async (req, res) => {
     try {
       const { postId, commentId } = req.params;
       const { content } = req.body;
@@ -2999,6 +2916,17 @@ ${JSON.stringify(userProfile, null, 2)}
         queryId = commentIdStr;
       }
 
+      const existingComment = await db.collection("comments").findOne({ _id: queryId, postId } as any);
+      if (!existingComment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+
+      const userId = (req as any).user?.uid || (req as any).user?.firebaseUid;
+      const isAdmin = (req as any).user?.role === "admin";
+      if (existingComment.authorId && existingComment.authorId !== userId && !isAdmin) {
+        return res.status(403).json({ error: "Forbidden: You are not authorized to edit this comment" });
+      }
+
       const result = await db.collection("comments").findOneAndUpdate(
         { _id: queryId, postId } as any,
         { $set: { content, updatedAt: new Date() } },
@@ -3006,9 +2934,6 @@ ${JSON.stringify(userProfile, null, 2)}
       );
 
       const updatedComment = (result as any)?.value || result;
-      if (!updatedComment) {
-        return res.status(404).json({ error: "Comment not found" });
-      }
       res.json(updatedComment);
     } catch (err) {
       logger.error({ err: err }, "Edit Comment Error:");
@@ -3022,8 +2947,9 @@ ${JSON.stringify(userProfile, null, 2)}
       const { postId } = req.params;
       if (!db) return res.status(503).json({ error: "Database not available" });
 
+      const safePostId = escapeRegex(Array.isArray(postId) ? postId[0] : postId);
       const comments = await db.collection("comments")
-        .find({ path: new RegExp('^,' + postId + ',') })
+        .find({ path: new RegExp('^,' + safePostId + ',') })
         .sort({ path: 1 })
         .toArray();
 
@@ -3072,6 +2998,14 @@ ${JSON.stringify(userProfile, null, 2)}
     }
   });
 
+  // Mount modular route catalog for endpoints defined in src/api/routes
+  app.use("/api", rootRouter);
+
+  // Return instant 404 for any unhandled /api requests to avoid falling through to Vite or proxy loops
+  app.all("/api/*all", (req, res) => {
+    res.status(404).json({ error: `Cannot ${req.method} ${req.path}` });
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -3087,18 +3021,51 @@ ${JSON.stringify(userProfile, null, 2)}
   }
 
   // --- Socket.io Real-Time Pipeline ---
+  io.use(async (socket, next) => {
+    try {
+      const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.replace(/^Bearer /, '');
+      if (token) {
+        try {
+          const user = await verifyToken(token);
+          (socket as any).user = user;
+        } catch (e) {
+          // Allow connection to proceed for public live alerts, user will be undefined
+        }
+      }
+      next();
+    } catch (err: any) {
+      next();
+    }
+  });
+
   io.on("connection", (socket) => {
     logger.info(`[Socket] Client connected: ${socket.id}`);
     socket.emit("connected", { status: "ready" });
 
     // --- Application Note real-time co-editing ---
-    // Each open note is a room keyed by its id. A client that opens a note
-    // joins the room; when it edits, it emits "note:update" and we relay the
-    // latest title/blocks to every *other* client in the room. Persistence is
-    // handled by the editing client via POST /api/v1/application-notes
-    // (last write wins), mirroring the existing collaborative snippet editor.
-    socket.on("note:join", (data: { noteId?: string }) => {
-      if (data?.noteId) socket.join(`note_${data.noteId}`);
+    socket.on("note:join", async (data: { noteId?: string }) => {
+      const noteIdStr = data?.noteId;
+      if (!noteIdStr) return;
+      const user = (socket as any).user;
+      const uid = user?.uid || user?.firebaseUid;
+      if (!uid) {
+        socket.emit("note:error", { message: "Unauthorized: Please log in to collaborate." });
+        return;
+      }
+
+      if (db) {
+        try {
+          const note = await db.collection("application_notes").findOne({
+            $or: [{ _id: parseNoteId(noteIdStr) }, { applicationId: noteIdStr }]
+          });
+          if (note && !canAccessNote(note, uid) && user.role !== "admin") {
+            socket.emit("note:error", { message: "Access denied to this note." });
+            return;
+          }
+        } catch (e) {}
+      }
+
+      socket.join(`note_${noteIdStr}`);
     });
 
     socket.on("note:leave", (data: { noteId?: string }) => {
@@ -3112,6 +3079,10 @@ ${JSON.stringify(userProfile, null, 2)}
       userId?: string;
     }) => {
       if (!payload?.noteId) return;
+      const user = (socket as any).user;
+      if (user?.uid) {
+        payload.userId = user.uid;
+      }
       socket.to(`note_${payload.noteId}`).emit("note:updated", payload);
     });
 

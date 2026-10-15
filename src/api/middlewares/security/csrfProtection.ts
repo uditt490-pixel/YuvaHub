@@ -21,12 +21,21 @@ export const csrfProtection = (req: Request, res: Response, next: NextFunction) 
 
   // Only check state-changing methods
   if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
-    // Skip CSRF check for the shutdown endpoint if it uses dedicated authentication
-    // or skip for specific API routes that are authenticated purely via Bearer tokens
-    // but as a strict default, we check it.
-    
+    // Explicit Bearer token authenticated requests are not vulnerable to CSRF
+    // as browsers do not attach Authorization headers automatically cross-origin.
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      return next();
+    }
+
     const headerToken = req.headers['x-csrf-token'];
-    if (!headerToken || headerToken !== csrfToken) {
+    if (typeof headerToken !== 'string') {
+      return res.status(403).json({ error: 'CSRF token validation failed' });
+    }
+
+    const headerBuf = Buffer.from(headerToken);
+    const cookieBuf = Buffer.from(csrfToken);
+
+    if (headerBuf.length !== cookieBuf.length || !crypto.timingSafeEqual(headerBuf, cookieBuf)) {
       return res.status(403).json({ error: 'CSRF token validation failed' });
     }
   }

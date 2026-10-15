@@ -7,6 +7,7 @@ import {
   Sparkles, Brain, FileText, MessageSquare, PenTool
 } from 'lucide-react';
 import Whiteboard from '../components/Whiteboard';
+import { auth } from '../lib/firebase.js';
 
 // Web Speech API Types
 declare global {
@@ -237,9 +238,21 @@ INSTRUCTIONS:
 
 Your response:`;
 
+        let token = '';
+        try {
+          if (auth?.currentUser) {
+            token = await auth.currentUser.getIdToken();
+          }
+        } catch (authErr) {
+          // Continue without token
+        }
+
         const res = await fetch('/api/v1/ai/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
           body: JSON.stringify({ prompt, expectJson: false })
         });
 

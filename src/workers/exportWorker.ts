@@ -52,19 +52,28 @@ export const exportWorker = new Worker(
         fileBuffer = Buffer.from(JSON.stringify(exportData, null, 2), "utf-8");
         contentType = "application/json";
       } else if (format === "csv") {
+        const sanitizeCsvCell = (val: any): string => {
+          if (val === null || val === undefined) return '""';
+          let str = String(val).replace(/"/g, '""');
+          if (/^[=+\-@\t\r]/.test(str)) {
+            str = `'${str}`;
+          }
+          return `"${str}"`;
+        };
+
         let csvContent = "";
         
         if (sections.includes("profile") && exportData.profile) {
           csvContent += "--- Profile Data ---\n";
           csvContent += "Name,Email,Reputation,Level\n";
-          csvContent += `"${exportData.profile.name || ""}","${exportData.profile.email || ""}",${exportData.profile.reputation_score || 0},${exportData.profile.level || 1}\n\n`;
+          csvContent += `${sanitizeCsvCell(exportData.profile.name)},${sanitizeCsvCell(exportData.profile.email)},${exportData.profile.reputation_score || 0},${exportData.profile.level || 1}\n\n`;
         }
 
         if (sections.includes("applications") && exportData.applications.length > 0) {
           csvContent += "--- Applications ---\n";
           csvContent += "Title,Company,Status,Applied At\n";
           exportData.applications.forEach((app: any) => {
-            csvContent += `"${app.opportunityTitle || ""}","${app.companyName || ""}","${app.status || ""}","${app.appliedAt || ""}"\n`;
+            csvContent += `${sanitizeCsvCell(app.opportunityTitle)},${sanitizeCsvCell(app.companyName)},${sanitizeCsvCell(app.status)},${sanitizeCsvCell(app.appliedAt)}\n`;
           });
           csvContent += "\n";
         }
@@ -73,7 +82,7 @@ export const exportWorker = new Worker(
           csvContent += "--- Bookmarks ---\n";
           csvContent += "Item ID,Type,Added At\n";
           exportData.bookmarks.forEach((bm: any) => {
-            csvContent += `"${bm.itemId || ""}","${bm.itemType || ""}","${bm.createdAt || ""}"\n`;
+            csvContent += `${sanitizeCsvCell(bm.itemId)},${sanitizeCsvCell(bm.itemType)},${sanitizeCsvCell(bm.createdAt)}\n`;
           });
         }
 

@@ -25,16 +25,16 @@ export const authRateLimiter = rateLimit({
 
 export const chatRateLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 60,
+  max: 10,
   standardHeaders: true,
   legacyHeaders: true,
   validate: false,
   store: createFailOpenStore('rate-limit:ai-chat:'),
-  keyGenerator: (req) => {
-    return req.body?.userId || req.ip || "unknown";
+  keyGenerator: (req: any) => {
+    return req.user?.uid || req.ip || "unknown";
   },
   handler: (req, res) => {
-    res.status(200).json({ text: "I am here to help you navigate academic choices, resume reviews, track development milestones, and match with elite engineering fellowships!" });
+    res.status(429).json({ text: "AI assistant rate limit reached. Returning cached response or falling back to local guidance." });
   }
 });
 

@@ -16,14 +16,17 @@ import {
   updateProfile
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+
+const clean = (val?: string) => (val ? String(val).replace(/^["']|["']$/g, '').trim() : '');
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  apiKey: clean(import.meta.env.VITE_FIREBASE_API_KEY),
+  authDomain: clean(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN),
+  projectId: clean(import.meta.env.VITE_FIREBASE_PROJECT_ID),
+  storageBucket: clean(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET),
+  messagingSenderId: clean(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID),
+  appId: clean(import.meta.env.VITE_FIREBASE_APP_ID),
+  measurementId: clean(import.meta.env.VITE_FIREBASE_MEASUREMENT_ID)
 };
 
 const app = initializeApp(firebaseConfig);
@@ -53,7 +56,7 @@ export const googleProvider = new GoogleAuthProvider();
 export const githubProvider = new GithubAuthProvider();
 export const appleProvider = new OAuthProvider('apple.com');
 
-// Use signInWithPopup first, fall back to signInWithRedirect if domain is unauthorized
+// Use signInWithPopup first, fall back to signInWithRedirect if domain is unauthorized or popup blocked
 export const signInWithGoogle = async () => {
   try {
     return await signInWithPopup(auth, googleProvider);

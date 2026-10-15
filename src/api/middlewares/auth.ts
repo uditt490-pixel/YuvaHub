@@ -89,7 +89,7 @@ export const authenticateUser = (db?: any) => {
         console.warn('[Auth] JWT_SECRET not configured, skipping custom JWT verification');
       } else {
         try {
-          decodedToken = jwt.verify(token, jwtSecret);
+          decodedToken = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] });
           isCustomToken = true;
         } catch (err) {
           // Fallback to Firebase
@@ -122,7 +122,18 @@ export const authenticateUser = (db?: any) => {
         }
       }
 
+      const uid = decodedToken.uid || decodedToken.firebaseUid || decodedToken.sub || decodedToken.user_id;
+      if (!uid) {
+        throw new Error('Token payload missing user id');
+      }
+      decodedToken.uid = uid;
       req.user = decodedToken;
+
+      const adminEmails = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '')
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+      const isConfiguredAdmin = !!(decodedToken.email && adminEmails.includes(decodedToken.email.toLowerCase()));
 
       // Dynamically resolve DB reference at runtime (allows test mocks & module-level fallback)
       const activeDb = db || (req as any).db || dbCommand;
@@ -130,18 +141,18 @@ export const authenticateUser = (db?: any) => {
       if (activeDb) {
         try {
           const usersCollection = activeDb.collection('users');
-          const uid = decodedToken.uid || decodedToken.firebaseUid;
 
           const userDoc = await usersCollection.findOneAndUpdate(
-            { firebaseUid: uid },
+            { $or: [{ firebaseUid: uid }, { uid }] },
             {
               $setOnInsert: {
+                uid: uid,
                 firebaseUid: uid,
                 email: decodedToken.email || '',
                 name: decodedToken.name || '',
                 picture: decodedToken.picture || '',
                 created_at: new Date(),
-                role: 'student',
+                role: isConfiguredAdmin ? 'admin' : 'student',
               },
             },
             {
@@ -153,9 +164,9 @@ export const authenticateUser = (db?: any) => {
 
           const returnedDoc = userDoc && (userDoc.value !== undefined ? userDoc.value : userDoc);
           if (returnedDoc && returnedDoc.role) {
-            req.user.role = returnedDoc.role;
+            req.user.role = isConfiguredAdmin ? 'admin' : returnedDoc.role;
           } else {
-            req.user.role = 'student';
+            req.user.role = isConfiguredAdmin ? 'admin' : 'student';
           }
         } catch (dbError) {
           console.error(
@@ -163,12 +174,12 @@ export const authenticateUser = (db?: any) => {
             dbError,
           );
           if (!req.user.role) {
-            req.user.role = 'student';
+            req.user.role = isConfiguredAdmin ? 'admin' : 'student';
           }
         }
       } else {
         if (!req.user.role) {
-          req.user.role = 'student';
+          req.user.role = isConfiguredAdmin ? 'admin' : 'student';
         }
       }
 
@@ -208,3 +219,29 @@ export const authorizeRoles = (allowedRoles: string[]) => {
 
 export const authMiddleware = authenticateUser();
 export const adminOnly = authorizeRoles(['admin', 'superadmin']);
+
+export const verifyToken = async (token: string): Promise<any> => {
+  if (!token) throw new Error('Missing token');
+  const jwtSecret = config.JWT_SECRET;
+  if (jwtSecret) {
+    try {
+      return jwt.verify(token, jwtSecret, { algorithms: ['HS256'] });
+    } catch (e) {
+      // Fallback to Firebase
+    }
+  }
+
+  if (isFirebaseInitialized) {
+    return await getAuth().verifyIdToken(token);
+  }
+
+  if (isDevelopment && mockAuthEnabled && token === mockValidToken) {
+    return {
+      uid: 'mock_user_123',
+      email: 'mock@example.com',
+      name: 'Mock User',
+    };
+  }
+
+  throw new Error('Unauthorized: Invalid or unverified token');
+};

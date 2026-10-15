@@ -158,6 +158,10 @@ export default function Landing() {
       console.error(e);
       if (e?.code === 'auth/unauthorized-domain') {
         setErrorMsg(`Domain '${window.location.hostname}' is not authorized in Firebase Console. Please add 'localhost' to Firebase Console -> Authentication -> Settings -> Authorized Domains.`);
+      } else if (e?.code === 'auth/internal-error') {
+        setErrorMsg(`Firebase authentication failed (auth/internal-error). Please verify: 1) Google sign-in is enabled in Firebase Console (Authentication > Sign-in method), 2) 'localhost' is listed under Authorized Domains, and 3) third-party cookies or popups are not blocked.`);
+      } else if (e?.code === 'auth/operation-not-allowed') {
+        setErrorMsg(`Google sign-in is not enabled in Firebase Console. Go to Authentication -> Sign-in method and enable Google.`);
       } else {
         setErrorMsg(e?.message || 'Login failed. Please try again.');
       }
@@ -175,6 +179,10 @@ export default function Landing() {
       console.error(e);
       if (e?.code === 'auth/unauthorized-domain') {
         setErrorMsg(`Domain '${window.location.hostname}' is not authorized in Firebase Console. Please add 'localhost' to Firebase Console -> Authentication -> Settings -> Authorized Domains.`);
+      } else if (e?.code === 'auth/internal-error') {
+        setErrorMsg(`Firebase authentication failed (auth/internal-error). Please verify: 1) GitHub sign-in is enabled with Client ID & Secret in Firebase Console (Authentication > Sign-in method), and 2) third-party cookies or popups are not blocked.`);
+      } else if (e?.code === 'auth/operation-not-allowed') {
+        setErrorMsg(`GitHub sign-in is not enabled in Firebase Console. Go to Authentication -> Sign-in method and enable GitHub.`);
       } else {
         setErrorMsg(e?.message || 'Login failed. Please try again.');
       }

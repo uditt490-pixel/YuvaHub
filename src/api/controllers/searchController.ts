@@ -47,7 +47,7 @@ export const searchHandler = async (req: Request, res: Response) => {
   if (typesStr) {
     const types = typesStr.split(",").map(t => t.trim()).filter(Boolean);
     if (types.length > 0) {
-      const typeRegexes = types.map(t => new RegExp(`^${t.replace(/s$/i, "")}`, "i"));
+      const typeRegexes = types.map(t => new RegExp(`^${t.replace(/s$/i, "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i"));
       andConditions.push({
         $or: [
           { type: { $in: typeRegexes } },

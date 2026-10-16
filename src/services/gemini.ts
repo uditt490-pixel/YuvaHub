@@ -1,3 +1,5 @@
+import { auth } from "../lib/firebase.js";
+
 const robustParseJSON = (text: string): any => {
   if (!text) return null;
   try {
@@ -57,14 +59,37 @@ export async function generatedContentProxyWithRetry(
   while (attempt <= maxRetries) {
     attempt++;
     try {
+      let token = "";
+      try {
+        if (auth?.currentUser) {
+          token = await auth.currentUser.getIdToken();
+        }
+      } catch (authErr) {
+        // Silently continue without token if Firebase auth is not available
+      }
+
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const res = await fetch("/api/v1/ai/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ prompt, expectJson })
       });
 
       if (!res.ok) {
         lastError = `AI Service temporary issue (${res.status} ${res.statusText})`;
+        if (res.status === 429) {
+          return {
+            text: expectJson ? "[]" : "AI assistant rate limit reached. Using curated fallbacks.",
+            success: false,
+            error: lastError,
+            isRetryable: false,
+            attemptsUsed: attempt
+          };
+        }
         isRetryable = true;
         if (attempt <= maxRetries) {
           if (options.onRetry) options.onRetry(attempt, lastError);
